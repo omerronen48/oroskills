@@ -14,19 +14,22 @@ Each skill is a drop-in replacement for the corresponding `superpowers:*` skill 
 
 ## Install
 
-Clone the repo and symlink (or copy) each skill into your Claude Code skills directory.
+Clone the repo and run the install script:
 
 ```bash
 git clone https://github.com/<you>/oroskills.git ~/oroskills
-
-mkdir -p ~/.claude/skills
-
-ln -s ~/oroskills/brainstorming-time   ~/.claude/skills/brainstorming-time
-ln -s ~/oroskills/writing-plans-time   ~/.claude/skills/writing-plans-time
-ln -s ~/oroskills/executing-plan-time  ~/.claude/skills/executing-plan-time
+cd ~/oroskills
+./install.sh
 ```
 
-Prefer copies over symlinks? Replace `ln -s` with `cp -r`.
+Options:
+
+```
+./install.sh              # symlink into ~/.claude/skills (global)
+./install.sh --project    # symlink into ./.claude/skills (project-scoped)
+./install.sh --copy       # copy files instead of symlinking
+./install.sh --force      # overwrite existing skills with the same name
+```
 
 Verify:
 
