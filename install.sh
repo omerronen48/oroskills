@@ -9,7 +9,7 @@
 
 set -euo pipefail
 
-SKILLS=(brainstorming-time writing-plans-time executing-plan-time)
+SKILLS=(project-time brainstorming-time writing-plans-time executing-plan-time caveman)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 SCOPE="global"
