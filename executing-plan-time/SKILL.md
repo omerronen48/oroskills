@@ -13,12 +13,12 @@ One skill that runs an approved plan to done. Replaces the chain of superpowers:
 - A written, approved plan file (preferably produced by writing-plans-time, which already includes the File Edit Manifest + wave structure).
 - A repo with (or willing to initialize) a graphify graph.
 
-**Companion templates (in this skill folder):**
-- `implementer-prompt.md` — dispatch template for the per-task implementer subagent. Worktree-aware, manifest-constrained, enforces the TDD-before-commit contract.
-- `spec-reviewer-prompt.md` — dispatch template for the spec-compliance reviewer. Also verifies manifest discipline and TDD-artifact integrity (re-runs the test on the parent commit to confirm it would have failed).
-- `code-quality-reviewer-prompt.md` — dispatch template for the code-quality reviewer. Also checks for sibling-task conflicts when the task ran inside a parallel wave.
+**Dispatched agents (in `dev-pipeline/agents/`):**
+- `implementer` (dev-pipeline/agents/implementer.md) — the per-task implementer subagent. Worktree-aware, manifest-constrained, enforces the TDD-before-commit contract.
+- `spec-reviewer` (dev-pipeline/agents/spec-reviewer.md) — the spec-compliance reviewer. Also verifies manifest discipline and TDD-artifact integrity (re-runs the test on the parent commit to confirm it would have failed).
+- `code-quality-reviewer` (dev-pipeline/agents/code-quality-reviewer.md) — the code-quality reviewer. Also checks for sibling-task conflicts when the task ran inside a parallel wave.
 
-Every implementer dispatch MUST be built from `implementer-prompt.md`. Every task MUST pass both reviewers in order (spec first, then quality) before being marked done. Skipping a reviewer is a hard-gate violation — see below.
+Every implementer dispatch MUST dispatch the `implementer` agent by name. Every task MUST pass both reviewers in order (spec first, then quality) before being marked done. Skipping a reviewer is a hard-gate violation — see below.
 
 <HARD-GATE>
 Four hard gates. Violating any of them is a stop-the-line event:
@@ -26,7 +26,7 @@ Four hard gates. Violating any of them is a stop-the-line event:
 1. **Worktree gate.** No edits to the main checkout. All work happens inside a git worktree created by this skill.
 2. **TDD-before-commit gate.** A task does not commit unless a test that exercises the change was written, observed to fail, and then observed to pass — in that order. The fail log + pass log + commit triple is the artifact.
 3. **Overlap gate.** Two tasks run in parallel only if overlap analysis (files + functions + call-graph edges) shows zero conflict. When in doubt, serialize.
-4. **Two-stage review gate.** A task is not done until `spec-reviewer-prompt.md` returns PASS and then `code-quality-reviewer-prompt.md` returns APPROVED. Spec review always runs before quality review.
+4. **Two-stage review gate.** A task is not done until the `spec-reviewer` agent returns PASS and then the `code-quality-reviewer` agent returns APPROVED. Spec review always runs before quality review.
 </HARD-GATE>
 
 ## Why a single skill
@@ -39,9 +39,9 @@ It also lets us state cross-cutting invariants that no individual skill can stat
 
 Create a TodoWrite todo for each phase. Each phase has its own internal steps.
 
-1. **Pre-flight** — graphify exists, plan loaded, worktree created, baseline tests green
+1. **Pre-flight** — graphify exists, plan loaded, worktree created, baseline tests green, memory read (read `.dev/memory/` per `dev-pipeline/memory-protocol.md` if present; pass memory pointers to each dispatched agent)
 2. **Overlap analysis** — for every wave, verify file + function + call-graph disjointness; downgrade waves if needed
-3. **Wave loop** — for each wave: dispatch parallel implementer subagents (using `implementer-prompt.md`), await all; per task run spec-compliance review (using `spec-reviewer-prompt.md`), fix loop if needed, then code-quality review (using `code-quality-reviewer-prompt.md`), fix loop if needed; verify the wave; mark tasks done
+3. **Wave loop** — for each wave: dispatch parallel `implementer` agents, await all; per task run spec-compliance review (dispatch the `spec-reviewer` agent), fix loop if needed, then code-quality review (dispatch the `code-quality-reviewer` agent), fix loop if needed; verify the wave; mark tasks done
 4. **Final verification** — full test suite + lint + type-check + spec coverage check on the worktree
 5. **Finishing handoff** — present PR / merge-to-main / leave-as-worktree choice; do not act without user confirmation
 
@@ -152,6 +152,10 @@ Concrete rules for the main agent:
 - Do not call Edit/Write on source files. Dispatch a subagent.
 - Do not run the full test suite from main except at the final verification step. Per-task tests run inside the subagent.
 
+### 1.5 Memory protocol
+
+Read `.dev/memory/` per `dev-pipeline/memory-protocol.md` if present; pass memory pointers to each dispatched agent. No-op when absent.
+
 ---
 
 ## Phase 2: Overlap Analysis (per wave)
@@ -186,18 +190,18 @@ For each wave, in order:
 
 ### 3.1 Dispatch parallel implementer subagents
 
-Send **all tasks in the wave as a single message with multiple Agent tool calls**. Build each call from `implementer-prompt.md` in this skill folder — do not write ad-hoc instructions. Each filled-in template gets:
+Send **all tasks in the wave as a single message with multiple Agent tool calls**. Dispatch the `implementer` agent (dev-pipeline/agents/implementer.md) by name with the task slice — do not write ad-hoc instructions. Each dispatch gets:
 
 - The worktree absolute path and branch (Phase 1.2)
 - The full task text from the plan (verbatim — do NOT have the subagent read the plan file)
 - The task's File Edit Manifest entries (Create / Modify / Test / Delete)
-- Pre-queried graphify context (functions defined in modified files, callers, callees) — run these queries once in main BEFORE dispatching, paste the results into each template
+- Pre-queried graphify context (functions defined in modified files, callers, callees) — run these queries once in main BEFORE dispatching, paste the results into each dispatch
 
-The implementer template already enforces the TDD-before-commit contract (3.2) and the manifest constraint. Do not weaken it; do not skip placeholders. If a placeholder doesn't apply, write "none" — never leave it blank or invent a value.
+The `implementer` agent already enforces the TDD-before-commit contract (3.2) and the manifest constraint. Do not weaken it; do not skip required context. If a context slot doesn't apply, write "none" — never leave it blank or invent a value.
 
 ### 3.2 TDD-before-commit (the contract)
 
-Encoded inside `implementer-prompt.md`. Restated here for visibility — every task's commit MUST be backed by:
+Encoded inside the `implementer` agent. Restated here for visibility — every task's commit MUST be backed by:
 
 1. A test file change (new test or modified test in the manifest's Test file).
 2. **Fail log:** observed test failure output before implementation, run on the not-yet-modified branch state.
@@ -225,9 +229,9 @@ If wave verification fails: investigate. Common causes:
 
 ### 3.4 Per-task spec-compliance review
 
-For each task in the wave, dispatch a spec-compliance reviewer using `spec-reviewer-prompt.md`. Reviewers for different tasks in the same wave can run in parallel (they read disjoint diffs).
+For each task in the wave, dispatch the `spec-reviewer` agent (dev-pipeline/agents/spec-reviewer.md) by name. Reviewers for different tasks in the same wave can run in parallel (they read disjoint diffs).
 
-Fill in:
+Provide:
 - Worktree path
 - Base SHA (commit immediately before this task's commit) and head SHA (the task's commit)
 - The full task text from the plan
@@ -242,17 +246,17 @@ Do NOT proceed to code-quality review on a `FAIL`. Do NOT silently fix the issue
 
 ### 3.5 Per-task code-quality review
 
-Only after spec review returns `PASS` for a given task, dispatch a code-quality reviewer using `code-quality-reviewer-prompt.md`.
+Only after spec review returns `PASS` for a given task, dispatch the `code-quality-reviewer` agent (dev-pipeline/agents/code-quality-reviewer.md) by name.
 
-Fill in:
+Provide:
 - Worktree path, base SHA, head SHA
 - One-paragraph task summary
-- **Sibling-task touch sets** — the files modified by every other task in this same wave. This is what the upstream code-quality reviewer does not have visibility into and is why the template here includes a sibling-conflicts check.
+- **Sibling-task touch sets** — the files modified by every other task in this same wave. This is what the upstream code-quality reviewer does not have visibility into and is why this agent includes a sibling-conflicts check.
 
 The reviewer returns `APPROVED` or `CHANGES_REQUESTED`. If `CHANGES_REQUESTED`:
 - Re-dispatch the implementer with the findings.
 - Re-run code-quality review until `APPROVED`.
-- If only Minor issues remain, the reviewer template allows `APPROVED` with the minors noted for follow-up (non-blocking).
+- If only Minor issues remain, the reviewer allows `APPROVED` with the minors noted for follow-up (non-blocking).
 
 ### 3.6 Mark done + context hygiene between waves
 
@@ -323,7 +327,7 @@ Ponytail (minimal-code enforcement) runs at mode `full`. Every implementer and r
 5. Can it be one line?
 6. Only then: the minimum viable implementation.
 
-Because dispatched subagents may not inherit ponytail's global session hook, the ladder is stated explicitly in `implementer-prompt.md` and the over-engineering check in `code-quality-reviewer-prompt.md` — do not rely on the hook alone.
+Because dispatched subagents may not inherit ponytail's global session hook, the ladder is stated explicitly in the `implementer` agent and the over-engineering check in the `code-quality-reviewer` agent — do not rely on the hook alone.
 
 ## Token & Context Discipline
 
@@ -384,7 +388,7 @@ If any intersection is non-empty, serialize.
 |---|---|---|
 | superpowers:using-git-worktrees | Always-isolate-in-worktree rule | Worktree creation is phase 1, not a separate skill load |
 | superpowers:executing-plans | Plan-driven execution | Merged into the wave loop |
-| superpowers:subagent-driven-development | Per-task fresh subagent + 3 prompt templates (implementer, spec-reviewer, code-quality-reviewer) | Templates ship with this skill (companion files), adapted to require worktree path, pre-queried graphify context, TDD artifact integrity check (re-run on parent commit), manifest-discipline check, and sibling-task conflict check |
+| superpowers:subagent-driven-development | Per-task fresh subagent + 3 named agents (implementer, spec-reviewer, code-quality-reviewer) | Agents live in `dev-pipeline/agents/`, adapted to require worktree path, pre-queried graphify context, TDD artifact integrity check (re-run on parent commit), manifest-discipline check, and sibling-task conflict check |
 | superpowers:dispatching-parallel-agents | Parallel-when-independent | File + function + call-graph overlap check, not just "looks independent" |
 | superpowers:test-driven-development | Test-first, see-it-fail, see-it-pass | Enforced as a contract on every dispatched subagent, with an artifact check |
 | superpowers:verification-before-completion | Evidence before claims | Promoted to a phase with explicit commands and a gate |
@@ -399,8 +403,8 @@ If any intersection is non-empty, serialize.
 - Two parallel implementers touching the same file
 - Implementer returns "done" without fail + pass logs → not done
 - Skipping the spec reviewer or running code-quality before spec → hard-gate violation
-- Skipping the sibling-task touch-sets in the code-quality reviewer dispatch — the template's parallel-aware check will silently degrade to upstream behavior
-- Writing ad-hoc subagent prompts instead of filling in the template files in this skill folder
+- Skipping the sibling-task touch-sets in the code-quality reviewer dispatch — the agent's parallel-aware check will silently degrade to upstream behavior
+- Writing ad-hoc subagent prompts instead of dispatching the named `implementer` / `spec-reviewer` / `code-quality-reviewer` agents
 - Main agent reading source files directly → use graphify
 - Main agent fixing reviewer findings itself instead of re-dispatching the implementer (context pollution)
 - "Final verification" being a sentence instead of a command run
