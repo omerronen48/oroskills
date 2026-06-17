@@ -1,115 +1,107 @@
 # Graph Report - .  (2026-06-17)
 
 ## Corpus Check
-- Corpus is ~16,715 words - fits in a single context window. You may not need a graph.
+- 24 files · ~16,501 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 80 nodes · 141 edges · 17 communities (10 shown, 7 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 14 edges (avg confidence: 0.89)
+- 80 nodes · 131 edges · 12 communities (7 shown, 5 thin omitted)
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 6 edges (avg confidence: 0.88)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- [[_COMMUNITY_Dev-Pipeline & Memory Store|Dev-Pipeline & Memory Store]]
-- [[_COMMUNITY_Ship-Pipeline Stages|Ship-Pipeline Stages]]
-- [[_COMMUNITY_Workflow Chain Front Door|Workflow Chain Front Door]]
-- [[_COMMUNITY_Dev-Pipeline Agents|Dev-Pipeline Agents]]
-- [[_COMMUNITY_Caveman Mode & Session Hook|Caveman Mode & Session Hook]]
-- [[_COMMUNITY_Executing-Plan Mechanics|Executing-Plan Mechanics]]
+- [[_COMMUNITY_Ship Pipeline & Agents|Ship Pipeline & Agents]]
+- [[_COMMUNITY_ExecutingWriting Plans|Executing/Writing Plans]]
+- [[_COMMUNITY_Install & Session Setup|Install & Session Setup]]
+- [[_COMMUNITY_ProjectBrainstorm & Roadmap|Project/Brainstorm & Roadmap]]
+- [[_COMMUNITY_dev Loop & Memory Store|/dev Loop & Memory Store]]
 - [[_COMMUNITY_install.sh Internals|install.sh Internals]]
-- [[_COMMUNITY_Writing-Plans Artifacts|Writing-Plans Artifacts]]
-- [[_COMMUNITY_README & Ponytail|README & Ponytail]]
-- [[_COMMUNITY_Local SettingsPermissions|Local Settings/Permissions]]
-- [[_COMMUNITY_check_agents test|check_agents test]]
-- [[_COMMUNITY_caveman-hook script|caveman-hook script]]
+- [[_COMMUNITY_Caveman Skill|Caveman Skill]]
 - [[_COMMUNITY_check_dev_command test|check_dev_command test]]
 - [[_COMMUNITY_check_install test|check_install test]]
+- [[_COMMUNITY_caveman-hook script|caveman-hook script]]
+- [[_COMMUNITY_check_agents test|check_agents test]]
 - [[_COMMUNITY_check_memory_protocol test|check_memory_protocol test]]
-- [[_COMMUNITY_settings_local|settings_local]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `executing-plan-time skill` - 16 edges
+1. `executing-plan-time skill` - 18 edges
 2. `writing-plans-time skill` - 12 edges
-3. `dev memory protocol` - 12 edges
-4. `oroskills README` - 9 edges
-5. `brainstorming-time skill` - 9 edges
-6. `dev command` - 9 edges
-7. `project-time skill` - 8 edges
-8. `implementer agent` - 8 edges
-9. `coder agent` - 7 edges
-10. `dev-pipeline memory protocol` - 6 edges
+3. `.dev/memory/ protocol` - 11 edges
+4. `brainstorming-time skill` - 9 edges
+5. `ponytail minimal-code ladder` - 8 edges
+6. `project-time skill` - 8 edges
+7. `dev-pipeline memory-protocol.md` - 7 edges
+8. `dev command (roadmap-driven loop)` - 7 edges
+9. `implementer agent` - 7 edges
+10. `dev pipeline` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `coder agent` --semantically_similar_to--> `implementer agent`  [INFERRED] [semantically similar]
-  ship-pipeline/agents/coder.md → dev-pipeline/agents/implementer.md
-- `reviewer agent` --semantically_similar_to--> `code-quality-reviewer agent`  [INFERRED] [semantically similar]
-  ship-pipeline/agents/reviewer.md → dev-pipeline/agents/code-quality-reviewer.md
-- `install_ponytail()` --references--> `ponytail plugin (minimal-code enforcement)`  [EXTRACTED]
+- `install_ponytail()` --implements--> `ponytail plugin`  [EXTRACTED]
   install.sh → README.md
-- `writing-plans-time skill` --conceptually_related_to--> `skill workflow chain`  [INFERRED]
-  writing-plans-time/SKILL.md → README.md
-- `executing-plan-time skill` --conceptually_related_to--> `skill workflow chain`  [INFERRED]
-  executing-plan-time/SKILL.md → README.md
+- `caveman SessionStart hook` --conceptually_related_to--> `caveman mode`  [EXTRACTED]
+  skills/caveman/caveman-hook.sh → README.md
+- `ponytail minimal-code ladder` --conceptually_related_to--> `ponytail plugin`  [EXTRACTED]
+  skills/executing-plan-time/SKILL.md → README.md
+- `dev command (roadmap-driven loop)` --references--> `project-time skill`  [EXTRACTED]
+  pipelines/dev-pipeline/commands/dev.md → skills/project-time/SKILL.md
+- `.dev/memory/ protocol` --references--> `project-time skill`  [EXTRACTED]
+  pipelines/dev-pipeline/memory-protocol.md → skills/project-time/SKILL.md
 
 ## Hyperedges (group relationships)
-- **project-time to executing-plan-time chain** — project_time_skill, brainstorming_time_skill, writing_plans_time_skill, executing_plan_time_skill [EXTRACTED 1.00]
-- **executing-plan-time dispatched agents** — executing_plan_time_skill, implementer_agent, spec_reviewer_agent, code_quality_reviewer_agent [EXTRACTED 1.00]
-- **caveman-on-by-default install mechanism** — install_install_session_hook, caveman_caveman_hook, session_start_hook [EXTRACTED 1.00]
-- **ship four-stage feature pipeline** — ship_pipeline_commands_ship, ship_pipeline_agents_planner, ship_pipeline_agents_coder, ship_pipeline_agents_tester, ship_pipeline_agents_reviewer [EXTRACTED 1.00]
-- **dev roadmap-driven dev loop** — dev_pipeline_commands_dev, dev_pipeline_agents_phase_executor, skill_project_time, skill_brainstorming_time, skill_writing_plans_time, concept_dev_memory_store [EXTRACTED 1.00]
-- **executing-plan-time implementer + two-stage review** — skill_executing_plan_time, dev_pipeline_agents_implementer, dev_pipeline_agents_spec_reviewer, dev_pipeline_agents_code_quality_reviewer, concept_tdd_before_commit_contract [INFERRED 0.85]
-- **.dev/memory store files** — concept_dev_memory_store, concept_goals_md, concept_decisions_md, concept_lessons_md, concept_glossary_md, concept_progress_md [EXTRACTED 1.00]
+- **project to executed code skill chain** — project_time_skill, brainstorming_time_skill, writing_plans_time_skill, executing_plan_time_skill [EXTRACTED 1.00]
+- **executing-plan-time dispatched agents** — agent_implementer, agent_spec_reviewer, agent_code_quality_reviewer [EXTRACTED 1.00]
+- **install.sh setup actions** — install_install_item, install_install_session_hook, install_install_ponytail [EXTRACTED 1.00]
+- **plan parallelization artifacts** — file_edit_manifest, execution_waves, overlap_analysis [INFERRED 0.85]
+- **dev pipeline test checks** — check_dev_command, check_memory_protocol, check_agents, check_install [INFERRED 0.85]
+- **ship feature pipeline stages** — ship_command, ship_pipeline_planner, ship_pipeline_coder, ship_pipeline_tester, ship_pipeline_reviewer [EXTRACTED 1.00]
+- **ship pipeline handoff artifacts** — ship_spec_artifact, ship_changes_artifact, ship_test_results_artifact, ship_review_artifact [EXTRACTED 1.00]
+- **.dev/memory shared store files** — dev_memory_goals, dev_memory_decisions, dev_memory_lessons, dev_memory_glossary, dev_memory_progress [EXTRACTED 1.00]
+- **dev pipeline skill chain** — dev_command, project_time_skill, brainstorming_time_skill, writing_plans_time_skill, executing_plan_time_skill [EXTRACTED 1.00]
+- **dev pipeline subagents** — dev_pipeline_phase_executor, dev_pipeline_implementer, dev_pipeline_spec_reviewer, dev_pipeline_code_quality_reviewer [INFERRED 0.85]
 
-## Communities (17 total, 7 thin omitted)
+## Communities (12 total, 5 thin omitted)
 
-### Community 0 - "Dev-Pipeline & Memory Store"
-Cohesion: 0.21
-Nodes (19): decisions.md audit log, .dev/memory/ store, glossary.md, goals.md, lessons.md, ponytail minimal-code ladder, progress.md phase tracker, TDD-before-commit contract (+11 more)
+### Community 0 - "Ship Pipeline & Agents"
+Cohesion: 0.24
+Nodes (15): code-quality-reviewer agent, implementer agent, spec-reviewer agent, file manifest hard constraint, ponytail minimal-code ladder, .pipeline/changes.md, ship command (feature pipeline), ship coder agent (+7 more)
 
-### Community 1 - "Ship-Pipeline Stages"
-Cohesion: 0.39
-Nodes (9): .pipeline/changes.md handoff, .pipeline/review.md handoff, .pipeline/spec.md handoff, .pipeline/test-results.md handoff, coder agent, planner agent, reviewer agent, tester agent (+1 more)
+### Community 1 - "Executing/Writing Plans"
+Cohesion: 0.24
+Nodes (12): code-quality-reviewer agent, implementer agent, spec-reviewer agent, executing-plan-time skill, parallel execution waves, File Edit Manifest, git worktree isolation, overlap analysis (file/function/call-graph) (+4 more)
 
-### Community 2 - "Workflow Chain Front Door"
-Cohesion: 0.43
-Nodes (6): brainstorming-time skill, dev pipeline (/dev continuous loop), graphify knowledge graph, dev-pipeline memory protocol, project-time skill, skill workflow chain
+### Community 2 - "Install & Session Setup"
+Cohesion: 0.19
+Nodes (9): phase-executor agent, caveman mode, caveman SessionStart hook, dev pipeline, install_ponytail(), install_session_hook(), ponytail plugin, oroskills README (+1 more)
 
-### Community 3 - "Dev-Pipeline Agents"
-Cohesion: 0.53
-Nodes (4): code-quality-reviewer agent, implementer agent, phase-executor agent, spec-reviewer agent
+### Community 3 - "Project/Brainstorm & Roadmap"
+Cohesion: 0.27
+Nodes (9): brainstorming-time skill, oroskills skill chain, .dev/memory layer, graphify knowledge graph, dev-pipeline memory-protocol.md, Mermaid mind map, project-time skill, roadmap file (docs/roadmaps) (+1 more)
 
-### Community 4 - "Caveman Mode & Session Hook"
-Cohesion: 0.50
-Nodes (4): caveman skill, install_session_hook(), mattpocock/skills caveman source, caveman SessionStart hook
+### Community 4 - "/dev Loop & Memory Store"
+Cohesion: 0.31
+Nodes (9): blocking-ambiguity policy (escalate vs auto), dev command (roadmap-driven loop), decisions.md, glossary.md, goals.md, lessons.md, progress.md, .dev/memory/ protocol (+1 more)
 
-### Community 5 - "Executing-Plan Mechanics"
-Cohesion: 0.40
-Nodes (5): executing-plan-time skill, git worktree isolation, overlap analysis (file+function+call-graph), TDD-before-commit contract, two-stage review gate
-
-### Community 6 - "install.sh Internals"
+### Community 5 - "install.sh Internals"
 Cohesion: 0.70
 Nodes (4): install_item(), install_ponytail(), install_session_hook(), install.sh script
 
-### Community 7 - "Writing-Plans Artifacts"
-Cohesion: 0.83
-Nodes (3): parallel execution waves, File Edit Manifest, writing-plans-time skill
-
-### Community 8 - "README & Ponytail"
-Cohesion: 0.50
-Nodes (4): install_ponytail(), ponytail plugin (minimal-code enforcement), oroskills README, ship pipeline (/ship)
+### Community 6 - "Caveman Skill"
+Cohesion: 0.67
+Nodes (3): caveman auto-clarity exception, caveman persistence mode, caveman skill
 
 ## Knowledge Gaps
-- **19 isolated node(s):** `check_dev_command.sh script`, `check_memory_protocol.sh script`, `check_agents.sh script`, `check_install.sh script`, `allow` (+14 more)
+- **17 isolated node(s):** `check_dev_command.sh script`, `check_memory_protocol.sh script`, `check_agents.sh script`, `check_install.sh script`, `caveman-hook.sh script` (+12 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **5 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `dev check_install.sh` connect `Dev-Pipeline & Memory Store` to `Dev-Pipeline Agents`?**
-  _High betweenness centrality (0.287) - this node is a cross-community bridge._
-- **Why does `implementer agent` connect `Dev-Pipeline & Memory Store` to `Ship-Pipeline Stages`?**
-  _High betweenness centrality (0.127) - this node is a cross-community bridge._
-- **Why does `executing-plan-time skill` connect `Executing-Plan Mechanics` to `README & Ponytail`, `Workflow Chain Front Door`, `Dev-Pipeline Agents`, `Writing-Plans Artifacts`?**
-  _High betweenness centrality (0.112) - this node is a cross-community bridge._
+- **Why does `executing-plan-time skill` connect `Executing/Writing Plans` to `Ship Pipeline & Agents`, `Install & Session Setup`, `Project/Brainstorm & Roadmap`, `/dev Loop & Memory Store`?**
+  _High betweenness centrality (0.225) - this node is a cross-community bridge._
+- **Why does `ponytail minimal-code ladder` connect `Ship Pipeline & Agents` to `Executing/Writing Plans`, `Install & Session Setup`?**
+  _High betweenness centrality (0.095) - this node is a cross-community bridge._
+- **Why does `.dev/memory/ protocol` connect `/dev Loop & Memory Store` to `Ship Pipeline & Agents`, `Project/Brainstorm & Roadmap`?**
+  _High betweenness centrality (0.091) - this node is a cross-community bridge._
 - **What connects `check_dev_command.sh script`, `check_memory_protocol.sh script`, `check_agents.sh script` to the rest of the system?**
   _19 weakly-connected nodes found - possible documentation gaps or missing edges._

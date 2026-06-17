@@ -1,127 +1,127 @@
 {
   "/Users/omes/Desktop/oroskills/install.sh": {
-    "mtime": 1781698258.8484302,
-    "ast_hash": "3453859e42bd04a7fcb5e9850470c525",
-    "semantic_hash": "3453859e42bd04a7fcb5e9850470c525"
+    "mtime": 1781699305.2650647,
+    "ast_hash": "d0e0f9da276540936ffaef2f1b23b3bf",
+    "semantic_hash": "d0e0f9da276540936ffaef2f1b23b3bf"
   },
   "/Users/omes/Desktop/oroskills/tests/dev/check_dev_command.sh": {
-    "mtime": 1781698258.848801,
-    "ast_hash": "6b8a9b72e4d03b7cdc110b7a8a53b552",
-    "semantic_hash": "6b8a9b72e4d03b7cdc110b7a8a53b552"
+    "mtime": 1781699422.3603532,
+    "ast_hash": "c04d0f302c8103254c7bb84cadb8c2e3",
+    "semantic_hash": "c04d0f302c8103254c7bb84cadb8c2e3"
   },
   "/Users/omes/Desktop/oroskills/tests/dev/check_memory_protocol.sh": {
-    "mtime": 1781698258.8489983,
-    "ast_hash": "bdf80df890125c08fc7813cd9dacea6e",
-    "semantic_hash": "bdf80df890125c08fc7813cd9dacea6e"
+    "mtime": 1781699422.3527794,
+    "ast_hash": "cd5ae924950bb9eb2e777d6f2ee16fd8",
+    "semantic_hash": "cd5ae924950bb9eb2e777d6f2ee16fd8"
   },
   "/Users/omes/Desktop/oroskills/tests/dev/check_agents.sh": {
-    "mtime": 1781698258.8487155,
-    "ast_hash": "1f1ad3023f2436bc400f7ac21491958f",
-    "semantic_hash": "1f1ad3023f2436bc400f7ac21491958f"
+    "mtime": 1781699422.3445125,
+    "ast_hash": "7959563f97293125121bcf9eb7029e2b",
+    "semantic_hash": "7959563f97293125121bcf9eb7029e2b"
   },
   "/Users/omes/Desktop/oroskills/tests/dev/check_install.sh": {
-    "mtime": 1781698258.848882,
-    "ast_hash": "f120631b444bc5208963c06f3eb49c03",
-    "semantic_hash": "f120631b444bc5208963c06f3eb49c03"
+    "mtime": 1781699422.3384695,
+    "ast_hash": "9d48d23ebaff67cd8d8d0e2d7b0a965d",
+    "semantic_hash": "9d48d23ebaff67cd8d8d0e2d7b0a965d"
   },
   "/Users/omes/Desktop/oroskills/.claude/settings.local.json": {
     "mtime": 1780999055.037386,
     "ast_hash": "96563457ea6739c7c6f7def4ed390a41",
     "semantic_hash": "96563457ea6739c7c6f7def4ed390a41"
   },
-  "/Users/omes/Desktop/oroskills/caveman/caveman-hook.sh": {
+  "/Users/omes/Desktop/oroskills/README.md": {
+    "mtime": 1781699557.3840826,
+    "ast_hash": "68bf6d61acd7083fa94392873c782ba5",
+    "semantic_hash": "68bf6d61acd7083fa94392873c782ba5"
+  },
+  "/Users/omes/Desktop/oroskills/skills/caveman/caveman-hook.sh": {
     "mtime": 1781692815.4717112,
     "ast_hash": "f7eb73b2b5ee8f1bf589dc402439cf07",
     "semantic_hash": "f7eb73b2b5ee8f1bf589dc402439cf07"
   },
-  "/Users/omes/Desktop/oroskills/README.md": {
-    "mtime": 1781698401.1415973,
-    "ast_hash": "2215a8fa9ffa8d0329d32d4a52ab77ca",
-    "semantic_hash": "2215a8fa9ffa8d0329d32d4a52ab77ca"
-  },
-  "/Users/omes/Desktop/oroskills/project-time/SKILL.md": {
-    "mtime": 1781698258.84857,
-    "ast_hash": "3ef2d7f3a50a6898566687b209c25365",
-    "semantic_hash": "3ef2d7f3a50a6898566687b209c25365"
-  },
-  "/Users/omes/Desktop/oroskills/writing-plans-time/SKILL.md": {
-    "mtime": 1781698258.850234,
-    "ast_hash": "b2446814d5029ed97db19ca1f08946ca",
-    "semantic_hash": "b2446814d5029ed97db19ca1f08946ca"
-  },
-  "/Users/omes/Desktop/oroskills/writing-plans-time/plan-template.md": {
-    "mtime": 1780296273.5428998,
-    "ast_hash": "4bb6c8786540c0ec8ad81a4b8c16c983",
-    "semantic_hash": "4bb6c8786540c0ec8ad81a4b8c16c983"
-  },
-  "/Users/omes/Desktop/oroskills/brainstorming-time/SKILL.md": {
-    "mtime": 1781698258.8452067,
-    "ast_hash": "8b8a7706dcd60ec8c60d03779939a7b8",
-    "semantic_hash": "8b8a7706dcd60ec8c60d03779939a7b8"
-  },
-  "/Users/omes/Desktop/oroskills/executing-plan-time/SKILL.md": {
-    "mtime": 1781698649.7927613,
-    "ast_hash": "c6ba586fdaa25991e6a8c97c24851e0a",
-    "semantic_hash": "c6ba586fdaa25991e6a8c97c24851e0a"
-  },
-  "/Users/omes/Desktop/oroskills/ship-pipeline/agents/reviewer.md": {
+  "/Users/omes/Desktop/oroskills/pipelines/ship-pipeline/agents/reviewer.md": {
     "mtime": 1781694976.532347,
     "ast_hash": "306ccb0fe333873c172a2d469488b6f6",
     "semantic_hash": "306ccb0fe333873c172a2d469488b6f6"
   },
-  "/Users/omes/Desktop/oroskills/ship-pipeline/agents/tester.md": {
+  "/Users/omes/Desktop/oroskills/pipelines/ship-pipeline/agents/tester.md": {
     "mtime": 1781692242.2035794,
     "ast_hash": "7cfa4e3b03822636a7b69c49eceaf665",
     "semantic_hash": "7cfa4e3b03822636a7b69c49eceaf665"
   },
-  "/Users/omes/Desktop/oroskills/ship-pipeline/agents/planner.md": {
+  "/Users/omes/Desktop/oroskills/pipelines/ship-pipeline/agents/planner.md": {
     "mtime": 1781692236.3713696,
     "ast_hash": "d657c67d66a1d413f12066e195fe7fc6",
     "semantic_hash": "d657c67d66a1d413f12066e195fe7fc6"
   },
-  "/Users/omes/Desktop/oroskills/ship-pipeline/agents/coder.md": {
+  "/Users/omes/Desktop/oroskills/pipelines/ship-pipeline/agents/coder.md": {
     "mtime": 1781694976.5308301,
     "ast_hash": "0415602648c255939d43d085dd418b99",
     "semantic_hash": "0415602648c255939d43d085dd418b99"
   },
-  "/Users/omes/Desktop/oroskills/ship-pipeline/commands/ship.md": {
+  "/Users/omes/Desktop/oroskills/pipelines/ship-pipeline/commands/ship.md": {
     "mtime": 1781692251.834621,
     "ast_hash": "5dfec011fe53189c54c4ea8bf329a5e9",
     "semantic_hash": "5dfec011fe53189c54c4ea8bf329a5e9"
   },
-  "/Users/omes/Desktop/oroskills/caveman/SKILL.md": {
-    "mtime": 1780999082.1657429,
-    "ast_hash": "936f394c106cf52312e448c3f173a353",
-    "semantic_hash": "936f394c106cf52312e448c3f173a353"
-  },
-  "/Users/omes/Desktop/oroskills/dev-pipeline/memory-protocol.md": {
+  "/Users/omes/Desktop/oroskills/pipelines/dev-pipeline/memory-protocol.md": {
     "mtime": 1781698258.846723,
     "ast_hash": "93674f338e03970b5e275c628ed3de42",
     "semantic_hash": "93674f338e03970b5e275c628ed3de42"
   },
-  "/Users/omes/Desktop/oroskills/dev-pipeline/agents/phase-executor.md": {
-    "mtime": 1781698258.8459272,
-    "ast_hash": "220b0c10eea7c053043897e1bdac08d4",
-    "semantic_hash": "220b0c10eea7c053043897e1bdac08d4"
+  "/Users/omes/Desktop/oroskills/pipelines/dev-pipeline/agents/phase-executor.md": {
+    "mtime": 1781699365.093952,
+    "ast_hash": "da1e2f77fd834221fa10f47a2102f695",
+    "semantic_hash": "da1e2f77fd834221fa10f47a2102f695"
   },
-  "/Users/omes/Desktop/oroskills/dev-pipeline/agents/spec-reviewer.md": {
+  "/Users/omes/Desktop/oroskills/pipelines/dev-pipeline/agents/spec-reviewer.md": {
     "mtime": 1781698613.1000845,
     "ast_hash": "20eb1f74ef31222d3788f2ae185faa6c",
     "semantic_hash": "20eb1f74ef31222d3788f2ae185faa6c"
   },
-  "/Users/omes/Desktop/oroskills/dev-pipeline/agents/code-quality-reviewer.md": {
+  "/Users/omes/Desktop/oroskills/pipelines/dev-pipeline/agents/code-quality-reviewer.md": {
     "mtime": 1781698258.8453782,
     "ast_hash": "701b654bb00fd3b69b15f809790ac6d7",
     "semantic_hash": "701b654bb00fd3b69b15f809790ac6d7"
   },
-  "/Users/omes/Desktop/oroskills/dev-pipeline/agents/implementer.md": {
+  "/Users/omes/Desktop/oroskills/pipelines/dev-pipeline/agents/implementer.md": {
     "mtime": 1781698258.8454754,
     "ast_hash": "1d2624a1d9350f0fe5d552e3c41afe21",
     "semantic_hash": "1d2624a1d9350f0fe5d552e3c41afe21"
   },
-  "/Users/omes/Desktop/oroskills/dev-pipeline/commands/dev.md": {
+  "/Users/omes/Desktop/oroskills/pipelines/dev-pipeline/commands/dev.md": {
     "mtime": 1781698258.8465018,
     "ast_hash": "99c3f2eca5c809184690638cb42df5dc",
     "semantic_hash": "99c3f2eca5c809184690638cb42df5dc"
+  },
+  "/Users/omes/Desktop/oroskills/skills/project-time/SKILL.md": {
+    "mtime": 1781699422.368209,
+    "ast_hash": "1c53d7639a36a32e7d90dac285450fc7",
+    "semantic_hash": "1c53d7639a36a32e7d90dac285450fc7"
+  },
+  "/Users/omes/Desktop/oroskills/skills/writing-plans-time/SKILL.md": {
+    "mtime": 1781699422.3832562,
+    "ast_hash": "8a9c2bf537b229773132fd53500dbe51",
+    "semantic_hash": "8a9c2bf537b229773132fd53500dbe51"
+  },
+  "/Users/omes/Desktop/oroskills/skills/writing-plans-time/plan-template.md": {
+    "mtime": 1780296273.5428998,
+    "ast_hash": "4bb6c8786540c0ec8ad81a4b8c16c983",
+    "semantic_hash": "4bb6c8786540c0ec8ad81a4b8c16c983"
+  },
+  "/Users/omes/Desktop/oroskills/skills/brainstorming-time/SKILL.md": {
+    "mtime": 1781699422.3759258,
+    "ast_hash": "3eaf9dba2ead1d201cf287e458ad3e84",
+    "semantic_hash": "3eaf9dba2ead1d201cf287e458ad3e84"
+  },
+  "/Users/omes/Desktop/oroskills/skills/executing-plan-time/SKILL.md": {
+    "mtime": 1781699402.9748929,
+    "ast_hash": "3f0bba70bcf03d92a2f4c375172432c0",
+    "semantic_hash": "3f0bba70bcf03d92a2f4c375172432c0"
+  },
+  "/Users/omes/Desktop/oroskills/skills/caveman/SKILL.md": {
+    "mtime": 1780999082.1657429,
+    "ast_hash": "936f394c106cf52312e448c3f173a353",
+    "semantic_hash": "936f394c106cf52312e448c3f173a353"
   }
 }
