@@ -42,6 +42,20 @@ A separate, self-contained feature pipeline that ships as **four subagents plus 
 
 Source lives in `ship-pipeline/`. The agents and command are installed automatically by `install.sh` (no separate step).
 
+## The /dev Continuous Loop
+
+`/dev "<idea>"` runs the whole chain end-to-end and keeps going across a multi-phase roadmap, so you don't hand-walk each stage. It wraps **project-time → brainstorming-time → writing-plans-time → executing-plan-time** in one resumable command:
+
+1. Builds the roadmap once (project-time), seeding a project-local `.dev/memory/` layer (`goals.md`, `decisions.md`, `lessons.md`, `glossary.md`, `progress.md`).
+2. For each phase: brainstorm + plan **interactively** (it asks you), then dispatches a **phase-executor** subagent that runs `executing-plan-time` unattended in its own context window.
+3. Auto-advances to the next phase. Every decision — interactive, auto, and escalated — is logged to `.dev/memory/decisions.md` for review.
+
+Each phase executes in a fresh subagent, so the main session stays lean; the loop is **resumable** from `.dev/memory/progress.md` if a session ends. Irreversible forks pause and escalate to you; reversible ones are auto-decided and logged.
+
+Source lives in `dev-pipeline/` (a `/dev` command + four agents + a shared `memory-protocol.md`), installed automatically by `install.sh`.
+
+**Two doors:** use `/ship` for a single feature in one sitting (no roadmap, no worktree); use `/dev` (or run the chain by hand) for anything larger — multiple phases, parallel waves, per-task two-stage review.
+
 ## Ponytail
 
 [ponytail](https://github.com/DietrichGebert/ponytail) is a "lazy senior dev" plugin that enforces minimal, necessary code (YAGNI, stdlib first, one line over fifty). `install.sh` installs and enables it via the Claude Code plugin CLI (`claude plugin marketplace add DietrichGebert/ponytail` + `claude plugin install ponytail@ponytail`) — it is **not** vendored, so ponytail manages its own skills, commands, hooks, and updates (`claude plugin update ponytail`).
@@ -76,12 +90,13 @@ Verify:
 ls ~/.claude/skills/
 # brainstorming-time  caveman  executing-plan-time  project-time  writing-plans-time
 ls ~/.claude/agents/
-# coder.md  planner.md  reviewer.md  tester.md
+# code-quality-reviewer.md  coder.md  implementer.md  phase-executor.md
+# planner.md  reviewer.md  spec-reviewer.md  tester.md
 ls ~/.claude/commands/
-# ship.md
+# dev.md  ship.md
 ```
 
-Restart Claude Code (or start a new session) and the skills, agents, and `/ship` command will appear.
+Restart Claude Code (or start a new session) and the skills, agents, and the `/ship` + `/dev` commands will appear.
 
 ### Project-scoped install
 
@@ -118,9 +133,6 @@ writing-plans-time/
   plan-template.md
 executing-plan-time/
   SKILL.md
-  implementer-prompt.md
-  spec-reviewer-prompt.md
-  code-quality-reviewer-prompt.md
 caveman/
   SKILL.md
   caveman-hook.sh
@@ -132,4 +144,18 @@ ship-pipeline/
     reviewer.md
   commands/
     ship.md
+dev-pipeline/
+  agents/
+    implementer.md
+    spec-reviewer.md
+    code-quality-reviewer.md
+    phase-executor.md
+  commands/
+    dev.md
+  memory-protocol.md
+tests/dev/
+  check_memory_protocol.sh
+  check_agents.sh
+  check_dev_command.sh
+  check_install.sh
 ```
