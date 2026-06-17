@@ -10,6 +10,9 @@
 set -euo pipefail
 
 SKILLS=(project-time brainstorming-time writing-plans-time executing-plan-time caveman)
+# The ship pipeline ships as agents + a slash command rather than a skill.
+AGENTS=(planner coder tester reviewer)
+COMMANDS=(ship)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 SCOPE="global"
@@ -35,45 +38,62 @@ for arg in "$@"; do
 done
 
 if [[ "$SCOPE" == "global" ]]; then
-  TARGET_DIR="$HOME/.claude/skills"
+  BASE_DIR="$HOME/.claude"
 else
-  TARGET_DIR="$PWD/.claude/skills"
+  BASE_DIR="$PWD/.claude"
 fi
 
-mkdir -p "$TARGET_DIR"
+SKILLS_DIR="$BASE_DIR/skills"
+AGENTS_DIR="$BASE_DIR/agents"
+COMMANDS_DIR="$BASE_DIR/commands"
 
-echo "Installing oroskills"
-echo "  source: $SCRIPT_DIR"
-echo "  target: $TARGET_DIR"
-echo "  mode:   $MODE"
-echo
+# install_item <src> <dest> <label>
+install_item() {
+  local src="$1" dest="$2" label="$3"
 
-for skill in "${SKILLS[@]}"; do
-  src="$SCRIPT_DIR/$skill"
-  dest="$TARGET_DIR/$skill"
-
-  if [[ ! -d "$src" ]]; then
-    echo "  ! skip $skill (not found at $src)"
-    continue
+  if [[ ! -e "$src" ]]; then
+    echo "  ! skip $label (not found at $src)"
+    return
   fi
 
   if [[ -e "$dest" || -L "$dest" ]]; then
     if [[ "$FORCE" -eq 1 ]]; then
       rm -rf "$dest"
     else
-      echo "  ! skip $skill (already exists; use --force to overwrite)"
-      continue
+      echo "  ! skip $label (already exists; use --force to overwrite)"
+      return
     fi
   fi
 
   if [[ "$MODE" == "copy" ]]; then
     cp -R "$src" "$dest"
-    echo "  + copied  $skill"
+    echo "  + copied  $label"
   else
     ln -s "$src" "$dest"
-    echo "  + linked  $skill"
+    echo "  + linked  $label"
   fi
+}
+
+echo "Installing oroskills"
+echo "  source: $SCRIPT_DIR"
+echo "  target: $BASE_DIR"
+echo "  mode:   $MODE"
+echo
+
+mkdir -p "$SKILLS_DIR"
+for skill in "${SKILLS[@]}"; do
+  install_item "$SCRIPT_DIR/$skill" "$SKILLS_DIR/$skill" "$skill"
+done
+
+mkdir -p "$AGENTS_DIR"
+for agent in "${AGENTS[@]}"; do
+  install_item "$SCRIPT_DIR/ship-pipeline/agents/$agent.md" "$AGENTS_DIR/$agent.md" "agent:$agent"
+done
+
+mkdir -p "$COMMANDS_DIR"
+for command in "${COMMANDS[@]}"; do
+  install_item "$SCRIPT_DIR/ship-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
 done
 
 echo
-echo "Done. Restart Claude Code (or start a new session) to pick up the skills."
+echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, and commands."

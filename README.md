@@ -14,6 +14,26 @@ A set of Claude Code skills for moving from project idea → roadmap → spec �
 
 `brainstorming-time`, `writing-plans-time`, and `executing-plan-time` are drop-in replacements for the corresponding `superpowers:*` skills (`brainstorming`, `writing-plans`, `executing-plans` + the worktree/subagent/TDD/verification/finishing chain). `project-time` sits one stage above the chain and has no `superpowers:*` counterpart — invoke it when starting a new project or large multi-feature initiative.
 
+## The Ship Pipeline
+
+A separate, self-contained feature pipeline that ships as **four subagents plus a `/ship` slash command** rather than a skill. You run `/ship <feature request>` and four agents hand work off to each other through a shared `.pipeline/` folder:
+
+| Agent | Model | Stage |
+|---|---|---|
+| **planner** | opus | Feature request → `.pipeline/spec.md` (exact paths, signatures, edge cases). Flags ambiguity as `OPEN QUESTION`. |
+| **coder** | sonnet | Implements the spec exactly → `.pipeline/changes.md`. No scope creep. |
+| **tester** | sonnet | Writes/runs tests → `.pipeline/test-results.md`. On failure it **stops** rather than patching the code. |
+| **reviewer** | opus | Read-only `git diff` review → `.pipeline/review.md` with `VERDICT: SHIP / NEEDS WORK / BLOCK`. |
+
+`/ship` orchestrates the four in order, confirming each handoff file exists before the next stage, pausing on open questions or test failures, and **never merging** — it leaves the branch for your review. Opus handles the reasoning-heavy plan/review stages; Sonnet handles the bulk code/test work (~30/70 spend split).
+
+```
+/ship add rate limiting to the login endpoint
+/ship build a user settings page with email notification preferences
+```
+
+Source lives in `ship-pipeline/`. The agents and command are installed automatically by `install.sh` (no separate step).
+
 ## Install
 
 Clone the repo and run the install script:
@@ -38,9 +58,13 @@ Verify:
 ```bash
 ls ~/.claude/skills/
 # brainstorming-time  caveman  executing-plan-time  project-time  writing-plans-time
+ls ~/.claude/agents/
+# coder.md  planner.md  reviewer.md  tester.md
+ls ~/.claude/commands/
+# ship.md
 ```
 
-Restart Claude Code (or start a new session) and the skills will appear in the available-skills list.
+Restart Claude Code (or start a new session) and the skills, agents, and `/ship` command will appear.
 
 ### Project-scoped install
 
@@ -81,4 +105,12 @@ executing-plan-time/
   code-quality-reviewer-prompt.md
 caveman/
   SKILL.md
+ship-pipeline/
+  agents/
+    planner.md
+    coder.md
+    tester.md
+    reviewer.md
+  commands/
+    ship.md
 ```
