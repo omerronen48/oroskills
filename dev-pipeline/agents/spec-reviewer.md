@@ -72,10 +72,21 @@ DO:
    - Does the commit contain BOTH the test and the implementation?
    - Is the implementer's reported fail log consistent with the test
      actually being new or modified in this commit?
-   - Re-run the test command. Does it pass on HEAD?
-   - Checkout the parent commit briefly, re-run the test, confirm it
-     would have failed there. (Then return to HEAD.) If the test passed
-     on the parent commit, the TDD contract was faked — flag it.
+   - Re-run the test command on HEAD (in the shared worktree). Does it pass?
+   - Confirm it would have FAILED on the parent commit — but do NOT mutate
+     the shared worktree. NEVER run `git checkout` here: it detaches HEAD,
+     races sibling agents, and orphans the branch ref so later commits are
+     left off the branch. Instead use a throwaway worktree at the parent:
+     ```
+     git worktree add --detach /tmp/tdd-verify-<short-sha> <parent-sha>
+     # run the test command inside /tmp/tdd-verify-<short-sha>
+     git worktree remove --force /tmp/tdd-verify-<short-sha>
+     ```
+     If the test passes on the parent, the TDD contract was faked — flag it.
+     Fallback if a throwaway worktree can't be created: confirm the test is
+     newly added/modified in this commit via `git show <commit> -- <testpath>`
+     (a test that did not exist before could not have passed) and check out
+     nothing.
 
 5. **Misunderstandings.** Did the implementer solve the requested problem,
    or a different one that sounds similar? Read the requirement carefully

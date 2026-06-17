@@ -298,6 +298,22 @@ State the final verification result explicitly. No "it should be working" — ev
 
 After final verification is green, present the choice. Do not act without the user picking one.
 
+**Branch-integrity precheck (do this first, before any merge/PR).** A subagent may have detached the worktree HEAD during the run, leaving the branch ref behind the real work — merging the ref would then ship only part of the plan. Confirm the branch label actually points at the work tip:
+
+```bash
+git -C <worktree> rev-parse HEAD          # the real work tip
+git -C <worktree> rev-parse <branch>      # the branch label
+git -C <worktree> symbolic-ref -q HEAD || echo "DETACHED HEAD"
+```
+
+If `HEAD` is detached or the two SHAs differ, repoint the branch before finishing:
+
+```bash
+git -C <worktree> branch -f <branch> <work-tip-SHA>
+```
+
+Then, after any merge, re-check the merge diffstat covers **every** task in the plan — not just the early ones.
+
 > "Plan complete and verified on worktree `<path>` (branch `<branch>`). Summary: <N> tasks across <W> waves, peak parallelism <P>, all tests green, lint clean.
 >
 > Finishing options:
@@ -379,6 +395,7 @@ If any intersection is non-empty, serialize.
 | Main context bloats mid-execution | Main agent reading files instead of querying graphify | Stop, summarize current state in ≤10 lines, continue with discipline |
 | Baseline was red when we started, masked by new failures | Skipped phase 1.3 | Stash current work, return to base, fix baseline first |
 | "Final verification" was implicit ("should be fine") | Verification gate skipped | Run the suite explicitly, don't hand off without evidence |
+| Merge to base brings only some tasks; branch ref lags the real work | An agent ran `git checkout <sha>` on the shared worktree → detached HEAD, later commits left the branch ref behind | Before finishing, assert worktree HEAD == branch tip (see Phase 5); if detached, `git branch -f <branch> <worktree-HEAD>` then merge |
 
 ---
 
@@ -412,6 +429,7 @@ If any intersection is non-empty, serialize.
 - Reusing an old worktree without asking the user
 - Skipping graphify and parallelizing on file-disjointness alone (cross-edge races will bite)
 - Implementer adds an unrequested abstraction, option, or speculative code → ponytail violation; re-dispatch with the minimal-code ladder re-emphasized
+- Any agent running `git checkout` on the **shared** worktree (e.g. a reviewer "checking out the parent to verify TDD") → detaches HEAD, races siblings, and orphans the branch ref so later commits land off-branch. Verify parent-commit behavior in a throwaway `git worktree add --detach`, never by checking out the shared worktree.
 
 ---
 
