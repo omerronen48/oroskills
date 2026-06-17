@@ -8,7 +8,25 @@ Ensure `.dev/memory/` exists. If absent, create the skeleton files — `goals.md
 
 ## 2. Roadmap
 
-If the idea is multi-feature and no roadmap exists yet, run the `project-time` skill (interactive). It writes `goals.md`, seeds `decisions.md`/`glossary.md`, and seeds `progress.md` phases as `pending`. If the idea is a single feature, `progress.md` gets one phase.
+Decide how `progress.md` gets its phases:
+
+- **Explicit import** — if invoked as `/dev --import <path> [...]`: seed from `<path>` (see Import below). If `progress.md` already has phases, refuse unless `--force` is also given: "progress.md already has phases; re-run with --force to overwrite."
+- **Auto-detect import** — else if `progress.md` has no phases, scan in order `.dev/roadmap.md`, `ROADMAP.md`, `docs/roadmap.md`; if one exists, offer: "Found <path>. Import it as the phase list?" On yes, import it (see Import below).
+- **project-time** — else if the idea is multi-feature and `progress.md` is empty, run the `project-time` skill (interactive). It writes `goals.md`, seeds `decisions.md`/`glossary.md`, and seeds `progress.md` phases as `pending`.
+- **Single feature** — else `progress.md` gets one phase.
+- If `progress.md` already has phases and no `--import` was given, skip seeding and resume the loop (see Resume).
+
+### Import
+
+Seed `progress.md` from a markdown roadmap (the shape `project-time` emits):
+
+1. **Parse milestones.** A phase is each markdown heading at the shallowest heading level that has ≥2 occurrences whose text matches a milestone pattern — text begins with `Milestone`, `M<number>`, `Phase`, or a leading `<number>.`/`<number>)` (case-insensitive). Strip that leading ordinal from the phase name; keep document order. If no heading matches, report that milestones could not be identified and fall back to the project-time / single-feature paths above — do not guess.
+2. **Seed phases** into `progress.md`, all `pending`, in document order.
+3. **Goals (optional).** If the file has a `## Goals` section (heading text exactly `Goals`) and `goals.md` is empty, copy that section's body (up to the next same-or-shallower heading) into `goals.md`. Never overwrite a non-empty `goals.md`.
+4. **Conflict guard.** If `progress.md` already had phases: auto-detect does not import at all; explicit `--import` refuses unless `--force`, which replaces the phase list wholesale.
+5. **Completion prompt.** Phases import as `pending`, so ask: "Imported N milestones, all pending — which are already complete? I'll mark them `done` so /dev resumes at the first incomplete one. (e.g. `1-3`, or `none`)." Mark the named phases `done`. The orchestrator owns these `progress.md` writes.
+
+A bad explicit `--import` path is reported and stops (do not silently auto-detect a different file).
 
 ## 3. Phase loop
 
