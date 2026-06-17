@@ -210,7 +210,7 @@ Encoded inside the `implementer` agent. Restated here for visibility — every t
 
 If an implementer returns without all four, the task is **not done**. Either re-dispatch with the missing artifact explicitly requested, or roll back the commit and re-dispatch fresh.
 
-Never accept "I tested it manually" or "the test passed but I didn't capture the output." The artifact is the fail log → pass log → commit triple. The spec-compliance reviewer (3.4) will verify this by re-running the test on the parent commit.
+Never accept "I tested it manually" or "the test passed but I didn't capture the output." The artifact is the fail log → pass log → commit triple. The spec-compliance reviewer (3.4) will verify this by running the HEAD test against the parent's implementation (in a throwaway worktree, overlaying the HEAD test onto the parent — not a plain parent checkout, which reverts the test too and falsely passes).
 
 ### 3.3 Await all + verify wave-level integration
 
