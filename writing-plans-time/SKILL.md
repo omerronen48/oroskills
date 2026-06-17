@@ -257,6 +257,12 @@ Message to the user:
 - Plan ends with "implement the rest similarly" → fill it in or split the task
 - Handing off to implementation before saving the plan file → finish the artifact first
 
+## Memory protocol (when run under /dev)
+
+When this skill runs inside a `/dev` loop, read `.dev/memory/` before building the File Edit Manifest so the plan inherits prior decisions instead of re-deriving them. Append any planning decisions made while writing the plan to `.dev/memory/decisions.md` tagged `[interactive]`.
+
+See `dev-pipeline/memory-protocol.md` for the file formats. This step is a **no-op when `.dev/memory/` is absent** — the skill still runs standalone without it.
+
 ## Key Principles
 
 - **Graph before grep.** The manifest is grounded in the call graph, not in guesses.
