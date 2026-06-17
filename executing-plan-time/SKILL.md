@@ -312,6 +312,19 @@ For option 3: print the worktree path and branch name and stop.
 
 ---
 
+## Ponytail Integration (Required)
+
+Ponytail (minimal-code enforcement) runs at mode `full`. Every implementer and reviewer dispatch operates under its decision ladder, applied in order before any line is written:
+
+1. Does this need to exist? (If not, don't write it.)
+2. Does the standard library solve it?
+3. Is there a native platform/framework feature?
+4. Is a dependency already installed that solves it?
+5. Can it be one line?
+6. Only then: the minimum viable implementation.
+
+Because dispatched subagents may not inherit ponytail's global session hook, the ladder is stated explicitly in `implementer-prompt.md` and the over-engineering check in `code-quality-reviewer-prompt.md` — do not rely on the hook alone.
+
 ## Token & Context Discipline
 
 This skill exists partly because chaining seven sub-skills wastes context. To keep main lean:
@@ -394,6 +407,7 @@ If any intersection is non-empty, serialize.
 - Handing off to finishing before running the full suite
 - Reusing an old worktree without asking the user
 - Skipping graphify and parallelizing on file-disjointness alone (cross-edge races will bite)
+- Implementer adds an unrequested abstraction, option, or speculative code → ponytail violation; re-dispatch with the minimal-code ladder re-emphasized
 
 ---
 

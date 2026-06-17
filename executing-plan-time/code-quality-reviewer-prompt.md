@@ -61,6 +61,11 @@ Agent tool (general-purpose):
     - Any speculative abstractions, options, or configuration that wasn't
       needed for this task?
     - Any "while I was here" cleanup unrelated to the task?
+    - Ponytail check: walk the diff against the minimal-code ladder (need →
+      stdlib → native feature → existing dep → one line → minimum viable).
+      Flag anything that fails a rung as over-engineered.
+    - If the diff contains an abstraction, option, or layer the task did not
+      require, that is a Critical issue → CHANGES_REQUESTED.
 
     **Sibling-task conflicts (specific to parallel execution):**
     - Did this task introduce or rename a symbol that is referenced by files

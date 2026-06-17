@@ -81,6 +81,19 @@ Agent tool (general-purpose):
     - Do not improve adjacent code, fix typos in untouched lines, or reformat
       unrelated regions.
 
+    ## Ponytail Minimal-Code Ladder (HARD CONSTRAINT)
+
+    Before writing any line, walk this ladder and write the LEAST code that
+    makes the test pass:
+    1. Does this need to exist? If not, don't write it.
+    2. Does the standard library solve it?
+    3. Is there a native platform/framework feature?
+    4. Is an already-installed dependency enough?
+    5. Can it be one line?
+    6. Only then: the minimum viable implementation.
+    No speculative abstractions, options, or configuration the task didn't ask
+    for. One line beats fifty.
+
     ## When You're in Over Your Head
 
     It is always OK to stop and say "this is too hard for me" or "I'm missing
