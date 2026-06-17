@@ -42,6 +42,15 @@ A separate, self-contained feature pipeline that ships as **four subagents plus 
 
 Source lives in `ship-pipeline/`. The agents and command are installed automatically by `install.sh` (no separate step).
 
+## Ponytail
+
+[ponytail](https://github.com/DietrichGebert/ponytail) is a "lazy senior dev" plugin that enforces minimal, necessary code (YAGNI, stdlib first, one line over fifty). `install.sh` installs and enables it via the Claude Code plugin CLI (`claude plugin marketplace add DietrichGebert/ponytail` + `claude plugin install ponytail@ponytail`) — it is **not** vendored, so ponytail manages its own skills, commands, hooks, and updates (`claude plugin update ponytail`).
+
+- It activates at mode **`full`** by default. Adjust at runtime with `/ponytail lite|full|ultra|off`; audit with `/ponytail-review` and `/ponytail-audit`.
+- Its hooks require **`node`**. If `node` is missing at install time, the plugin still installs but its hooks no-op until node is available.
+- If the `claude` CLI is not found at install time, `install.sh` skips ponytail and reports it; the rest of the install proceeds.
+- The coding skills (`executing-plan-time`, the ship `coder`/`reviewer`) reference ponytail's minimal-code ladder by default, so dispatched subagents apply it even if they don't inherit the global session hook.
+
 ## Install
 
 Clone the repo and run the install script:
@@ -82,6 +91,7 @@ To install for a single project instead of globally, use `<project>/.claude/skil
 
 - **graphify** — all three skills use `graphify query` as their primary source for codebase context. Install graphify and run `/graphify` once per repo; the skills will offer to initialize it if `graphify-out/graph.json` is missing.
 - **git** — `executing-plan-time` always runs work inside a git worktree.
+- **ponytail** (optional but recommended) — installed automatically by `install.sh` when the `claude` CLI is present; requires `node` for its hooks. See the Ponytail section above.
 
 ## Usage
 
