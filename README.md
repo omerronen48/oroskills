@@ -32,6 +32,8 @@ ls ~/.claude/commands/  # dev.md ship.md
 
 `install.sh` registers a `SessionStart` hook that turns caveman mode on for every new session. The hook script is **copied** into the install target (`~/.claude/caveman-hook.sh`) and points at that copy, so moving or deleting the repo won't break it. Say "stop caveman" / "normal mode" to drop it for a session. Both the copy and the `settings.json` merge are idempotent. To remove it, delete the `SessionStart` entry from `settings.json` and, optionally, the copied script.
 
+**Statusline chip (optional).** `install.sh` also installs `caveman-state.sh` and registers it on `SessionStart` + `UserPromptSubmit` to track caveman on/off per session in a tmp flag file. Paste `skills/caveman/statusline-snippet.sh` into your statusline to surface it as `🦴 caveman` / `caveman off`. The statusline itself is user-owned, so the installer only points you at the snippet rather than editing it; if your statusline already references the flag, the installer reports it as present.
+
 ### Ponytail
 
 [ponytail](https://github.com/DietrichGebert/ponytail) is a "lazy senior dev" plugin that enforces minimal, necessary code (YAGNI, stdlib first, one line over fifty). `install.sh` installs and enables it via the Claude Code plugin CLI — it is **not** vendored, so ponytail manages its own skills, commands, hooks, and updates (`claude plugin update ponytail`).
@@ -109,7 +111,7 @@ skills/
   brainstorming-time/  SKILL.md
   writing-plans-time/  SKILL.md  plan-template.md
   executing-plan-time/ SKILL.md
-  caveman/             SKILL.md  caveman-hook.sh
+  caveman/             SKILL.md  caveman-hook.sh  caveman-state.sh  statusline-snippet.sh
 pipelines/
   ship-pipeline/
     agents/    planner.md  coder.md  tester.md  reviewer.md

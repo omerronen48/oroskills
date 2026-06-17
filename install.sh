@@ -58,6 +58,14 @@ HOOK_SRC="$SCRIPT_DIR/skills/caveman/caveman-hook.sh"
 HOOK_DEST="$BASE_DIR/caveman-hook.sh"
 HOOK_CMD="bash \"$HOOK_DEST\""
 
+# Per-session caveman on/off flag for the statusline. Same copy-not-reference
+# treatment. Registered on SessionStart (seed "on") + UserPromptSubmit (toggle).
+STATE_SRC="$SCRIPT_DIR/skills/caveman/caveman-state.sh"
+STATE_DEST="$BASE_DIR/caveman-state.sh"
+STATE_CMD="sh \"$STATE_DEST\""
+STATUSLINE_FILE="$BASE_DIR/statusline-command.sh"
+STATUSLINE_SNIPPET="$SCRIPT_DIR/skills/caveman/statusline-snippet.sh"
+
 # install_item <src> <dest> <label>
 install_item() {
   local src="$1" dest="$2" label="$3"
@@ -85,34 +93,50 @@ install_item() {
   fi
 }
 
-# Merge the caveman SessionStart hook into the target settings.json (idempotent).
+# register_hook <event> <command> — idempotently add a command hook to SETTINGS_FILE.
+register_hook() {
+  local event="$1" cmd="$2" tmp
+  if jq -e --arg e "$event" --arg c "$cmd" \
+      '[.hooks[$e][]?.hooks[]?.command] | any(. == $c)' "$SETTINGS_FILE" >/dev/null; then
+    echo "  = hook $event (already present)"
+    return
+  fi
+  tmp="$(mktemp)"
+  jq --arg e "$event" --arg c "$cmd" '
+    .hooks //= {}
+    | .hooks[$e] = ((.hooks[$e] // []) + [{hooks: [{type: "command", command: $c}]}])
+  ' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+  echo "  + hook $event -> registered"
+}
+
+# Copy the caveman hook scripts into BASE_DIR and register their hooks (idempotent).
+# Scripts are copied (not referenced) so they survive the repo moving; always
+# refreshed so updates propagate on re-install.
 install_session_hook() {
   if ! command -v jq >/dev/null 2>&1; then
     echo "  ! skip caveman session hook (jq not found; install jq to enable)"
     return
   fi
 
-  # Copy the hook script into BASE_DIR so it survives the repo moving. Always
-  # refresh it so updates to the script propagate on re-install.
-  cp "$HOOK_SRC" "$HOOK_DEST"
-  chmod +x "$HOOK_DEST"
+  cp "$HOOK_SRC"  "$HOOK_DEST";  chmod +x "$HOOK_DEST"
+  cp "$STATE_SRC" "$STATE_DEST"; chmod +x "$STATE_DEST"
 
   [[ -f "$SETTINGS_FILE" ]] || echo '{}' > "$SETTINGS_FILE"
 
-  if jq -e --arg c "$HOOK_CMD" \
-      '[.hooks.SessionStart[]?.hooks[]?.command] | any(. == $c)' \
-      "$SETTINGS_FILE" >/dev/null; then
-    echo "  = caveman session hook (already present)"
+  register_hook SessionStart    "$HOOK_CMD"   # caveman on by default
+  register_hook SessionStart    "$STATE_CMD"  # seed per-session on/off flag
+  register_hook UserPromptSubmit "$STATE_CMD"  # flip the flag on verbal toggle
+}
+
+# The statusline is user-owned and varies, so we don't auto-edit it. Point the
+# user at the paste-in snippet that surfaces the caveman flag as a chip.
+install_statusline_chip() {
+  if [[ -f "$STATUSLINE_FILE" ]] && grep -q 'claude-caveman' "$STATUSLINE_FILE"; then
+    echo "  = statusline caveman chip (already present)"
     return
   fi
-
-  local tmp
-  tmp="$(mktemp)"
-  jq --arg c "$HOOK_CMD" '
-    .hooks //= {}
-    | .hooks.SessionStart = ((.hooks.SessionStart // []) + [{hooks: [{type: "command", command: $c}]}])
-  ' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
-  echo "  + caveman session hook -> $SETTINGS_FILE"
+  echo "  i statusline caveman chip: paste this snippet into your statusline to"
+  echo "    show 🦴 caveman / caveman off -> $STATUSLINE_SNIPPET"
 }
 
 # Install + enable the ponytail plugin (minimal-code enforcement) via the
@@ -166,6 +190,8 @@ for command in "${DEV_COMMANDS[@]}"; do
 done
 
 install_session_hook
+
+install_statusline_chip
 
 install_ponytail
 
