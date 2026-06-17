@@ -184,7 +184,7 @@ Loop until the user approves, then invoke `writing-plans-time`.
 When this skill runs inside a `/dev` loop, read `.dev/memory/` **first**, before gathering context or asking clarifying questions:
 
 - **Suppress re-asking** anything already settled in `goals.md`, `decisions.md`, or `glossary.md`. Do not re-ask settled questions — treat those decisions as fixed inputs to the spec.
-- Append new design decisions made during the brainstorm to `.dev/memory/decisions.md` tagged `[interactive]`, and append any new domain terms to `.dev/memory/glossary.md`.
+- Append new design decisions made during the brainstorm to `.dev/memory/decisions.md` tagged `[interactive]` (see `dev-pipeline/memory-protocol.md` for the full entry format, including the `phase<N>/<stage>:` prefix), and append any new domain terms to `.dev/memory/glossary.md`.
 
 See `dev-pipeline/memory-protocol.md` for the file formats. This step is a **no-op when `.dev/memory/` is absent** — the skill still runs standalone without it.
 
