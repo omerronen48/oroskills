@@ -264,3 +264,4 @@ Message to the user:
 - **Disjoint files = safe parallel.** Logical independence isn't enough; file-level disjointness is the parallelization invariant.
 - **Wave width is a quality metric.** Narrow waves usually mean missed decomposition.
 - **No silent scope creep.** Every touched file is in the manifest. Every manifest file is touched by a task.
+- **Ponytail first rung.** Apply "does this need to exist?" to every task and file in the manifest; drop work that fails it rather than planning it.

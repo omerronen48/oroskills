@@ -186,3 +186,4 @@ Loop until the user approves, then invoke `writing-plans-time`.
 - **Picture before prose.** A mind map catches structural mistakes faster than a spec does.
 - **One approach, named tradeoff.** Don't pad with alternatives the user didn't ask for.
 - **Hard gate holds.** No code until the spec is approved, no matter how small the task looks.
+- **Ponytail first rung.** Apply "does this need to exist?" to every proposed component; cut scope that fails it before it reaches the spec.
