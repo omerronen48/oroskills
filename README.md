@@ -10,7 +10,15 @@ A set of Claude Code skills for moving from project idea → roadmap → spec �
 | **brainstorming-time** | Turns an idea (or one milestone from a roadmap) into a reviewable spec. Uses graphify for codebase context and produces a mind map before the written spec. |
 | **writing-plans-time** | Turns an approved spec into an implementation plan with a File Edit Manifest up front and tasks grouped into parallel-executable waves. |
 | **executing-plan-time** | Runs an approved plan end-to-end: worktree setup, parallel implementer subagents, TDD-before-commit, spec + code-quality review, branch finishing. |
-| **caveman** | Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Trigger with "caveman mode" / "/caveman". Sourced from [mattpocock/skills](https://github.com/mattpocock/skills/blob/main/skills/productivity/caveman/SKILL.md). |
+| **caveman** | Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Trigger with "caveman mode" / "/caveman", or have it **on by default** (see below). Sourced from [mattpocock/skills](https://github.com/mattpocock/skills/blob/main/skills/productivity/caveman/SKILL.md). |
+
+### Caveman on by default
+
+`install.sh` also registers a `SessionStart` hook that turns caveman mode on automatically for every new session. The hook script (`caveman/caveman-hook.sh`) is **copied** into the install target (`~/.claude/caveman-hook.sh`, or `./.claude/caveman-hook.sh` for `--project`) and the hook points at that copy — so moving or deleting the repo won't break it. It injects a self-contained directive that works whether or not the caveman skill is installed. Say "stop caveman" / "normal mode" any time to drop it for the session.
+
+- Requires `jq` (used to merge the hook into `settings.json` without clobbering existing settings). If `jq` is missing, the install skips the hook and reports it.
+- Both the script copy and the merge are idempotent; re-running `install.sh` refreshes the script and won't duplicate the hook.
+- To remove it, delete the `SessionStart` entry from `~/.claude/settings.json` (or `./.claude/settings.json` for a `--project` install) and, optionally, the copied `caveman-hook.sh`.
 
 `brainstorming-time`, `writing-plans-time`, and `executing-plan-time` are drop-in replacements for the corresponding `superpowers:*` skills (`brainstorming`, `writing-plans`, `executing-plans` + the worktree/subagent/TDD/verification/finishing chain). `project-time` sits one stage above the chain and has no `superpowers:*` counterpart — invoke it when starting a new project or large multi-feature initiative.
 
@@ -105,6 +113,7 @@ executing-plan-time/
   code-quality-reviewer-prompt.md
 caveman/
   SKILL.md
+  caveman-hook.sh
 ship-pipeline/
   agents/
     planner.md

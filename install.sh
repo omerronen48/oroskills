@@ -46,6 +46,12 @@ fi
 SKILLS_DIR="$BASE_DIR/skills"
 AGENTS_DIR="$BASE_DIR/agents"
 COMMANDS_DIR="$BASE_DIR/commands"
+SETTINGS_FILE="$BASE_DIR/settings.json"
+# SessionStart hook that turns caveman mode on by default. The script is copied
+# into BASE_DIR (not symlinked/referenced), so moving the repo won't break it.
+HOOK_SRC="$SCRIPT_DIR/caveman/caveman-hook.sh"
+HOOK_DEST="$BASE_DIR/caveman-hook.sh"
+HOOK_CMD="bash \"$HOOK_DEST\""
 
 # install_item <src> <dest> <label>
 install_item() {
@@ -74,6 +80,36 @@ install_item() {
   fi
 }
 
+# Merge the caveman SessionStart hook into the target settings.json (idempotent).
+install_session_hook() {
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "  ! skip caveman session hook (jq not found; install jq to enable)"
+    return
+  fi
+
+  # Copy the hook script into BASE_DIR so it survives the repo moving. Always
+  # refresh it so updates to the script propagate on re-install.
+  cp "$HOOK_SRC" "$HOOK_DEST"
+  chmod +x "$HOOK_DEST"
+
+  [[ -f "$SETTINGS_FILE" ]] || echo '{}' > "$SETTINGS_FILE"
+
+  if jq -e --arg c "$HOOK_CMD" \
+      '[.hooks.SessionStart[]?.hooks[]?.command] | any(. == $c)' \
+      "$SETTINGS_FILE" >/dev/null; then
+    echo "  = caveman session hook (already present)"
+    return
+  fi
+
+  local tmp
+  tmp="$(mktemp)"
+  jq --arg c "$HOOK_CMD" '
+    .hooks //= {}
+    | .hooks.SessionStart = ((.hooks.SessionStart // []) + [{hooks: [{type: "command", command: $c}]}])
+  ' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+  echo "  + caveman session hook -> $SETTINGS_FILE"
+}
+
 echo "Installing oroskills"
 echo "  source: $SCRIPT_DIR"
 echo "  target: $BASE_DIR"
@@ -95,5 +131,7 @@ for command in "${COMMANDS[@]}"; do
   install_item "$SCRIPT_DIR/ship-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
 done
 
+install_session_hook
+
 echo
-echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, and commands."
+echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, commands, and caveman default."
