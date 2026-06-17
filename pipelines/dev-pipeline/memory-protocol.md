@@ -19,8 +19,8 @@ absent.
   lesson, `**Why:**`, `**How to apply:**`.
 - `glossary.md` — domain terms, appended on first definition.
 - `progress.md` — phases with status `pending` / `planned` / `done`. Writers:
-  project-time seeds the initial phase list; thereafter only the `/dev`
-  orchestrator updates phase status.
+  project-time **or roadmap import** seeds the initial phase list; thereafter
+  only the `/dev` orchestrator updates phase status.
 
 ## Read order
 

@@ -14,4 +14,6 @@ TMP="$(mktemp -d)"; mkdir -p "$TMP/.dev/memory"
 printf '%s\n' '- [auto] phase1/exec: chose list over set — order matters' >> "$TMP/.dev/memory/decisions.md"
 grep -q "chose list over set" "$TMP/.dev/memory/decisions.md" || { echo "FAIL: roundtrip"; exit 1; }
 rm -rf "$TMP"
+# roadmap import is recognized as a progress.md seeder (alongside project-time)
+awk '/progress\.md/{f=4} f>0{print; f--}' "$P" | grep -qi "import" || { echo "FAIL: import not named as progress.md seeder"; exit 1; }
 echo "PASS"
