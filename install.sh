@@ -39,8 +39,10 @@ done
 
 if [[ "$SCOPE" == "global" ]]; then
   BASE_DIR="$HOME/.claude"
+  PLUGIN_SCOPE="user"
 else
   BASE_DIR="$PWD/.claude"
+  PLUGIN_SCOPE="project"
 fi
 
 SKILLS_DIR="$BASE_DIR/skills"
@@ -110,6 +112,27 @@ install_session_hook() {
   echo "  + caveman session hook -> $SETTINGS_FILE"
 }
 
+# Install + enable the ponytail plugin (minimal-code enforcement) via the
+# Claude Code plugin CLI. Delegated, not vendored — ponytail owns its own
+# hooks, skills, and updates. Default mode is ponytail's own 'full'.
+install_ponytail() {
+  if ! command -v claude >/dev/null 2>&1; then
+    echo "  ! skip ponytail (claude CLI not found)"
+    return
+  fi
+
+  if ! command -v node >/dev/null 2>&1; then
+    echo "  ! ponytail installing but node not found; its hooks no-op until node is available"
+  fi
+
+  claude plugin marketplace add DietrichGebert/ponytail --scope "$PLUGIN_SCOPE" >/dev/null 2>&1 || true
+  if claude plugin install ponytail@ponytail --scope "$PLUGIN_SCOPE" >/dev/null 2>&1; then
+    echo "  + ponytail plugin (mode: full)"
+  else
+    echo "  = ponytail (already installed or install skipped)"
+  fi
+}
+
 echo "Installing oroskills"
 echo "  source: $SCRIPT_DIR"
 echo "  target: $BASE_DIR"
@@ -133,5 +156,7 @@ done
 
 install_session_hook
 
+install_ponytail
+
 echo
-echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, commands, and caveman default."
+echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, commands, caveman default, and ponytail."
