@@ -63,7 +63,9 @@ HOOK_CMD="bash \"$HOOK_DEST\""
 STATE_SRC="$SCRIPT_DIR/skills/caveman/caveman-state.sh"
 STATE_DEST="$BASE_DIR/caveman-state.sh"
 STATE_CMD="sh \"$STATE_DEST\""
+STATUSLINE_SRC="$SCRIPT_DIR/statusline-command.sh"
 STATUSLINE_FILE="$BASE_DIR/statusline-command.sh"
+STATUSLINE_CMD="sh \"$STATUSLINE_FILE\""
 STATUSLINE_SNIPPET="$SCRIPT_DIR/skills/caveman/statusline-snippet.sh"
 
 # install_item <src> <dest> <label>
@@ -128,15 +130,33 @@ install_session_hook() {
   register_hook UserPromptSubmit "$STATE_CMD"  # flip the flag on verbal toggle
 }
 
-# The statusline is user-owned and varies, so we don't auto-edit it. Point the
-# user at the paste-in snippet that surfaces the caveman flag as a chip.
-install_statusline_chip() {
-  if [[ -f "$STATUSLINE_FILE" ]] && grep -q 'claude-caveman' "$STATUSLINE_FILE"; then
-    echo "  = statusline caveman chip (already present)"
+# Install the oroskills statusline (emoji-labelled, caveman chip baked in) and
+# point settings.json at it. Guarded: an existing statusline you customized is
+# never clobbered without --force — we just point you at the paste-in snippet.
+install_statusline() {
+  if [[ -f "$STATUSLINE_FILE" && "$FORCE" -ne 1 ]]; then
+    if grep -q 'claude-caveman' "$STATUSLINE_FILE"; then
+      echo "  = statusline (already has caveman chip)"
+    else
+      echo "  ! statusline exists; not replacing (use --force). To add just the"
+      echo "    caveman chip, paste: $STATUSLINE_SNIPPET"
+    fi
     return
   fi
-  echo "  i statusline caveman chip: paste this snippet into your statusline to"
-  echo "    show 🦴 caveman / caveman off -> $STATUSLINE_SNIPPET"
+
+  cp "$STATUSLINE_SRC" "$STATUSLINE_FILE"
+  chmod +x "$STATUSLINE_FILE"
+  echo "  + statusline -> $STATUSLINE_FILE"
+
+  if command -v jq >/dev/null 2>&1; then
+    [[ -f "$SETTINGS_FILE" ]] || echo '{}' > "$SETTINGS_FILE"
+    local tmp; tmp="$(mktemp)"
+    jq --arg c "$STATUSLINE_CMD" '.statusLine = {type: "command", command: $c}' \
+      "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+    echo "  + statusLine config -> $SETTINGS_FILE"
+  else
+    echo "  ! statusLine config not set (jq not found); add it manually"
+  fi
 }
 
 # Install + enable the ponytail plugin (minimal-code enforcement) via the
@@ -191,7 +211,7 @@ done
 
 install_session_hook
 
-install_statusline_chip
+install_statusline
 
 install_ponytail
 

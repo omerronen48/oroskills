@@ -32,7 +32,15 @@ ls ~/.claude/commands/  # dev.md ship.md
 
 `install.sh` registers a `SessionStart` hook that turns caveman mode on for every new session. The hook script is **copied** into the install target (`~/.claude/caveman-hook.sh`) and points at that copy, so moving or deleting the repo won't break it. Say "stop caveman" / "normal mode" to drop it for a session. Both the copy and the `settings.json` merge are idempotent. To remove it, delete the `SessionStart` entry from `settings.json` and, optionally, the copied script.
 
-**Statusline chip (optional).** `install.sh` also installs `caveman-state.sh` and registers it on `SessionStart` + `UserPromptSubmit` to track caveman on/off per session in a tmp flag file. Paste `skills/caveman/statusline-snippet.sh` into your statusline to surface it as `🦴 caveman` / `caveman off`. The statusline itself is user-owned, so the installer only points you at the snippet rather than editing it; if your statusline already references the flag, the installer reports it as present.
+**Statusline.** `install.sh` installs an emoji-labelled statusline (`statusline-command.sh`) and points `settings.json` at it:
+
+```
+📁 ~/project  🌿 main · 🤖 Opus 4.8 · 🦴 caveman · 🧠 42% ctx · ⏳ 18% 5h · 📅 63% 7d · 💰 $4.05 · 🕐 07:11
+```
+
+The caveman chip is driven by `caveman-state.sh`, which the installer also copies and registers on `SessionStart` (seed `on`) + `UserPromptSubmit` (flip on verbal toggle), tracking on/off per session in a tmp flag file: `🦴 caveman` when on, `💤 caveman` when off.
+
+Your statusline is **never clobbered**: if one already exists, the installer leaves it alone and points you at `skills/caveman/statusline-snippet.sh` (the 5-line chip to paste into your own bar). Use `--force` to replace it with the oroskills statusline.
 
 ### Ponytail
 
@@ -122,5 +130,6 @@ pipelines/
     memory-protocol.md
 tests/dev/
   check_install.sh  check_agents.sh  check_dev_command.sh  check_memory_protocol.sh
+statusline-command.sh   # emoji-labelled bar with the caveman chip
 install.sh
 ```

@@ -4,11 +4,13 @@
 # read its JSON input into `$input` (e.g. `input=$(cat)`) and assemble a `$line`.
 
 # 1) After you read stdin into `$input`, add this block:
+# Caveman is on by default, so a missing flag reads on; only an explicit
+# "stop caveman" (flag == off) shows the sleeping chip.
+caveman="🦴 caveman"
 sid=$(echo "$input" | jq -r '.session_id // empty')
-caveman="caveman off"
 if [ -n "$sid" ]; then
   cf="${TMPDIR:-/tmp}/claude-caveman/$sid"
-  [ -f "$cf" ] && [ "$(cat "$cf")" = "on" ] && caveman="🦴 caveman"
+  [ -f "$cf" ] && [ "$(cat "$cf")" = "off" ] && caveman="💤 caveman"
 fi
 
 # 2) Where you build the output line, append the chip, e.g.:
