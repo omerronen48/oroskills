@@ -1,0 +1,2662 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {
+    "hyperedges": [
+      {
+        "id": "workflow_chain_stages",
+        "label": "project-time to executing-plan-time chain",
+        "nodes": [
+          "project_time_skill",
+          "brainstorming_time_skill",
+          "writing_plans_time_skill",
+          "executing_plan_time_skill"
+        ],
+        "relation": "form",
+        "confidence": "EXTRACTED",
+        "confidence_score": 1.0,
+        "source_file": "README.md"
+      },
+      {
+        "id": "executing_plan_dispatched_agents",
+        "label": "executing-plan-time dispatched agents",
+        "nodes": [
+          "executing_plan_time_skill",
+          "implementer_agent",
+          "spec_reviewer_agent",
+          "code_quality_reviewer_agent"
+        ],
+        "relation": "participate_in",
+        "confidence": "EXTRACTED",
+        "confidence_score": 1.0,
+        "source_file": "executing-plan-time/SKILL.md"
+      },
+      {
+        "id": "caveman_default_mechanism",
+        "label": "caveman-on-by-default install mechanism",
+        "nodes": [
+          "install_install_session_hook",
+          "caveman_caveman_hook",
+          "session_start_hook"
+        ],
+        "relation": "form",
+        "confidence": "EXTRACTED",
+        "confidence_score": 1.0,
+        "source_file": "install.sh"
+      },
+      {
+        "id": "ship_pipeline_stages",
+        "label": "ship four-stage feature pipeline",
+        "nodes": [
+          "ship_pipeline_commands_ship",
+          "ship_pipeline_agents_planner",
+          "ship_pipeline_agents_coder",
+          "ship_pipeline_agents_tester",
+          "ship_pipeline_agents_reviewer"
+        ],
+        "relation": "participate_in",
+        "confidence": "EXTRACTED",
+        "confidence_score": 1.0,
+        "source_file": "ship-pipeline/commands/ship.md"
+      },
+      {
+        "id": "dev_pipeline_orchestration",
+        "label": "dev roadmap-driven dev loop",
+        "nodes": [
+          "dev_pipeline_commands_dev",
+          "dev_pipeline_agents_phase_executor",
+          "skill_project_time",
+          "skill_brainstorming_time",
+          "skill_writing_plans_time",
+          "concept_dev_memory_store"
+        ],
+        "relation": "participate_in",
+        "confidence": "EXTRACTED",
+        "confidence_score": 1.0,
+        "source_file": "dev-pipeline/commands/dev.md"
+      },
+      {
+        "id": "dev_execution_review_loop",
+        "label": "executing-plan-time implementer + two-stage review",
+        "nodes": [
+          "skill_executing_plan_time",
+          "dev_pipeline_agents_implementer",
+          "dev_pipeline_agents_spec_reviewer",
+          "dev_pipeline_agents_code_quality_reviewer",
+          "concept_tdd_before_commit_contract"
+        ],
+        "relation": "participate_in",
+        "confidence": "INFERRED",
+        "confidence_score": 0.85,
+        "source_file": "dev-pipeline/agents/phase-executor.md"
+      },
+      {
+        "id": "dev_memory_files",
+        "label": ".dev/memory store files",
+        "nodes": [
+          "concept_dev_memory_store",
+          "concept_goals_md",
+          "concept_decisions_md",
+          "concept_lessons_md",
+          "concept_glossary_md",
+          "concept_progress_md"
+        ],
+        "relation": "form",
+        "confidence": "EXTRACTED",
+        "confidence_score": 1.0,
+        "source_file": "dev-pipeline/memory-protocol.md"
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "label": "install.sh",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "id": "install_sh",
+      "community": 6,
+      "norm_label": "install.sh"
+    },
+    {
+      "label": "install.sh script",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "id": "users_omes_desktop_oroskills_install_sh__entry",
+      "community": 6,
+      "norm_label": "install.sh script"
+    },
+    {
+      "label": "install_item()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L62",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "id": "oroskills_install_install_item",
+      "community": 6,
+      "norm_label": "install_item()"
+    },
+    {
+      "label": "install_session_hook()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L89",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "id": "oroskills_install_install_session_hook",
+      "community": 6,
+      "norm_label": "install_session_hook()"
+    },
+    {
+      "label": "install_ponytail()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "L121",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "id": "oroskills_install_install_ponytail",
+      "community": 6,
+      "norm_label": "install_ponytail()"
+    },
+    {
+      "label": "check_dev_command.sh",
+      "file_type": "code",
+      "source_file": "tests/dev/check_dev_command.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "id": "tests_dev_check_dev_command_sh",
+      "community": 12,
+      "norm_label": "check_dev_command.sh"
+    },
+    {
+      "label": "check_dev_command.sh script",
+      "file_type": "code",
+      "source_file": "tests/dev/check_dev_command.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "id": "users_omes_desktop_oroskills_tests_dev_check_dev_command_sh__entry",
+      "community": 12,
+      "norm_label": "check_dev_command.sh script"
+    },
+    {
+      "label": "check_memory_protocol.sh",
+      "file_type": "code",
+      "source_file": "tests/dev/check_memory_protocol.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "id": "tests_dev_check_memory_protocol_sh",
+      "community": 14,
+      "norm_label": "check_memory_protocol.sh"
+    },
+    {
+      "label": "check_memory_protocol.sh script",
+      "file_type": "code",
+      "source_file": "tests/dev/check_memory_protocol.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "id": "users_omes_desktop_oroskills_tests_dev_check_memory_protocol_sh__entry",
+      "community": 14,
+      "norm_label": "check_memory_protocol.sh script"
+    },
+    {
+      "label": "check_agents.sh",
+      "file_type": "code",
+      "source_file": "tests/dev/check_agents.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "id": "tests_dev_check_agents_sh",
+      "community": 10,
+      "norm_label": "check_agents.sh"
+    },
+    {
+      "label": "check_agents.sh script",
+      "file_type": "code",
+      "source_file": "tests/dev/check_agents.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "id": "users_omes_desktop_oroskills_tests_dev_check_agents_sh__entry",
+      "community": 10,
+      "norm_label": "check_agents.sh script"
+    },
+    {
+      "label": "check_install.sh",
+      "file_type": "code",
+      "source_file": "tests/dev/check_install.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "id": "tests_dev_check_install_sh",
+      "community": 13,
+      "norm_label": "check_install.sh"
+    },
+    {
+      "label": "check_install.sh script",
+      "file_type": "code",
+      "source_file": "tests/dev/check_install.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "id": "users_omes_desktop_oroskills_tests_dev_check_install_sh__entry",
+      "community": 13,
+      "norm_label": "check_install.sh script"
+    },
+    {
+      "label": "settings.local.json",
+      "file_type": "code",
+      "source_file": ".claude/settings.local.json",
+      "source_location": "L1",
+      "id": "claude_settings_local_json",
+      "community": 9,
+      "norm_label": "settings.local.json"
+    },
+    {
+      "label": "permissions",
+      "file_type": "code",
+      "source_file": ".claude/settings.local.json",
+      "source_location": "L2",
+      "id": "claude_settings_local_permissions",
+      "community": 9,
+      "norm_label": "permissions"
+    },
+    {
+      "label": "allow",
+      "file_type": "code",
+      "source_file": ".claude/settings.local.json",
+      "source_location": "L3",
+      "id": "claude_settings_local_permissions_allow",
+      "community": 9,
+      "norm_label": "allow"
+    },
+    {
+      "label": "caveman-hook.sh",
+      "file_type": "code",
+      "source_file": "caveman/caveman-hook.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "id": "caveman_caveman_hook_sh",
+      "community": 11,
+      "norm_label": "caveman-hook.sh"
+    },
+    {
+      "label": "caveman-hook.sh script",
+      "file_type": "code",
+      "source_file": "caveman/caveman-hook.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "id": "users_omes_desktop_oroskills_caveman_caveman_hook_sh__entry",
+      "community": 11,
+      "norm_label": "caveman-hook.sh script"
+    },
+    {
+      "label": "oroskills README",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme",
+      "community": 8,
+      "norm_label": "oroskills readme"
+    },
+    {
+      "label": "install.sh",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "install",
+      "community": 3,
+      "norm_label": "install.sh"
+    },
+    {
+      "label": "install_item()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "62-86",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "install_install_item",
+      "community": 15,
+      "norm_label": "install_item()"
+    },
+    {
+      "label": "install_session_hook()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "89-116",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "install_install_session_hook",
+      "community": 4,
+      "norm_label": "install_session_hook()"
+    },
+    {
+      "label": "install_ponytail()",
+      "file_type": "code",
+      "source_file": "install.sh",
+      "source_location": "121-137",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "install_install_ponytail",
+      "community": 8,
+      "norm_label": "install_ponytail()"
+    },
+    {
+      "label": "project-time skill",
+      "file_type": "document",
+      "source_file": "project-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "project_time_skill",
+      "community": 2,
+      "norm_label": "project-time skill"
+    },
+    {
+      "label": "brainstorming-time skill",
+      "file_type": "document",
+      "source_file": "brainstorming-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "brainstorming_time_skill",
+      "community": 2,
+      "norm_label": "brainstorming-time skill"
+    },
+    {
+      "label": "writing-plans-time skill",
+      "file_type": "document",
+      "source_file": "writing-plans-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "writing_plans_time_skill",
+      "community": 7,
+      "norm_label": "writing-plans-time skill"
+    },
+    {
+      "label": "plan-template.md",
+      "file_type": "document",
+      "source_file": "writing-plans-time/plan-template.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "writing_plans_time_plan_template",
+      "community": 7,
+      "norm_label": "plan-template.md"
+    },
+    {
+      "label": "executing-plan-time skill",
+      "file_type": "document",
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "executing_plan_time_skill",
+      "community": 5,
+      "norm_label": "executing-plan-time skill"
+    },
+    {
+      "label": "caveman skill",
+      "file_type": "document",
+      "source_file": "caveman/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "caveman_skill",
+      "community": 4,
+      "norm_label": "caveman skill"
+    },
+    {
+      "label": "caveman-hook.sh",
+      "file_type": "code",
+      "source_file": "caveman/caveman-hook.sh",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "caveman_caveman_hook",
+      "community": 4,
+      "norm_label": "caveman-hook.sh"
+    },
+    {
+      "label": ".claude/settings.local.json",
+      "file_type": "code",
+      "source_file": ".claude/settings.local.json",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "settings_local",
+      "community": 16,
+      "norm_label": ".claude/settings.local.json"
+    },
+    {
+      "label": "check_dev_command.sh",
+      "file_type": "code",
+      "source_file": "tests/dev/check_dev_command.sh",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dev_check_dev_command",
+      "community": 2,
+      "norm_label": "check_dev_command.sh"
+    },
+    {
+      "label": "check_memory_protocol.sh",
+      "file_type": "code",
+      "source_file": "tests/dev/check_memory_protocol.sh",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dev_check_memory_protocol",
+      "community": 2,
+      "norm_label": "check_memory_protocol.sh"
+    },
+    {
+      "label": "check_agents.sh",
+      "file_type": "code",
+      "source_file": "tests/dev/check_agents.sh",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dev_check_agents",
+      "community": 3,
+      "norm_label": "check_agents.sh"
+    },
+    {
+      "label": "skill workflow chain",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "workflow_chain",
+      "community": 2,
+      "norm_label": "skill workflow chain"
+    },
+    {
+      "label": "graphify knowledge graph",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "graphify",
+      "community": 2,
+      "norm_label": "graphify knowledge graph"
+    },
+    {
+      "label": "ponytail plugin (minimal-code enforcement)",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ponytail",
+      "community": 8,
+      "norm_label": "ponytail plugin (minimal-code enforcement)"
+    },
+    {
+      "label": "ship pipeline (/ship)",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ship_pipeline",
+      "community": 8,
+      "norm_label": "ship pipeline (/ship)"
+    },
+    {
+      "label": "dev pipeline (/dev continuous loop)",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dev_pipeline",
+      "community": 2,
+      "norm_label": "dev pipeline (/dev continuous loop)"
+    },
+    {
+      "label": "caveman SessionStart hook",
+      "file_type": "concept",
+      "source_file": "install.sh",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "session_start_hook",
+      "community": 4,
+      "norm_label": "caveman sessionstart hook"
+    },
+    {
+      "label": "File Edit Manifest",
+      "file_type": "concept",
+      "source_file": "writing-plans-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "file_edit_manifest",
+      "community": 7,
+      "norm_label": "file edit manifest"
+    },
+    {
+      "label": "parallel execution waves",
+      "file_type": "concept",
+      "source_file": "writing-plans-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "execution_waves",
+      "community": 7,
+      "norm_label": "parallel execution waves"
+    },
+    {
+      "label": "overlap analysis (file+function+call-graph)",
+      "file_type": "concept",
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "overlap_analysis",
+      "community": 5,
+      "norm_label": "overlap analysis (file+function+call-graph)"
+    },
+    {
+      "label": "TDD-before-commit contract",
+      "file_type": "concept",
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "tdd_before_commit",
+      "community": 5,
+      "norm_label": "tdd-before-commit contract"
+    },
+    {
+      "label": "git worktree isolation",
+      "file_type": "concept",
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "git_worktree",
+      "community": 5,
+      "norm_label": "git worktree isolation"
+    },
+    {
+      "label": "two-stage review gate",
+      "file_type": "concept",
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "two_stage_review",
+      "community": 5,
+      "norm_label": "two-stage review gate"
+    },
+    {
+      "label": "dev-pipeline memory protocol",
+      "file_type": "concept",
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "memory_protocol",
+      "community": 2,
+      "norm_label": "dev-pipeline memory protocol"
+    },
+    {
+      "label": "implementer agent",
+      "file_type": "concept",
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "implementer_agent",
+      "community": 3,
+      "norm_label": "implementer agent"
+    },
+    {
+      "label": "spec-reviewer agent",
+      "file_type": "concept",
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "spec_reviewer_agent",
+      "community": 3,
+      "norm_label": "spec-reviewer agent"
+    },
+    {
+      "label": "code-quality-reviewer agent",
+      "file_type": "concept",
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "code_quality_reviewer_agent",
+      "community": 3,
+      "norm_label": "code-quality-reviewer agent"
+    },
+    {
+      "label": "phase-executor agent",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "phase_executor_agent",
+      "community": 3,
+      "norm_label": "phase-executor agent"
+    },
+    {
+      "label": "mattpocock/skills caveman source",
+      "file_type": "concept",
+      "source_file": "caveman/SKILL.md",
+      "source_location": null,
+      "source_url": "https://github.com/mattpocock/skills/blob/main/skills/productivity/caveman/SKILL.md",
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "mattpocock_caveman",
+      "community": 4,
+      "norm_label": "mattpocock/skills caveman source"
+    },
+    {
+      "label": "ship command",
+      "file_type": "document",
+      "source_file": "ship-pipeline/commands/ship.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ship_pipeline_commands_ship",
+      "community": 1,
+      "norm_label": "ship command"
+    },
+    {
+      "label": "planner agent",
+      "file_type": "document",
+      "source_file": "ship-pipeline/agents/planner.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ship_pipeline_agents_planner",
+      "community": 1,
+      "norm_label": "planner agent"
+    },
+    {
+      "label": "coder agent",
+      "file_type": "document",
+      "source_file": "ship-pipeline/agents/coder.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ship_pipeline_agents_coder",
+      "community": 1,
+      "norm_label": "coder agent"
+    },
+    {
+      "label": "tester agent",
+      "file_type": "document",
+      "source_file": "ship-pipeline/agents/tester.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ship_pipeline_agents_tester",
+      "community": 1,
+      "norm_label": "tester agent"
+    },
+    {
+      "label": "reviewer agent",
+      "file_type": "document",
+      "source_file": "ship-pipeline/agents/reviewer.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ship_pipeline_agents_reviewer",
+      "community": 1,
+      "norm_label": "reviewer agent"
+    },
+    {
+      "label": "dev command",
+      "file_type": "document",
+      "source_file": "dev-pipeline/commands/dev.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dev_pipeline_commands_dev",
+      "community": 0,
+      "norm_label": "dev command"
+    },
+    {
+      "label": "dev memory protocol",
+      "file_type": "document",
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dev_pipeline_memory_protocol",
+      "community": 0,
+      "norm_label": "dev memory protocol"
+    },
+    {
+      "label": "phase-executor agent",
+      "file_type": "document",
+      "source_file": "dev-pipeline/agents/phase-executor.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dev_pipeline_agents_phase_executor",
+      "community": 0,
+      "norm_label": "phase-executor agent"
+    },
+    {
+      "label": "spec-reviewer agent",
+      "file_type": "document",
+      "source_file": "dev-pipeline/agents/spec-reviewer.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dev_pipeline_agents_spec_reviewer",
+      "community": 0,
+      "norm_label": "spec-reviewer agent"
+    },
+    {
+      "label": "code-quality-reviewer agent",
+      "file_type": "document",
+      "source_file": "dev-pipeline/agents/code-quality-reviewer.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dev_pipeline_agents_code_quality_reviewer",
+      "community": 0,
+      "norm_label": "code-quality-reviewer agent"
+    },
+    {
+      "label": "implementer agent",
+      "file_type": "document",
+      "source_file": "dev-pipeline/agents/implementer.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dev_pipeline_agents_implementer",
+      "community": 0,
+      "norm_label": "implementer agent"
+    },
+    {
+      "label": "dev check_install.sh",
+      "file_type": "code",
+      "source_file": "tests/dev/check_install.sh",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dev_check_install",
+      "community": 0,
+      "norm_label": "dev check_install.sh"
+    },
+    {
+      "label": ".pipeline/spec.md handoff",
+      "file_type": "concept",
+      "source_file": "ship-pipeline/commands/ship.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_pipeline_spec_md",
+      "community": 1,
+      "norm_label": ".pipeline/spec.md handoff"
+    },
+    {
+      "label": ".pipeline/changes.md handoff",
+      "file_type": "concept",
+      "source_file": "ship-pipeline/commands/ship.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_pipeline_changes_md",
+      "community": 1,
+      "norm_label": ".pipeline/changes.md handoff"
+    },
+    {
+      "label": ".pipeline/test-results.md handoff",
+      "file_type": "concept",
+      "source_file": "ship-pipeline/commands/ship.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_pipeline_test_results_md",
+      "community": 1,
+      "norm_label": ".pipeline/test-results.md handoff"
+    },
+    {
+      "label": ".pipeline/review.md handoff",
+      "file_type": "concept",
+      "source_file": "ship-pipeline/commands/ship.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_pipeline_review_md",
+      "community": 1,
+      "norm_label": ".pipeline/review.md handoff"
+    },
+    {
+      "label": "ponytail minimal-code ladder",
+      "file_type": "rationale",
+      "source_file": "dev-pipeline/agents/implementer.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_ponytail_minimal_code_ladder",
+      "community": 0,
+      "norm_label": "ponytail minimal-code ladder"
+    },
+    {
+      "label": "TDD-before-commit contract",
+      "file_type": "concept",
+      "source_file": "dev-pipeline/agents/implementer.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_tdd_before_commit_contract",
+      "community": 0,
+      "norm_label": "tdd-before-commit contract"
+    },
+    {
+      "label": ".dev/memory/ store",
+      "file_type": "concept",
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_dev_memory_store",
+      "community": 0,
+      "norm_label": ".dev/memory/ store"
+    },
+    {
+      "label": "progress.md phase tracker",
+      "file_type": "concept",
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_progress_md",
+      "community": 0,
+      "norm_label": "progress.md phase tracker"
+    },
+    {
+      "label": "decisions.md audit log",
+      "file_type": "concept",
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_decisions_md",
+      "community": 0,
+      "norm_label": "decisions.md audit log"
+    },
+    {
+      "label": "lessons.md",
+      "file_type": "concept",
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_lessons_md",
+      "community": 0,
+      "norm_label": "lessons.md"
+    },
+    {
+      "label": "goals.md",
+      "file_type": "concept",
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_goals_md",
+      "community": 0,
+      "norm_label": "goals.md"
+    },
+    {
+      "label": "glossary.md",
+      "file_type": "concept",
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_glossary_md",
+      "community": 0,
+      "norm_label": "glossary.md"
+    },
+    {
+      "label": "executing-plan-time skill",
+      "file_type": "concept",
+      "source_file": "dev-pipeline/agents/phase-executor.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "skill_executing_plan_time",
+      "community": 0,
+      "norm_label": "executing-plan-time skill"
+    },
+    {
+      "label": "brainstorming-time skill",
+      "file_type": "concept",
+      "source_file": "dev-pipeline/commands/dev.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "skill_brainstorming_time",
+      "community": 0,
+      "norm_label": "brainstorming-time skill"
+    },
+    {
+      "label": "writing-plans-time skill",
+      "file_type": "concept",
+      "source_file": "dev-pipeline/commands/dev.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "skill_writing_plans_time",
+      "community": 0,
+      "norm_label": "writing-plans-time skill"
+    },
+    {
+      "label": "project-time skill",
+      "file_type": "concept",
+      "source_file": "dev-pipeline/commands/dev.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "skill_project_time",
+      "community": 0,
+      "norm_label": "project-time skill"
+    }
+  ],
+  "links": [
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "install_sh",
+      "target": "oroskills_install_install_item",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L121",
+      "weight": 1.0,
+      "source": "install_sh",
+      "target": "oroskills_install_install_ponytail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "install_sh",
+      "target": "oroskills_install_install_session_hook",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "install_sh",
+      "target": "users_omes_desktop_oroskills_install_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L147",
+      "weight": 1.0,
+      "context": "call",
+      "source": "users_omes_desktop_oroskills_install_sh__entry",
+      "target": "oroskills_install_install_item",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L170",
+      "weight": 1.0,
+      "context": "call",
+      "source": "users_omes_desktop_oroskills_install_sh__entry",
+      "target": "oroskills_install_install_ponytail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "install.sh",
+      "source_location": "L168",
+      "weight": 1.0,
+      "context": "call",
+      "source": "users_omes_desktop_oroskills_install_sh__entry",
+      "target": "oroskills_install_install_session_hook",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/dev/check_dev_command.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "tests_dev_check_dev_command_sh",
+      "target": "users_omes_desktop_oroskills_tests_dev_check_dev_command_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/dev/check_memory_protocol.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "tests_dev_check_memory_protocol_sh",
+      "target": "users_omes_desktop_oroskills_tests_dev_check_memory_protocol_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/dev/check_agents.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "tests_dev_check_agents_sh",
+      "target": "users_omes_desktop_oroskills_tests_dev_check_agents_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/dev/check_install.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "tests_dev_check_install_sh",
+      "target": "users_omes_desktop_oroskills_tests_dev_check_install_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/settings.local.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "claude_settings_local_json",
+      "target": "claude_settings_local_permissions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/settings.local.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "claude_settings_local_permissions",
+      "target": "claude_settings_local_permissions_allow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "caveman/caveman-hook.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "caveman_caveman_hook_sh",
+      "target": "users_omes_desktop_oroskills_caveman_caveman_hook_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme",
+      "target": "brainstorming_time_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme",
+      "target": "caveman_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme",
+      "target": "dev_pipeline"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme",
+      "target": "executing_plan_time_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme",
+      "target": "install"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme",
+      "target": "ponytail"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme",
+      "target": "project_time_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme",
+      "target": "ship_pipeline"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme",
+      "target": "writing_plans_time_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_install.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_check_install",
+      "target": "install"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": "12",
+      "weight": 1.0,
+      "source": "install",
+      "target": "brainstorming_time_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": "12",
+      "weight": 1.0,
+      "source": "install",
+      "target": "caveman_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": "17",
+      "weight": 1.0,
+      "source": "install",
+      "target": "code_quality_reviewer_agent"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install",
+      "target": "dev_pipeline"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": "12",
+      "weight": 1.0,
+      "source": "install",
+      "target": "executing_plan_time_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": "17",
+      "weight": 1.0,
+      "source": "install",
+      "target": "implementer_agent"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": "170",
+      "weight": 1.0,
+      "source": "install",
+      "target": "install_install_ponytail"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": "168",
+      "weight": 1.0,
+      "source": "install",
+      "target": "install_install_session_hook"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": "17",
+      "weight": 1.0,
+      "source": "install",
+      "target": "phase_executor_agent"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": "12",
+      "weight": 1.0,
+      "source": "install",
+      "target": "project_time_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install",
+      "target": "ship_pipeline"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": "17",
+      "weight": 1.0,
+      "source": "install",
+      "target": "spec_reviewer_agent"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": "12",
+      "weight": 1.0,
+      "source": "install",
+      "target": "writing_plans_time_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": "97",
+      "weight": 1.0,
+      "source": "install_install_session_hook",
+      "target": "caveman_caveman_hook"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_install_session_hook",
+      "target": "session_start_hook"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_install_ponytail",
+      "target": "ponytail"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_dev_command.sh",
+      "source_location": "7",
+      "weight": 1.0,
+      "source": "dev_check_dev_command",
+      "target": "project_time_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "project-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "project_time_skill",
+      "target": "brainstorming_time_skill"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "project-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "project_time_skill",
+      "target": "dev_pipeline"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "project-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "project_time_skill",
+      "target": "graphify"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "project-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "project_time_skill",
+      "target": "memory_protocol"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "project-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "project_time_skill",
+      "target": "workflow_chain"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "brainstorming-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "brainstorming_time_skill",
+      "target": "graphify"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "brainstorming-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "brainstorming_time_skill",
+      "target": "memory_protocol"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "brainstorming-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "brainstorming_time_skill",
+      "target": "ponytail"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "brainstorming-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "brainstorming_time_skill",
+      "target": "workflow_chain"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "brainstorming-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "brainstorming_time_skill",
+      "target": "writing_plans_time_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_dev_command.sh",
+      "source_location": "7",
+      "weight": 1.0,
+      "source": "dev_check_dev_command",
+      "target": "brainstorming_time_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_dev_command.sh",
+      "source_location": "7",
+      "weight": 1.0,
+      "source": "dev_check_dev_command",
+      "target": "writing_plans_time_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "writing-plans-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "writing_plans_time_skill",
+      "target": "executing_plan_time_skill"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "writing-plans-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "writing_plans_time_skill",
+      "target": "execution_waves"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "writing-plans-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "writing_plans_time_skill",
+      "target": "file_edit_manifest"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "writing-plans-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "writing_plans_time_skill",
+      "target": "graphify"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "writing-plans-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "writing_plans_time_skill",
+      "target": "memory_protocol"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "writing-plans-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "writing_plans_time_skill",
+      "target": "ponytail"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "writing-plans-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "writing_plans_time_skill",
+      "target": "workflow_chain"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "writing-plans-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "writing_plans_time_skill",
+      "target": "writing_plans_time_plan_template"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "writing-plans-time/plan-template.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "writing_plans_time_plan_template",
+      "target": "executing_plan_time_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "writing-plans-time/plan-template.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "writing_plans_time_plan_template",
+      "target": "execution_waves"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "writing-plans-time/plan-template.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "writing_plans_time_plan_template",
+      "target": "file_edit_manifest"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "executing_plan_time_skill",
+      "target": "code_quality_reviewer_agent"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "executing_plan_time_skill",
+      "target": "execution_waves"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "executing_plan_time_skill",
+      "target": "git_worktree"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "executing_plan_time_skill",
+      "target": "graphify"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "executing_plan_time_skill",
+      "target": "implementer_agent"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "executing_plan_time_skill",
+      "target": "memory_protocol"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "executing_plan_time_skill",
+      "target": "overlap_analysis"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "executing_plan_time_skill",
+      "target": "ponytail"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "executing_plan_time_skill",
+      "target": "spec_reviewer_agent"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "executing_plan_time_skill",
+      "target": "tdd_before_commit"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "executing_plan_time_skill",
+      "target": "two_stage_review"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "executing-plan-time/SKILL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "executing_plan_time_skill",
+      "target": "workflow_chain"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "caveman/caveman-hook.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "caveman_caveman_hook",
+      "target": "caveman_skill"
+    },
+    {
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "caveman/SKILL.md",
+      "source_location": "53",
+      "weight": 1.0,
+      "source": "caveman_skill",
+      "target": "mattpocock_caveman"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "caveman/caveman-hook.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "caveman_caveman_hook",
+      "target": "session_start_hook"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_dev_command.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_check_dev_command",
+      "target": "dev_pipeline"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_dev_command.sh",
+      "source_location": "6-8",
+      "weight": 1.0,
+      "source": "dev_check_dev_command",
+      "target": "phase_executor_agent"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_memory_protocol.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_check_memory_protocol",
+      "target": "memory_protocol"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_agents.sh",
+      "source_location": "4",
+      "weight": 1.0,
+      "source": "dev_check_agents",
+      "target": "code_quality_reviewer_agent"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_agents.sh",
+      "source_location": "4",
+      "weight": 1.0,
+      "source": "dev_check_agents",
+      "target": "implementer_agent"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_agents.sh",
+      "source_location": "10",
+      "weight": 1.0,
+      "source": "dev_check_agents",
+      "target": "memory_protocol"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_agents.sh",
+      "source_location": "4",
+      "weight": 1.0,
+      "source": "dev_check_agents",
+      "target": "phase_executor_agent"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_agents.sh",
+      "source_location": "4",
+      "weight": 1.0,
+      "source": "dev_check_agents",
+      "target": "spec_reviewer_agent"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/commands/ship.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_commands_ship",
+      "target": "ship_pipeline_agents_coder"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/commands/ship.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_commands_ship",
+      "target": "ship_pipeline_agents_planner"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/commands/ship.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_commands_ship",
+      "target": "ship_pipeline_agents_reviewer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/commands/ship.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_commands_ship",
+      "target": "ship_pipeline_agents_tester"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/agents/planner.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_planner",
+      "target": "concept_pipeline_spec_md"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "ship-pipeline/agents/planner.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_planner",
+      "target": "ship_pipeline_agents_coder"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/agents/coder.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_coder",
+      "target": "concept_pipeline_changes_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/agents/coder.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_coder",
+      "target": "concept_pipeline_spec_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/agents/coder.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_coder",
+      "target": "concept_ponytail_minimal_code_ladder"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "ship-pipeline/agents/coder.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_coder",
+      "target": "dev_pipeline_agents_implementer"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "ship-pipeline/agents/coder.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_coder",
+      "target": "ship_pipeline_agents_tester"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/agents/tester.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_tester",
+      "target": "concept_pipeline_changes_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/agents/tester.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_tester",
+      "target": "concept_pipeline_spec_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/agents/tester.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_tester",
+      "target": "concept_pipeline_test_results_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/agents/reviewer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_reviewer",
+      "target": "concept_pipeline_review_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/agents/reviewer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_reviewer",
+      "target": "concept_pipeline_spec_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/agents/reviewer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_reviewer",
+      "target": "concept_ponytail_minimal_code_ladder"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "ship-pipeline/agents/reviewer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ship_pipeline_agents_reviewer",
+      "target": "dev_pipeline_agents_code_quality_reviewer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_install.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_check_install",
+      "target": "dev_pipeline_commands_dev"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/commands/dev.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_commands_dev",
+      "target": "concept_decisions_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/commands/dev.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_commands_dev",
+      "target": "concept_dev_memory_store"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/commands/dev.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_commands_dev",
+      "target": "concept_progress_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/commands/dev.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_commands_dev",
+      "target": "dev_pipeline_agents_phase_executor"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/commands/dev.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_commands_dev",
+      "target": "dev_pipeline_memory_protocol"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/commands/dev.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_commands_dev",
+      "target": "skill_brainstorming_time"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/commands/dev.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_commands_dev",
+      "target": "skill_project_time"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/commands/dev.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_commands_dev",
+      "target": "skill_writing_plans_time"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/agents/code-quality-reviewer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_agents_code_quality_reviewer",
+      "target": "dev_pipeline_memory_protocol"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/agents/implementer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_agents_implementer",
+      "target": "dev_pipeline_memory_protocol"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/agents/phase-executor.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_agents_phase_executor",
+      "target": "dev_pipeline_memory_protocol"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/agents/spec-reviewer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_agents_spec_reviewer",
+      "target": "dev_pipeline_memory_protocol"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_memory_protocol",
+      "target": "concept_decisions_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_memory_protocol",
+      "target": "concept_dev_memory_store"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_memory_protocol",
+      "target": "concept_glossary_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_memory_protocol",
+      "target": "concept_goals_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_memory_protocol",
+      "target": "concept_lessons_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_memory_protocol",
+      "target": "concept_progress_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/memory-protocol.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_memory_protocol",
+      "target": "skill_project_time"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_install.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_check_install",
+      "target": "dev_pipeline_agents_phase_executor"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/agents/phase-executor.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_agents_phase_executor",
+      "target": "concept_decisions_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/agents/phase-executor.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_agents_phase_executor",
+      "target": "skill_executing_plan_time"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_install.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_check_install",
+      "target": "dev_pipeline_agents_spec_reviewer"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "dev-pipeline/agents/spec-reviewer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_agents_spec_reviewer",
+      "target": "dev_pipeline_agents_code_quality_reviewer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/agents/spec-reviewer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_agents_spec_reviewer",
+      "target": "concept_tdd_before_commit_contract"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/agents/spec-reviewer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_agents_spec_reviewer",
+      "target": "dev_pipeline_agents_implementer"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "dev-pipeline/agents/spec-reviewer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "skill_executing_plan_time",
+      "target": "dev_pipeline_agents_spec_reviewer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_install.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_check_install",
+      "target": "dev_pipeline_agents_code_quality_reviewer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/agents/code-quality-reviewer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_agents_code_quality_reviewer",
+      "target": "concept_ponytail_minimal_code_ladder"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "dev-pipeline/agents/code-quality-reviewer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "skill_executing_plan_time",
+      "target": "dev_pipeline_agents_code_quality_reviewer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/dev/check_install.sh",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_check_install",
+      "target": "dev_pipeline_agents_implementer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/agents/implementer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_agents_implementer",
+      "target": "concept_decisions_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/agents/implementer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_agents_implementer",
+      "target": "concept_ponytail_minimal_code_ladder"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/agents/implementer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dev_pipeline_agents_implementer",
+      "target": "concept_tdd_before_commit_contract"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "dev-pipeline/agents/implementer.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "skill_executing_plan_time",
+      "target": "dev_pipeline_agents_implementer"
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "workflow_chain_stages",
+      "label": "project-time to executing-plan-time chain",
+      "nodes": [
+        "project_time_skill",
+        "brainstorming_time_skill",
+        "writing_plans_time_skill",
+        "executing_plan_time_skill"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "id": "executing_plan_dispatched_agents",
+      "label": "executing-plan-time dispatched agents",
+      "nodes": [
+        "executing_plan_time_skill",
+        "implementer_agent",
+        "spec_reviewer_agent",
+        "code_quality_reviewer_agent"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "executing-plan-time/SKILL.md"
+    },
+    {
+      "id": "caveman_default_mechanism",
+      "label": "caveman-on-by-default install mechanism",
+      "nodes": [
+        "install_install_session_hook",
+        "caveman_caveman_hook",
+        "session_start_hook"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "install.sh"
+    },
+    {
+      "id": "ship_pipeline_stages",
+      "label": "ship four-stage feature pipeline",
+      "nodes": [
+        "ship_pipeline_commands_ship",
+        "ship_pipeline_agents_planner",
+        "ship_pipeline_agents_coder",
+        "ship_pipeline_agents_tester",
+        "ship_pipeline_agents_reviewer"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ship-pipeline/commands/ship.md"
+    },
+    {
+      "id": "dev_pipeline_orchestration",
+      "label": "dev roadmap-driven dev loop",
+      "nodes": [
+        "dev_pipeline_commands_dev",
+        "dev_pipeline_agents_phase_executor",
+        "skill_project_time",
+        "skill_brainstorming_time",
+        "skill_writing_plans_time",
+        "concept_dev_memory_store"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/commands/dev.md"
+    },
+    {
+      "id": "dev_execution_review_loop",
+      "label": "executing-plan-time implementer + two-stage review",
+      "nodes": [
+        "skill_executing_plan_time",
+        "dev_pipeline_agents_implementer",
+        "dev_pipeline_agents_spec_reviewer",
+        "dev_pipeline_agents_code_quality_reviewer",
+        "concept_tdd_before_commit_contract"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "dev-pipeline/agents/phase-executor.md"
+    },
+    {
+      "id": "dev_memory_files",
+      "label": ".dev/memory store files",
+      "nodes": [
+        "concept_dev_memory_store",
+        "concept_goals_md",
+        "concept_decisions_md",
+        "concept_lessons_md",
+        "concept_glossary_md",
+        "concept_progress_md"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "dev-pipeline/memory-protocol.md"
+    }
+  ],
+  "built_at_commit": "4f2539cbeebd924f8a44c68b66ab5c424c55070d"
+}
