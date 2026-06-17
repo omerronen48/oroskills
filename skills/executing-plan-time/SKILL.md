@@ -13,10 +13,10 @@ One skill that runs an approved plan to done. Replaces the chain of superpowers:
 - A written, approved plan file (preferably produced by writing-plans-time, which already includes the File Edit Manifest + wave structure).
 - A repo with (or willing to initialize) a graphify graph.
 
-**Dispatched agents (in `dev-pipeline/agents/`):**
-- `implementer` (dev-pipeline/agents/implementer.md) — the per-task implementer subagent. Worktree-aware, manifest-constrained, enforces the TDD-before-commit contract.
-- `spec-reviewer` (dev-pipeline/agents/spec-reviewer.md) — the spec-compliance reviewer. Also verifies manifest discipline and TDD-artifact integrity (re-runs the test on the parent commit to confirm it would have failed).
-- `code-quality-reviewer` (dev-pipeline/agents/code-quality-reviewer.md) — the code-quality reviewer. Also checks for sibling-task conflicts when the task ran inside a parallel wave.
+**Dispatched agents (in `pipelines/dev-pipeline/agents/`):**
+- `implementer` (pipelines/dev-pipeline/agents/implementer.md) — the per-task implementer subagent. Worktree-aware, manifest-constrained, enforces the TDD-before-commit contract.
+- `spec-reviewer` (pipelines/dev-pipeline/agents/spec-reviewer.md) — the spec-compliance reviewer. Also verifies manifest discipline and TDD-artifact integrity (re-runs the test on the parent commit to confirm it would have failed).
+- `code-quality-reviewer` (pipelines/dev-pipeline/agents/code-quality-reviewer.md) — the code-quality reviewer. Also checks for sibling-task conflicts when the task ran inside a parallel wave.
 
 Every implementer dispatch MUST dispatch the `implementer` agent by name. Every task MUST pass both reviewers in order (spec first, then quality) before being marked done. Skipping a reviewer is a hard-gate violation — see below.
 
@@ -39,7 +39,7 @@ It also lets us state cross-cutting invariants that no individual skill can stat
 
 Create a TodoWrite todo for each phase. Each phase has its own internal steps.
 
-1. **Pre-flight** — graphify exists, plan loaded, worktree created, baseline tests green, memory read (read `.dev/memory/` per `dev-pipeline/memory-protocol.md` if present; pass memory pointers to each dispatched agent)
+1. **Pre-flight** — graphify exists, plan loaded, worktree created, baseline tests green, memory read (read `.dev/memory/` per `pipelines/dev-pipeline/memory-protocol.md` if present; pass memory pointers to each dispatched agent)
 2. **Overlap analysis** — for every wave, verify file + function + call-graph disjointness; downgrade waves if needed
 3. **Wave loop** — for each wave: dispatch parallel `implementer` agents, await all; per task run spec-compliance review (dispatch the `spec-reviewer` agent), fix loop if needed, then code-quality review (dispatch the `code-quality-reviewer` agent), fix loop if needed; verify the wave; mark tasks done
 4. **Final verification** — full test suite + lint + type-check + spec coverage check on the worktree
@@ -154,7 +154,7 @@ Concrete rules for the main agent:
 
 ### 1.5 Memory protocol
 
-Read `.dev/memory/` per `dev-pipeline/memory-protocol.md` if present; pass memory pointers to each dispatched agent. No-op when absent.
+Read `.dev/memory/` per `pipelines/dev-pipeline/memory-protocol.md` if present; pass memory pointers to each dispatched agent. No-op when absent.
 
 ---
 
@@ -190,7 +190,7 @@ For each wave, in order:
 
 ### 3.1 Dispatch parallel implementer subagents
 
-Send **all tasks in the wave as a single message with multiple Agent tool calls**. Dispatch the `implementer` agent (dev-pipeline/agents/implementer.md) by name with the task slice — do not write ad-hoc instructions. Each dispatch gets:
+Send **all tasks in the wave as a single message with multiple Agent tool calls**. Dispatch the `implementer` agent (pipelines/dev-pipeline/agents/implementer.md) by name with the task slice — do not write ad-hoc instructions. Each dispatch gets:
 
 - The worktree absolute path and branch (Phase 1.2)
 - The full task text from the plan (verbatim — do NOT have the subagent read the plan file)
@@ -229,7 +229,7 @@ If wave verification fails: investigate. Common causes:
 
 ### 3.4 Per-task spec-compliance review
 
-For each task in the wave, dispatch the `spec-reviewer` agent (dev-pipeline/agents/spec-reviewer.md) by name. Reviewers for different tasks in the same wave can run in parallel (they read disjoint diffs).
+For each task in the wave, dispatch the `spec-reviewer` agent (pipelines/dev-pipeline/agents/spec-reviewer.md) by name. Reviewers for different tasks in the same wave can run in parallel (they read disjoint diffs).
 
 Provide:
 - Worktree path
@@ -246,7 +246,7 @@ Do NOT proceed to code-quality review on a `FAIL`. Do NOT silently fix the issue
 
 ### 3.5 Per-task code-quality review
 
-Only after spec review returns `PASS` for a given task, dispatch the `code-quality-reviewer` agent (dev-pipeline/agents/code-quality-reviewer.md) by name.
+Only after spec review returns `PASS` for a given task, dispatch the `code-quality-reviewer` agent (pipelines/dev-pipeline/agents/code-quality-reviewer.md) by name.
 
 Provide:
 - Worktree path, base SHA, head SHA
@@ -405,7 +405,7 @@ If any intersection is non-empty, serialize.
 |---|---|---|
 | superpowers:using-git-worktrees | Always-isolate-in-worktree rule | Worktree creation is phase 1, not a separate skill load |
 | superpowers:executing-plans | Plan-driven execution | Merged into the wave loop |
-| superpowers:subagent-driven-development | Per-task fresh subagent + 3 named agents (implementer, spec-reviewer, code-quality-reviewer) | Agents live in `dev-pipeline/agents/`, adapted to require worktree path, pre-queried graphify context, TDD artifact integrity check (re-run on parent commit), manifest-discipline check, and sibling-task conflict check |
+| superpowers:subagent-driven-development | Per-task fresh subagent + 3 named agents (implementer, spec-reviewer, code-quality-reviewer) | Agents live in `pipelines/dev-pipeline/agents/`, adapted to require worktree path, pre-queried graphify context, TDD artifact integrity check (re-run on parent commit), manifest-discipline check, and sibling-task conflict check |
 | superpowers:dispatching-parallel-agents | Parallel-when-independent | File + function + call-graph overlap check, not just "looks independent" |
 | superpowers:test-driven-development | Test-first, see-it-fail, see-it-pass | Enforced as a contract on every dispatched subagent, with an artifact check |
 | superpowers:verification-before-completion | Evidence before claims | Promoted to a phase with explicit commands and a gate |

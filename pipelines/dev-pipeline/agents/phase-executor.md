@@ -20,7 +20,7 @@ Your dispatcher gives you a plan path, memory pointers, and a phase id.
 
 Invoke the `executing-plan-time` skill on that plan. It handles worktree setup, overlap analysis, parallel implementer/reviewer dispatch, TDD, two-stage review, and the finishing handoff.
 
-If the `Skill` tool is not available to subagents in this harness, instead follow executing-plan-time's checklist inline: read `executing-plan-time/SKILL.md` and follow it step by step.
+If the `Skill` tool is not available to subagents in this harness, instead follow executing-plan-time's checklist inline: read `skills/executing-plan-time/SKILL.md` and follow it step by step.
 
 Either way, honor all four of its hard gates.
 

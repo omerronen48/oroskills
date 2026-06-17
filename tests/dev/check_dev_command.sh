@@ -1,7 +1,7 @@
 # tests/dev/check_dev_command.sh
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-D="$ROOT/dev-pipeline/commands/dev.md"
+D="$ROOT/pipelines/dev-pipeline/commands/dev.md"
 test -f "$D" || { echo "FAIL: dev.md missing"; exit 1; }
 for k in '\$ARGUMENTS' 'progress.md' '\.dev/memory' 'phase-executor' \
          'project-time' 'brainstorming-time' 'writing-plans-time' \

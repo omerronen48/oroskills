@@ -54,7 +54,7 @@ COMMANDS_DIR="$BASE_DIR/commands"
 SETTINGS_FILE="$BASE_DIR/settings.json"
 # SessionStart hook that turns caveman mode on by default. The script is copied
 # into BASE_DIR (not symlinked/referenced), so moving the repo won't break it.
-HOOK_SRC="$SCRIPT_DIR/caveman/caveman-hook.sh"
+HOOK_SRC="$SCRIPT_DIR/skills/caveman/caveman-hook.sh"
 HOOK_DEST="$BASE_DIR/caveman-hook.sh"
 HOOK_CMD="bash \"$HOOK_DEST\""
 
@@ -144,25 +144,25 @@ echo
 
 mkdir -p "$SKILLS_DIR"
 for skill in "${SKILLS[@]}"; do
-  install_item "$SCRIPT_DIR/$skill" "$SKILLS_DIR/$skill" "$skill"
+  install_item "$SCRIPT_DIR/skills/$skill" "$SKILLS_DIR/$skill" "$skill"
 done
 
 mkdir -p "$AGENTS_DIR"
 for agent in "${AGENTS[@]}"; do
-  install_item "$SCRIPT_DIR/ship-pipeline/agents/$agent.md" "$AGENTS_DIR/$agent.md" "agent:$agent"
+  install_item "$SCRIPT_DIR/pipelines/ship-pipeline/agents/$agent.md" "$AGENTS_DIR/$agent.md" "agent:$agent"
 done
 
 mkdir -p "$COMMANDS_DIR"
 for command in "${COMMANDS[@]}"; do
-  install_item "$SCRIPT_DIR/ship-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
+  install_item "$SCRIPT_DIR/pipelines/ship-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
 done
 
 for agent in "${DEV_AGENTS[@]}"; do
-  install_item "$SCRIPT_DIR/dev-pipeline/agents/$agent.md" "$AGENTS_DIR/$agent.md" "agent:$agent"
+  install_item "$SCRIPT_DIR/pipelines/dev-pipeline/agents/$agent.md" "$AGENTS_DIR/$agent.md" "agent:$agent"
 done
 
 for command in "${DEV_COMMANDS[@]}"; do
-  install_item "$SCRIPT_DIR/dev-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
+  install_item "$SCRIPT_DIR/pipelines/dev-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
 done
 
 install_session_hook

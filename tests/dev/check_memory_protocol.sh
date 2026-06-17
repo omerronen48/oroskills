@@ -1,7 +1,7 @@
 # tests/dev/check_memory_protocol.sh
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-P="$ROOT/dev-pipeline/memory-protocol.md"
+P="$ROOT/pipelines/dev-pipeline/memory-protocol.md"
 test -f "$P" || { echo "FAIL: memory-protocol.md missing"; exit 1; }
 for f in goals.md decisions.md lessons.md glossary.md progress.md; do
   grep -q "$f" "$P" || { echo "FAIL: protocol does not document $f"; exit 1; }

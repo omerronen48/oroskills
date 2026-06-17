@@ -203,7 +203,7 @@ When this skill runs inside a `/dev` loop, after the roadmap is produced and app
 - Seed `.dev/memory/decisions.md` and `.dev/memory/glossary.md` with the resolved project-level choices (tech stack, architecture, scope boundaries) and the domain terms the roadmap introduced.
 - Seed `.dev/memory/progress.md` with one `pending` entry per milestone.
 
-See `dev-pipeline/memory-protocol.md` for the file formats. This step is a **no-op when `.dev/memory/` is absent** — the skill still runs standalone without it.
+See `pipelines/dev-pipeline/memory-protocol.md` for the file formats. This step is a **no-op when `.dev/memory/` is absent** — the skill still runs standalone without it.
 
 ## Key Principles
 
