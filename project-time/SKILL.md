@@ -195,6 +195,16 @@ Loop until the user approves. Then output the hand-off line — do NOT invoke `b
 | "I can answer this from the codebase without asking" | Then do — that's correct behavior in existing-codebase mode. Don't ask what `graphify query` can answer. |
 | "Milestones should be horizontal (build the foundation first)" | Default to vertical slices so each milestone ships value. Pick horizontal only with stated reason. |
 
+## Memory protocol (when run under /dev)
+
+When this skill runs inside a `/dev` loop, after the roadmap is produced and approved, persist its decisions to shared memory:
+
+- Write `.dev/memory/goals.md` — the project goals plus the non-functional targets from the roadmap.
+- Seed `.dev/memory/decisions.md` and `.dev/memory/glossary.md` with the resolved project-level choices (tech stack, architecture, scope boundaries) and the domain terms the roadmap introduced.
+- Seed `.dev/memory/progress.md` with one `pending` entry per milestone.
+
+See `dev-pipeline/memory-protocol.md` for the file formats. This step is a **no-op when `.dev/memory/` is absent** — the skill still runs standalone without it.
+
 ## Key Principles
 
 - **One grill, then a roadmap.** Resolve project-level questions once, in one place, so feature-level brainstorms stop re-litigating them.

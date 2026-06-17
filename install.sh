@@ -13,6 +13,9 @@ SKILLS=(project-time brainstorming-time writing-plans-time executing-plan-time c
 # The ship pipeline ships as agents + a slash command rather than a skill.
 AGENTS=(planner coder tester reviewer)
 COMMANDS=(ship)
+# The dev pipeline also ships as agents + a slash command.
+DEV_AGENTS=(implementer spec-reviewer code-quality-reviewer phase-executor)
+DEV_COMMANDS=(dev)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 SCOPE="global"
@@ -154,9 +157,17 @@ for command in "${COMMANDS[@]}"; do
   install_item "$SCRIPT_DIR/ship-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
 done
 
+for agent in "${DEV_AGENTS[@]}"; do
+  install_item "$SCRIPT_DIR/dev-pipeline/agents/$agent.md" "$AGENTS_DIR/$agent.md" "agent:$agent"
+done
+
+for command in "${DEV_COMMANDS[@]}"; do
+  install_item "$SCRIPT_DIR/dev-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
+done
+
 install_session_hook
 
 install_ponytail
 
 echo
-echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, commands, caveman default, and ponytail."
+echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, commands (/ship, /dev), caveman default, and ponytail."
