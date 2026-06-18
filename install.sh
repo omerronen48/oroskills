@@ -11,10 +11,11 @@ set -euo pipefail
 
 SKILLS=(project-time brainstorming-time writing-plans-time executing-plan-time caveman)
 # The ship pipeline ships as agents + a slash command rather than a skill.
-AGENTS=(planner coder tester reviewer)
+# Agents are namespaced (oro-*) to avoid collisions in the global agents dir.
+AGENTS=(oro-planner oro-coder oro-tester oro-reviewer)
 COMMANDS=(ship)
 # The dev pipeline also ships as agents + a slash command.
-DEV_AGENTS=(implementer spec-reviewer code-quality-reviewer phase-executor)
+DEV_AGENTS=(oro-implementer oro-spec-reviewer oro-code-quality-reviewer oro-phase-executor)
 DEV_COMMANDS=(dev)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -173,10 +174,17 @@ install_ponytail() {
   fi
 
   claude plugin marketplace add DietrichGebert/ponytail --scope "$PLUGIN_SCOPE" >/dev/null 2>&1 || true
-  if claude plugin install ponytail@ponytail --scope "$PLUGIN_SCOPE" >/dev/null 2>&1; then
+
+  local out rc
+  out="$(claude plugin install ponytail@ponytail --scope "$PLUGIN_SCOPE" 2>&1)"; rc=$?
+  if [[ "$rc" -eq 0 ]]; then
     echo "  + ponytail plugin (mode: full)"
+  elif echo "$out" | grep -qi 'already'; then
+    echo "  = ponytail (already installed)"
   else
-    echo "  = ponytail (already installed or install skipped)"
+    # Surface the real failure (network/auth/etc.) instead of masking it.
+    echo "  ! ponytail install failed (rc=$rc):"
+    echo "$out" | sed 's/^/      /'
   fi
 }
 

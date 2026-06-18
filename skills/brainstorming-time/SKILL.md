@@ -74,16 +74,7 @@ The terminal state is invoking `writing-plans-time`. Do not jump to frontend-des
 
 This is what makes the skill "direct": you read the codebase through the graph, not by opening files one at a time.
 
-**Initialization gate.** Before any context gathering, check for `graphify-out/graph.json` in the project root:
-
-```bash
-test -f graphify-out/graph.json && echo present || echo missing
-```
-
-- If **present**: proceed.
-- If **missing**: stop and offer:
-  > "No graphify graph found here. I'd like to run `/graphify` first so I can answer design questions from the knowledge graph instead of reading files one by one. OK to initialize?"
-  Wait for the user's reply. If they decline, fall back to normal file reads but note the limitation.
+**Initialization gate.** Before any context gathering, check `graphify-out/graph.json`. If missing, stop and offer to run `/graphify` — "so I can answer design questions from the knowledge graph instead of reading files one by one" — and **wait** for the reply. If declined, fall back to file reads and note the limitation.
 
 **Querying.** For every "where is X", "how does Y work", "what depends on Z", "what's the current shape of A" question, run:
 

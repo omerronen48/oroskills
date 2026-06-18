@@ -71,17 +71,7 @@ digraph direct_writing_plans {
 
 This is what makes the plan trustworthy — the file list reflects the real graph, not a guess.
 
-**Initialization gate.** Before any querying:
-
-```bash
-test -f graphify-out/graph.json && echo present || echo missing
-```
-
-If missing, stop and offer:
-
-> "No graphify graph found here. I'd like to run `/graphify` first so the file manifest is grounded in the real call graph, not in grep guesses. OK to initialize?"
-
-Wait for the user. If declined, fall back to Read/Grep and note in the plan that the manifest may be incomplete.
+**Initialization gate.** Before any querying, check `graphify-out/graph.json`. If missing, stop and offer to run `/graphify` — "so the file manifest is grounded in the real call graph, not in grep guesses" — and **wait** for the reply. If declined, fall back to Read/Grep and note in the plan that the manifest may be incomplete.
 
 **Per-requirement queries.** For each spec requirement, run at least:
 
@@ -232,7 +222,7 @@ After saving the plan, hand off to `executing-plan-time`. That skill is the sing
 
 Message to the user:
 
-> "Plan saved to `<path>`. Wave summary: W1=1 task, W2=2 parallel, W3=1, W4=1, W5=1 (peak parallelism: 2). Ready to hand off to `executing-plan-time` — it will set up a worktree, run overlap analysis on the waves, dispatch parallel implementer subagents per wave, run spec-compliance and code-quality review per task, and finish the branch. Proceed?"
+> "Plan saved to `<path>`. Wave summary: W1=1 task, W2=2 parallel, W3=1, W4=1, W5=1 (peak parallelism: 2). Ready to hand off to `executing-plan-time` — it will set up a worktree, run overlap analysis on the waves, dispatch parallel oro-implementer subagents per wave, run spec-compliance and code-quality review per task, and finish the branch. Proceed?"
 
 **Routing:** Always `executing-plan-time`. Do NOT invoke superpowers:dispatching-parallel-agents, superpowers:subagent-driven-development, or superpowers:executing-plans separately — they are subsumed.
 

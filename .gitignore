@@ -1,0 +1,8 @@
+# graphify knowledge-graph output (regenerable; run `graphify` / `graphify --update`)
+graphify-out/
+
+# OS / editor cruft
+.DS_Store
+
+# stray literal ~ dir (nvim undodir, etc.)
+/~/

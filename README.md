@@ -82,12 +82,14 @@ Use executing-plan-time to run <plan file>.
 
 | Agent | Model | Stage |
 |---|---|---|
-| **planner** | opus | Feature request → `.pipeline/spec.md` (exact paths, signatures, edge cases). Flags ambiguity as `OPEN QUESTION`. |
-| **coder** | sonnet | Implements the spec exactly → `.pipeline/changes.md`. No scope creep. |
-| **tester** | sonnet | Writes/runs tests → `.pipeline/test-results.md`. On failure it **stops** rather than patching the code. |
-| **reviewer** | opus | Read-only `git diff` review → `.pipeline/review.md` with `VERDICT: SHIP / NEEDS WORK / BLOCK`. |
+| **oro-planner** | opus | Feature request → `.pipeline/spec.md` (exact paths, signatures, edge cases). Flags ambiguity as `OPEN QUESTION`. |
+| **oro-coder** | sonnet | Implements the spec exactly → `.pipeline/changes.md`. No scope creep. |
+| **oro-tester** | sonnet | Writes/runs tests → `.pipeline/test-results.md`. On failure it **stops** rather than patching the code. |
+| **oro-reviewer** | opus | Read-only `git diff` review → `.pipeline/review.md` with `VERDICT: SHIP / NEEDS WORK / BLOCK`. |
 
 `/ship` orchestrates the four in order, confirming each handoff file exists before the next stage, pausing on open questions or test failures, and **never merging** — it leaves the branch for your review. (Opus on the reasoning-heavy plan/review stages, Sonnet on the bulk code/test work.)
+
+> ⚠️ **`/ship` is a deliberate fast lane and does NOT enforce the TDD-before-commit contract.** Tests are written *after* the code, there is no git worktree, and no graphify context — the opposite of what the `/dev` chain treats as hard gates. Use `/ship` only when that trade is acceptable; for the full discipline (TDD-first, worktree isolation, graph-driven parallelism, two-stage review) use `/dev` or run the chain.
 
 ```
 /ship add rate limiting to the login endpoint
@@ -98,14 +100,28 @@ Use executing-plan-time to run <plan file>.
 `/dev "<idea>"` wraps **project-time → brainstorming-time → writing-plans-time → executing-plan-time** in one resumable command that runs across a multi-phase roadmap:
 
 1. Builds the roadmap once (project-time), seeding a project-local `.dev/memory/` layer (`goals.md`, `decisions.md`, `lessons.md`, `glossary.md`, `progress.md`).
-2. For each phase: brainstorm + plan **interactively** (it asks you), then dispatches a **phase-executor** subagent that runs `executing-plan-time` unattended in its own context window.
+2. For each phase: brainstorm + plan **interactively** (it asks you), then dispatches an **oro-phase-executor** subagent that runs `executing-plan-time` unattended in its own context window.
 3. Auto-advances to the next phase, logging every decision to `.dev/memory/decisions.md`.
 
 Each phase runs in a fresh subagent so the main session stays lean; the loop is **resumable** from `.dev/memory/progress.md`. Irreversible forks pause and escalate to you; reversible ones are auto-decided and logged.
 
 ## Requirements
 
-- **graphify** — the skills use `graphify query` as their primary source for codebase context. Install it and run `/graphify` once per repo; skills offer to initialize it if `graphify-out/graph.json` is missing.
+### graphify (the headline dependency — read this)
+
+The skills are **graphify-first**: they query a knowledge graph of your codebase (`graphify query`) instead of reading files one at a time, and `executing-plan-time` uses graphify's call-graph to decide which tasks are safe to run in parallel. graphify is a separate tool — the [`graphifyy`](https://pypi.org/project/graphifyy/) Python package plus a `/graphify` Claude Code skill that builds and queries the graph:
+
+```bash
+uv tool install graphifyy          # or: pip install graphifyy
+# optional extras: pip install 'graphifyy[gemini]'  (Gemini extraction)  ·  'graphifyy[video]'
+```
+
+Run `/graphify` once per repo to build `graphify-out/graph.json`; the skills offer to initialize it if it's missing, and `graphify --update` refreshes it after changes.
+
+**Degraded mode (be honest with yourself):** without graphify, every skill falls back to `Read`/`Grep`. They still work, but you lose the graph-driven context and — importantly — `executing-plan-time` can no longer verify function/call-graph disjointness, so it drops to file-level checks and serializes. In that mode these are essentially reworded `superpowers:*` skills; graphify is what makes them different.
+
+### Other
+
 - **git** — `executing-plan-time` always runs work inside a git worktree.
 - **jq** — used to merge the caveman session hook into `settings.json`. If missing, the install skips the hook and reports it.
 - **node** — required by ponytail's hooks. If missing at install time, ponytail still installs but its hooks no-op until node is available.
@@ -120,16 +136,19 @@ skills/
   writing-plans-time/  SKILL.md  plan-template.md
   executing-plan-time/ SKILL.md
   caveman/             SKILL.md  caveman-hook.sh  caveman-state.sh  statusline-snippet.sh
-pipelines/
+pipelines/                # agents install namespaced (oro-*) to avoid collisions
   ship-pipeline/
-    agents/    planner.md  coder.md  tester.md  reviewer.md
+    agents/    oro-planner.md  oro-coder.md  oro-tester.md  oro-reviewer.md
     commands/  ship.md
   dev-pipeline/
-    agents/    implementer.md  spec-reviewer.md  code-quality-reviewer.md  phase-executor.md
+    agents/    oro-implementer.md  oro-spec-reviewer.md  oro-code-quality-reviewer.md  oro-phase-executor.md
     commands/  dev.md
     memory-protocol.md
-tests/dev/
+tests/dev/                # install-wiring smoke tests (see note below)
   check_install.sh  check_agents.sh  check_dev_command.sh  check_memory_protocol.sh
-statusline-command.sh   # emoji-labelled bar with the caveman chip
+statusline-command.sh     # emoji-labelled bar with the caveman chip
 install.sh
+LICENSE                   # MIT
 ```
+
+The `tests/dev/` scripts are **install-wiring smoke tests** — they verify agents/commands are present, named, and referenced correctly, and that `install.sh` parses. They do **not** test skill behavior; passing them is not evidence the skills produce good specs/plans/code.

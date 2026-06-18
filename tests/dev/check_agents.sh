@@ -1,7 +1,7 @@
 # tests/dev/check_agents.sh
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-for a in implementer spec-reviewer code-quality-reviewer phase-executor; do
+for a in oro-implementer oro-spec-reviewer oro-code-quality-reviewer oro-phase-executor; do
   f="$ROOT/pipelines/dev-pipeline/agents/$a.md"
   test -f "$f" || { echo "FAIL: agent $a.md missing"; exit 1; }
   head -1 "$f" | grep -q '^---$' || { echo "FAIL: $a missing frontmatter"; exit 1; }
