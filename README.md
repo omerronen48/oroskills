@@ -19,13 +19,13 @@ Options:
 | `--copy` | Copy files instead of symlinking |
 | `--force` | Overwrite existing skills/agents with the same name |
 
-The installer places skills in `~/.claude/skills/`, the pipeline agents in `~/.claude/agents/`, the `/ship` + `/dev` commands in `~/.claude/commands/`, registers the caveman session hook, and installs the ponytail plugin. For a project-scoped install, swap `~/.claude/` for `<project>/.claude/`.
+The installer places skills in `~/.claude/skills/`, the pipeline agents (including `oro-triager`) in `~/.claude/agents/`, the `/ship`, `/dev`, `/loop-manager`, and `/loop-worker` commands in `~/.claude/commands/`, registers the caveman session hook, and installs the ponytail plugin. For a project-scoped install, swap `~/.claude/` for `<project>/.claude/`.
 
 Verify, then restart Claude Code (or start a new session):
 
 ```bash
 ls ~/.claude/skills/    # brainstorming-time caveman executing-plan-time project-time writing-plans-time
-ls ~/.claude/commands/  # dev.md ship.md
+ls ~/.claude/commands/  # dev.md loop-manager.md loop-worker.md ship.md
 ```
 
 ### Caveman on by default
@@ -105,6 +105,21 @@ Use executing-plan-time to run <plan file>.
 
 Each phase runs in a fresh subagent so the main session stays lean; the loop is **resumable** from `.dev/memory/progress.md`. Irreversible forks pause and escalate to you; reversible ones are auto-decided and logged.
 
+### `/loop-manager` + `/loop-worker` — autonomous loop pipeline
+
+Two autonomous agent loops that auto-develop a repo through a **GitHub Issues control plane**: a Manager loop triages the backlog and a Worker loop turns safe issues into PRs. Neither ever merges — **human merge is the gate**. Inspired by the loop-engineering pattern.
+
+| Command | Stage |
+|---|---|
+| **`/loop-manager`** | Triages open issues: classifies risk (`risk:low\|medium\|high`) and type, applies `agent:ready` / `needs:human`, and posts an *Agent Assessment* comment. Labels and comments only — **never** writes code, opens a PR, or merges. Apply mode by default; `--dry-run` previews; `--retriage` refreshes existing triage. |
+| **`/loop-worker`** | Takes one `agent:ready` + `risk:low` issue, isolates it in a worktree, drives the `/ship` pipeline, and on `VERDICT: SHIP` opens a PR and comments the link. Any non-SHIP outcome routes the issue to `needs:human`. Never merges. |
+
+The Manager delegates per-issue classification to **oro-triager**, a read-only agent that does the actual risk/type call without any write access.
+
+**Label taxonomy:** `risk:low\|medium\|high` · `type:{bug,feature,docs,test,refactor,chore}` · `agent:ready` · `needs:human` · `agent:in-progress`.
+
+**Scheduling & safety.** Run the loops unattended via Claude Code `/schedule` routines — see `pipelines/loop-pipeline/RUNBOOK.md`. A `.claude/settings.json` permission template (`pipelines/loop-pipeline/loop-settings.json`) **denies `gh pr merge`** as the enforceable hard stop, so even a misbehaving loop cannot merge. Honest limitation: Claude Code routines can't carry per-routine permission scopes today, so per-loop tool isolation rests on the read-only classifier, the command prose, and human PR review rather than a hard sandbox; routines themselves are a research preview.
+
 ## Requirements
 
 ### graphify (the headline dependency — read this)
@@ -144,6 +159,10 @@ pipelines/                # agents install namespaced (oro-*) to avoid collision
     agents/    oro-implementer.md  oro-spec-reviewer.md  oro-code-quality-reviewer.md  oro-phase-executor.md
     commands/  dev.md
     memory-protocol.md
+  loop-pipeline/
+    agents/    oro-triager.md
+    commands/  loop-manager.md  loop-worker.md
+    RUNBOOK.md  loop-settings.json
 tests/dev/                # install-wiring smoke tests (see note below)
   check_install.sh  check_agents.sh  check_dev_command.sh  check_memory_protocol.sh
 statusline-command.sh     # emoji-labelled bar with the caveman chip
