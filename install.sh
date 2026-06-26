@@ -17,6 +17,9 @@ COMMANDS=(ship)
 # The dev pipeline also ships as agents + a slash command.
 DEV_AGENTS=(oro-implementer oro-spec-reviewer oro-code-quality-reviewer oro-phase-executor)
 DEV_COMMANDS=(dev)
+# The loop pipeline (autonomous agent loops) also ships as agents + slash commands.
+LOOP_AGENTS=(oro-triager)
+LOOP_COMMANDS=(loop-manager loop-worker)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 SCOPE="global"
@@ -217,6 +220,14 @@ for command in "${DEV_COMMANDS[@]}"; do
   install_item "$SCRIPT_DIR/pipelines/dev-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
 done
 
+for agent in "${LOOP_AGENTS[@]}"; do
+  install_item "$SCRIPT_DIR/pipelines/loop-pipeline/agents/$agent.md" "$AGENTS_DIR/$agent.md" "agent:$agent"
+done
+
+for command in "${LOOP_COMMANDS[@]}"; do
+  install_item "$SCRIPT_DIR/pipelines/loop-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
+done
+
 install_session_hook
 
 install_statusline
@@ -224,4 +235,4 @@ install_statusline
 install_ponytail
 
 echo
-echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, commands (/ship, /dev), caveman default, and ponytail."
+echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, commands (/ship, /dev, /loop-manager, /loop-worker), caveman default, and ponytail."

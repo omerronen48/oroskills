@@ -21,4 +21,7 @@ done
 # Never-merge boundary, stated AND no merge call present.
 grep -Eqi 'never.*merge|FORBIDDEN' "$f" || { echo "FAIL: no never-merge boundary"; exit 1; }
 grep -q 'gh pr merge' "$f" && { echo "FAIL: must not call gh pr merge"; exit 1; }
+# M3 re-eligibility fix: agent:ready removed on BOTH SHIP and non-SHIP paths.
+# M2 removed it only on non-SHIP (1 occurrence); the fix adds the SHIP removal (>=2).
+[ "$(grep -c 'remove-label "agent:ready"' "$f")" -ge 2 ] || { echo "FAIL: SHIP path must also remove agent:ready"; exit 1; }
 echo "PASS"
