@@ -10,6 +10,7 @@ Ensure `.dev/memory/` exists. If absent, create the skeleton files — `goals.md
 
 Decide how `progress.md` gets its phases:
 
+- **`--auto` flag** — `/dev --auto [--import <path>]` runs the loop unattended (see Autonomous mode below).
 - **Explicit import** — if invoked as `/dev --import <path> [...]`: seed from `<path>` (see Import below). If `progress.md` already has phases, refuse unless `--force` is also given: "progress.md already has phases; re-run with --force to overwrite."
 - **Auto-detect import** — else if `progress.md` has no phases, scan in order `.dev/roadmap.md`, `ROADMAP.md`, `docs/roadmap.md`; if one exists, offer: "Found <path>. Import it as the phase list?" On yes, import it (see Import below).
 - **project-time** — else if the idea is multi-feature and `progress.md` is empty, run the `project-time` skill (interactive). It writes `goals.md`, seeds `decisions.md`/`glossary.md`, and seeds `progress.md` phases as `pending`.
@@ -42,7 +43,7 @@ g. Set this phase to `done` in `progress.md` and record the summary. Advance to 
 
 ## 4. Final report
 
-When no `pending`/`planned` phase remains, report. Do NOT merge unless the user authorized it — executing-plan-time's finishing handoff governs integration per phase.
+When no `pending`/`planned` phase remains, report. Do NOT merge unless the user authorized it — executing-plan-time's finishing handoff governs integration per phase. In `--auto` runs, list `blocked` phases separately from never-started ones.
 
 ## Resume
 
@@ -55,3 +56,21 @@ Because each phase executes inside the `oro-phase-executor` subagent — fresh c
 ## Decision logging
 
 Every decision — `[interactive]`, `[auto]`, and `[escalated]` — is logged to `decisions.md` so the user can review the full trail.
+
+## Autonomous mode (`--auto`)
+
+When invoked with `--auto`, the loop runs unattended: it never waits for a human at a gate.
+
+- **Propagate auto-context.** When running the `brainstorming-time` and `writing-plans-time` skills (phase-loop steps b and c), prefix the invocation with an explicit instruction that they are in **autonomous mode** — decide from the roadmap + `.dev/memory/` and self-review instead of asking. (Each skill's own "Autonomous mode" section defines the gate-clearing behavior.)
+- **Reversible forks** continue with the sensible default, logged to `decisions.md` tagged `[auto]` (unchanged executor policy).
+- **Irreversible forks** — when `oro-phase-executor` returns an `ESCALATE:` block, or an auto-brainstorm hits an irreversible question the roadmap+memory cannot answer:
+  1. Append the fork (phase id, question, options) to `.dev/memory/escalations.md`.
+  2. Set the phase to `blocked` in `progress.md`.
+  3. **Halt the loop** — do not start any later phase. A dependent phase must not build on an unresolved decision.
+- **Never merge** — `--auto` keeps the no-merge rule from "Final report": the loop opens branches/PRs but a human merges.
+- **Resume.** Re-running `/dev --auto` resolves nothing automatically: the operator records the resolution in `decisions.md` tagged `[escalated]`, clears the `blocked` status, and re-runs; the loop resumes at the first non-`done` phase.
+- **Empty roadmap.** With no phases and no `--import`, `--auto` does not start the interactive project-time path — it parks an escalation ("no phases to run; import a roadmap") and halts.
+
+### Phase status `blocked`
+
+`progress.md` phases may also be `blocked` (alongside `pending`/`planned`/`done`): a phase whose `--auto` run hit a parked irreversible fork. A `blocked` phase is not re-run until the operator clears it. The final report lists `blocked` phases distinctly from never-started ones.
