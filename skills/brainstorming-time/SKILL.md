@@ -179,6 +179,28 @@ When this skill runs inside a `/dev` loop, read `.dev/memory/` **first**, before
 
 See `pipelines/dev-pipeline/memory-protocol.md` for the file formats. This step is a **no-op when `.dev/memory/` is absent** — the skill still runs standalone without it.
 
+## Autonomous mode (under `/dev --auto`)
+
+When the `/dev` orchestrator invokes this skill in autonomous mode, do not wait for the
+user at any gate. Read `.dev/memory/` first, then clear each gate as follows:
+
+1. **graphify-missing gate** — do not offer `/graphify` and do not wait. Fall back to
+   targeted file reads silently and note the limitation in the spec. If `graphify` is
+   installed, you may run `graphify --update` non-interactively.
+2. **Clarifying questions** — answer from the milestone text + `.dev/memory/`
+   (`goals`/`decisions`/`glossary`). For a question with no answer there: if the choice is
+   **reversible**, pick the sensible default and append it to `decisions.md` tagged `[auto]`;
+   if **irreversible**, do not guess — return an `ESCALATE:` block to the orchestrator (it
+   parks the fork to `escalations.md` and halts).
+3. **Mind-map confirm** — generate the mind map, self-confirm, include it at the top of the
+   spec; do not wait for an "OK?".
+4. **Spec approval + `<HARD-GATE>`** — the inline self-review replaces human approval. The
+   HARD-GATE is satisfied by "mind map + self-reviewed spec produced". Then hand off to
+   `writing-plans-time` (also in autonomous mode).
+
+All new decisions/glossary terms are appended to `.dev/memory/` per the memory protocol.
+This section is inert when the skill runs standalone (not under `/dev --auto`).
+
 ## Key Principles
 
 - **Graph before file.** The graph is the entry point; files are the fallback.
