@@ -105,6 +105,20 @@ Use executing-plan-time to run <plan file>.
 
 Each phase runs in a fresh subagent so the main session stays lean; the loop is **resumable** from `.dev/memory/progress.md`. Irreversible forks pause and escalate to you; reversible ones are auto-decided and logged.
 
+**Unattended runs (`--auto`).** `/dev --auto` runs the whole chain across the roadmap without
+stopping at a human gate: brainstorming and planning decide from the roadmap + `.dev/memory/`
+and self-review instead of asking, reversible forks auto-decide (logged `[auto]`), and
+irreversible forks are **parked** to `.dev/memory/escalations.md` with the phase marked
+`blocked` — the loop then **halts** so nothing builds on an unresolved decision. It never
+merges. Resolve the parked fork, clear `blocked`, and re-run to resume. Plain `/dev` (no flag)
+keeps the interactive gates — that's your per-phase checkpoint mode, no extra setup.
+
+**Scheduling.** Run it on a timer locally (it needs the real repo, worktrees, graphify, and
+test runner): a cron line firing `claude -p '/dev --auto'`, or the `/loop` skill /
+ScheduleWakeup in-session. Reuse the loop-pipeline's `loop-settings.json` deny-merge template
+as the hard no-merge backstop. Full operator steps — preflight, scheduling, recovering from a
+halt — are in `pipelines/dev-pipeline/RUNBOOK-autonomous-dev.md`.
+
 ### `/loop-manager` + `/loop-worker` — autonomous loop pipeline
 
 Two autonomous agent loops that auto-develop a repo through a **GitHub Issues control plane**: a Manager loop triages the backlog and a Worker loop turns safe issues into PRs. Neither ever merges — **human merge is the gate**. Inspired by the loop-engineering pattern.
