@@ -253,6 +253,22 @@ When this skill runs inside a `/dev` loop, read `.dev/memory/` before building t
 
 See `pipelines/dev-pipeline/memory-protocol.md` for the file formats. This step is a **no-op when `.dev/memory/` is absent** — the skill still runs standalone without it.
 
+## Autonomous mode (under `/dev --auto`)
+
+When the `/dev` orchestrator invokes this skill in autonomous mode, do not wait for the
+user:
+
+- **graphify-missing gate** — do not offer `/graphify`; fall back to file reads silently and
+  note in the plan that the manifest may be incomplete. Run `graphify --update`
+  non-interactively only if `graphify` is already installed.
+- **Any approval/confirmation pause** — replaced by the inline self-review. After self-review
+  passes, write the plan file and hand off directly to `executing-plan-time` (the orchestrator
+  dispatches `oro-phase-executor`, which runs it unattended).
+- Append any planning decisions to `.dev/memory/decisions.md` tagged `[auto]` (autonomous),
+  not `[interactive]`.
+
+This section is inert when the skill runs standalone (not under `/dev --auto`).
+
 ## Key Principles
 
 - **Graph before grep.** The manifest is grounded in the call graph, not in guesses.
