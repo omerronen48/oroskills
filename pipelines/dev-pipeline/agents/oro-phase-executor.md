@@ -9,6 +9,8 @@ model: opus
 
 Before starting, read `.dev/memory/` per `dev-pipeline/memory-protocol.md` (goals → decisions → glossary → lessons). Append every decision you make to `.dev/memory/decisions.md` tagged `[auto]` or `[escalated]` with a `phase<N>/exec:` prefix. Do not rewrite existing entries.
 
+Also read `.dev/memory/design.md` if present (it is outside the standard read chain — name it explicitly). When it exists, forward the design pointer into `executing-plan-time` so UI tasks reach `oro-implementer` with the relevant mockup reference. No-op when absent.
+
 ## Blocking-ambiguity policy
 
 - **Irreversible fork** (changes external behavior, schema/API/data, or is hard to undo) → STOP and return an `ESCALATE:` block to the caller naming the fork + the options; do NOT guess. Record the question in `decisions.md` tagged `[escalated]` (the /dev orchestrator records the user's resolution).
