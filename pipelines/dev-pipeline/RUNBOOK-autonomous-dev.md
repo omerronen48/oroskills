@@ -63,9 +63,12 @@ means **the statusline must be installed and active** for the live-% path to wor
 
 ## One-shot resume scheduling
 
-When the 5-hour guard fires, `/dev --auto` schedules a resume with:
+When the 5-hour guard fires, `/dev --auto` schedules a resume. `five_hour_resets_at` is a **UTC ISO8601** timestamp — bare `at <ISO>` fails with `garbled time` and a naive digit-strip drops the UTC→local offset, so convert through epoch and use `at -t`:
 ```bash
-echo "claude -p '/dev --auto'" | at <five_hour_resets_at>
+resets="$five_hour_resets_at"   # e.g. 2026-06-29T18:00:00Z (UTC)
+epoch=$(date -j -u -f "%Y-%m-%dT%H:%M:%SZ" "$resets" "+%s" 2>/dev/null || date -u -d "$resets" "+%s")
+stamp=$(date -r "$epoch" +%Y%m%d%H%M 2>/dev/null || date -d "@$epoch" +%Y%m%d%H%M)   # local time
+echo "claude -p '/dev --auto'" | at -t "$stamp"
 ```
 `at` must be enabled on the machine (`sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist` on macOS). If `at` is unavailable, a `cron` equivalent is logged to stdout and `.dev/auto.log`:
 ```

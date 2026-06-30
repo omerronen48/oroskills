@@ -1,6 +1,6 @@
 # Caveman statusline chip — paste into your ~/.claude/statusline-command.sh.
 # Reads the per-session flag written by caveman-state.sh (installed by install.sh).
-# Shows "🦴 caveman" when on, "caveman off" otherwise. Requires the script to
+# Shows "🦴 caveman" when on, "💤 caveman" otherwise. Requires the script to
 # read its JSON input into `$input` (e.g. `input=$(cat)`) and assemble a `$line`.
 
 # 1) After you read stdin into `$input`, add this block:

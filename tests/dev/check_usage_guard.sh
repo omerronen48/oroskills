@@ -106,7 +106,7 @@ else
   trap 'rm -rf "$TMP_HOME"' EXIT
   mkdir -p "$TMP_HOME/.claude"
 
-  SAMPLE_JSON='{"rate_limits":{"five_hour":{"used_percentage":42,"resets_at":"2026-06-29T18:00:00Z"},"seven_day":{"used_percentage":77,"resets_at":"2026-07-03T00:00:00Z"}},"workspace":{"current_dir":"/tmp"},"model":"claude-opus-4-5","context_window":{"used_percent":10},"session_cost":{"total_usd":0.01}}'
+  SAMPLE_JSON='{"rate_limits":{"five_hour":{"used_percentage":42,"resets_at":"2026-06-29T18:00:00Z"},"seven_day":{"used_percentage":77,"resets_at":"2026-07-03T00:00:00Z"}},"workspace":{"current_dir":"/tmp"},"model":"claude-opus-4-5","context_window":{"used_percentage":10},"session_cost":{"total_usd":0.01}}'
 
   SL_OUTPUT=$(printf '%s' "$SAMPLE_JSON" | env HOME="$TMP_HOME" bash "$STATUSLINE" 2>/dev/null)
 
@@ -168,7 +168,7 @@ else
   fi
 
   # Test 2b: payload WITHOUT rate_limits — no crash, status line still prints
-  NO_RATE_JSON='{"workspace":{"current_dir":"/tmp"},"model":"claude-opus-4-5","context_window":{"used_percent":5},"session_cost":{"total_usd":0.00}}'
+  NO_RATE_JSON='{"workspace":{"current_dir":"/tmp"},"model":"claude-opus-4-5","context_window":{"used_percentage":5},"session_cost":{"total_usd":0.00}}'
 
   TMP_HOME2=$(mktemp -d)
   trap 'rm -rf "$TMP_HOME" "$TMP_HOME2"' EXIT
