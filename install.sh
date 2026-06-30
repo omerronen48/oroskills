@@ -6,6 +6,7 @@
 #   ./install.sh --project    # install to ./.claude/skills (project-scoped)
 #   ./install.sh --copy       # copy files instead of symlinking
 #   ./install.sh --force      # overwrite existing skills with the same name
+#   ./install.sh --refresh    # re-link new files + re-copy hook scripts (skips statusline); used by the auto-installed post-merge git hook
 
 set -euo pipefail
 
@@ -25,6 +26,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCOPE="global"
 MODE="symlink"
 FORCE=0
+REFRESH=0
 
 for arg in "$@"; do
   case "$arg" in
@@ -33,6 +35,7 @@ for arg in "$@"; do
     --copy)    MODE="copy"     ;;
     --symlink) MODE="symlink"  ;;
     --force|-f) FORCE=1        ;;
+    --refresh) REFRESH=1; MODE="symlink"; FORCE=1 ;;
     -h|--help)
       sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
@@ -232,11 +235,46 @@ for command in "${LOOP_COMMANDS[@]}"; do
   install_item "$SCRIPT_DIR/pipelines/loop-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
 done
 
-install_session_hook
+install_post_merge_hook() {
+  # .git/hooks is untracked, so the installer drops this into each clone. After every
+  # `git pull`/merge it re-runs `install.sh --refresh`: symlinked content is already live,
+  # so this just wires up newly-added skills/agents/commands and re-copies the hook scripts.
+  # ponytail: post-merge only — add post-checkout/post-rewrite if branch-switching ever needs the same refresh.
+  local hooks_dir
+  hooks_dir="$(git -C "$SCRIPT_DIR" rev-parse --git-path hooks 2>/dev/null)" || {
+    echo "  (skipped post-merge hook: $SCRIPT_DIR is not a git repo)"; return 0; }
+  case "$hooks_dir" in /*) ;; *) hooks_dir="$SCRIPT_DIR/$hooks_dir" ;; esac   # --git-path may be relative
+  mkdir -p "$hooks_dir"
+  local hook="$hooks_dir/post-merge"
+  local scope_flag="--global"
+  [ "$SCOPE" = "project" ] && scope_flag="--project"
+  if [ -e "$hook" ] && ! grep -q "oroskills: auto-apply" "$hook" 2>/dev/null; then
+    echo "  (post-merge hook exists and isn't ours — leaving it; add '\$root/install.sh --refresh $scope_flag' yourself)"
+    return 0
+  fi
+  cat > "$hook" <<EOF
+#!/bin/sh
+# oroskills: auto-apply repo changes after every pull/merge (installed by install.sh).
+root=\$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+[ -x "\$root/install.sh" ] || exit 0
+"\$root/install.sh" --refresh $scope_flag >/dev/null 2>&1 || true
+EOF
+  chmod +x "$hook"
+  echo "  Installed post-merge hook -> $hook (runs: install.sh --refresh $scope_flag on every pull)"
+}
 
-install_statusline
+install_session_hook   # re-copies the 3 hook scripts; under --refresh FORCE=1 makes that a real refresh
 
-install_ponytail
+install_post_merge_hook
 
-echo
-echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, commands (/ship, /dev, /loop-manager, /loop-worker), caveman default, and ponytail."
+if [ "$REFRESH" -eq 1 ]; then
+  echo
+  echo "Refreshed: re-linked skills/agents/commands and re-copied hook scripts (statusline left untouched)."
+else
+  install_statusline
+
+  install_ponytail
+
+  echo
+  echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, commands (/ship, /dev, /loop-manager, /loop-worker), caveman default, and ponytail."
+fi

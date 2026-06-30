@@ -18,8 +18,11 @@ Options:
 | `--project` | Symlink into `./.claude/` (project-scoped) |
 | `--copy` | Copy files instead of symlinking |
 | `--force` | Overwrite existing skills/agents with the same name |
+| `--refresh` | Re-link new files + re-copy hook scripts (skips statusline); used by the auto-installed post-merge git hook |
 
 The installer places skills in `~/.claude/skills/`, the pipeline agents (including `oro-triager`) in `~/.claude/agents/`, the `/ship`, `/dev`, `/loop-manager`, and `/loop-worker` commands in `~/.claude/commands/`, registers the caveman session hook, and installs the ponytail plugin. For a project-scoped install, swap `~/.claude/` for `<project>/.claude/`.
+
+**Changes apply live.** Because the default install symlinks into `~/.claude/`, edits to the skill/agent/command files in this repo take effect immediately — no reinstall. To also auto-wire **newly added** files and refresh the few copied hook scripts on every `git pull`, the installer drops a `post-merge` git hook that re-runs `install.sh --refresh` after each merge (it skips the statusline so a local customization is never clobbered, and won't overwrite a pre-existing non-oroskills `post-merge` hook).
 
 Verify, then restart Claude Code (or start a new session):
 
