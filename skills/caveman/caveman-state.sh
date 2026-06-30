@@ -7,7 +7,7 @@ sid=$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null)
 [ -n "$sid" ] || exit 0
 
 dir="${TMPDIR:-/tmp}/claude-caveman"
-mkdir -p "$dir"
+mkdir -p "$dir" || exit 0   # can't create state dir → no-op, don't write a stray flag
 f="$dir/$sid"
 
 event=$(printf '%s' "$input" | jq -r '.hook_event_name // .hookEventName // empty' 2>/dev/null)

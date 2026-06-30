@@ -3,6 +3,24 @@
 # Layout: 📁 dir  🌿 branch · 🤖 model · 🦴 caveman · 🧠 ctx · ⏳ 5h · 📅 7d · 💰 cost · 🕐 time
 input=$(cat)
 
+# --- Usage snapshot (bridge: write ~/.claude/oro-usage.json atomically) ---
+# Runs silently; never delays or breaks the status line output.
+_oro_write_usage() {
+  command -v jq >/dev/null 2>&1 || return 0
+  _five_pct=$(printf '%s' "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
+  _five_at=$(printf '%s' "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
+  _week_pct=$(printf '%s' "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
+  _week_at=$(printf '%s' "$input" | jq -r '.rate_limits.seven_day.resets_at // empty')
+  [ -z "$_five_pct" ] && [ -z "$_week_pct" ] && return 0
+  _ts=$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date +%Y-%m-%dT%H:%M:%SZ)
+  _tmp="${HOME}/.claude/oro-usage.$$.json"
+  printf '{"five_hour_pct":%s,"five_hour_resets_at":"%s","seven_day_pct":%s,"seven_day_resets_at":"%s","captured_at":"%s"}\n' \
+    "${_five_pct:-0}" "${_five_at:-}" "${_week_pct:-0}" "${_week_at:-}" "$_ts" > "$_tmp" 2>/dev/null \
+    && mv "$_tmp" "${HOME}/.claude/oro-usage.json" 2>/dev/null
+  rm -f "$_tmp" 2>/dev/null
+}
+_oro_write_usage
+
 # --- 📁 Directory ---
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
 if [ -n "$cwd" ]; then

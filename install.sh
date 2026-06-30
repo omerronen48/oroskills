@@ -111,8 +111,10 @@ register_hook() {
   jq --arg e "$event" --arg c "$cmd" '
     .hooks //= {}
     | .hooks[$e] = ((.hooks[$e] // []) + [{hooks: [{type: "command", command: $c}]}])
-  ' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
-  echo "  + hook $event -> registered"
+  ' "$SETTINGS_FILE" > "$tmp" \
+    && mv "$tmp" "$SETTINGS_FILE" \
+    && echo "  + hook $event -> registered" \
+    || { rm -f "$tmp"; echo "  ! hook $event NOT registered (jq failed on $SETTINGS_FILE)"; return 1; }
 }
 
 # Copy the caveman hook scripts into BASE_DIR and register their hooks (idempotent).
@@ -156,8 +158,10 @@ install_statusline() {
     [[ -f "$SETTINGS_FILE" ]] || echo '{}' > "$SETTINGS_FILE"
     local tmp; tmp="$(mktemp)"
     jq --arg c "$STATUSLINE_CMD" '.statusLine = {type: "command", command: $c}' \
-      "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
-    echo "  + statusLine config -> $SETTINGS_FILE"
+      "$SETTINGS_FILE" > "$tmp" \
+      && mv "$tmp" "$SETTINGS_FILE" \
+      && echo "  + statusLine config -> $SETTINGS_FILE" \
+      || { rm -f "$tmp"; echo "  ! statusLine config NOT set (jq failed on $SETTINGS_FILE)"; }
   else
     echo "  ! statusLine config not set (jq not found); add it manually"
   fi

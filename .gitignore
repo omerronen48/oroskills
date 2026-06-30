@@ -6,3 +6,7 @@ graphify-out/
 
 # stray literal ~ dir (nvim undodir, etc.)
 /~/
+
+# pipeline scratch (regenerable per /ship, /dev run)
+.pipeline/
+docs/
