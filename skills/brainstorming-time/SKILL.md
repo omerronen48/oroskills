@@ -176,6 +176,7 @@ When this skill runs inside a `/dev` loop, read `.dev/memory/` **first**, before
 
 - **Suppress re-asking** anything already settled in `goals.md`, `decisions.md`, or `glossary.md`. Do not re-ask settled questions — treat those decisions as fixed inputs to the spec.
 - Append new design decisions made during the brainstorm to `.dev/memory/decisions.md` tagged `[interactive]` (see `pipelines/dev-pipeline/memory-protocol.md` for the full entry format, including the `phase<N>/<stage>:` prefix), and append any new domain terms to `.dev/memory/glossary.md`.
+- **Design mockups.** If `.dev/memory/design.md` exists (written when `/dev` was invoked with `--design`), read it too — it is outside the goals→…→progress read chain, so name it explicitly. Treat the mockup manifest as a first-class **UI constraint**: derive the spec's UI sections and the mind map's screens/components branch from the listed mockup components, not from invented layout. No-op when `design.md` is absent.
 
 See `pipelines/dev-pipeline/memory-protocol.md` for the file formats. This step is a **no-op when `.dev/memory/` is absent** — the skill still runs standalone without it.
 
