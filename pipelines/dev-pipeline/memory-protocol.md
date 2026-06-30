@@ -29,6 +29,18 @@ absent.
   **This file is NOT part of the goals→decisions→glossary→lessons→progress
   read-order chain.** It is read only by the usage-window guard logic, never
   by brainstorm/plan/execute stages.
+- `design.md` — design-mockup pointer + manifest for UI-aware phases. Writer:
+  `/dev` orchestrator at bootstrap (only when `--design <ref>` is given).
+  Fields: **source** (`kind: uuid | folder` and the `ref`), **resolved-at**
+  (timestamp/note for folder-ref staleness), and **manifest** (a list of
+  `component → file` entries: each mockup component, its source path — remote
+  project path for `uuid`, local relative path for `folder` — and a one-line
+  description where available). Component bodies are fetched on demand by
+  readers, not inlined. **This file is NOT part of the
+  goals→decisions→glossary→lessons→progress read-order chain** — it is read
+  only by design-aware readers (brainstorming-time, oro-phase-executor), never
+  by the general stage read order. `design.md` is absent when no `--design`
+  ref was given.
 
 ## Read order
 
