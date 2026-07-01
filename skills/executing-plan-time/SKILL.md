@@ -162,7 +162,7 @@ Concrete rules for the main agent:
 
 ### 1.5 Memory protocol
 
-Read `.dev/memory/` per `pipelines/dev-pipeline/memory-protocol.md` if present; pass memory pointers to each dispatched agent. No-op when absent.
+Read `.dev/memory/` per `pipelines/dev-pipeline/memory-protocol.md` if present; pass memory pointers to each dispatched agent. No-op when absent. If `.dev/memory/design.md` is present, include it in the memory pointers passed to each dispatched `oro-implementer` — it sits outside the goals→…→progress read chain, so it must be forwarded explicitly or UI tasks lose the mockup reference.
 
 ---
 
