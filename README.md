@@ -1,6 +1,6 @@
 # oroskills
 
-Claude Code skills for **project idea → roadmap → spec → plan → executed code**, with less ceremony than the standard `superpowers` chain. Graphify-first, parallelization-aware, TDD-enforced.
+Claude Code skills for **project idea → roadmap → spec → plan → executed code**. Graphify-first, parallelization-aware, TDD-enforced.
 
 ## Installation
 
@@ -60,7 +60,6 @@ Emoji bar installed and wired into `settings.json`:
 
 - **The chain:** project-time → brainstorming-time → writing-plans-time → executing-plan-time. Don't skip stages; each hands off to the next.
 - `project-time` is optional — only for a new project/large initiative. Single feature in an existing repo: start at `brainstorming-time`.
-- The middle three are drop-in replacements for the matching `superpowers:*` skills; `project-time` has no counterpart.
 - Auto-trigger from their descriptions, or invoke explicitly (`Use writing-plans-time on <spec file>.`).
 
 ## Pipelines
@@ -134,7 +133,7 @@ uv tool install graphifyy          # or: pip install graphifyy
 
 Run `/graphify` once per repo to build `graphify-out/graph.json`; skills offer to init it if missing; `graphify --update` refreshes it.
 
-- **Degraded mode (without graphify):** every skill falls back to `Read`/`Grep`. Still works, but `executing-plan-time` can't verify call-graph disjointness so it drops to file-level checks and serializes — at which point these are essentially reworded `superpowers:*` skills.
+- **Degraded mode (without graphify):** every skill falls back to `Read`/`Grep`. Still works, but `executing-plan-time` can't verify call-graph disjointness so it drops to file-level checks and serializes.
 
 ### Other
 
