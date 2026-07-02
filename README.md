@@ -77,7 +77,7 @@ Use executing-plan-time to run <plan file>.
 
 ## Pipelines
 
-**Two doors:** `/ship` for a single feature in one sitting (no roadmap, no worktree); `/dev` (or running the chain by hand) for anything larger — multiple phases, parallel waves, per-task two-stage review.
+**Three doors:** `/ship` for a single feature in one sitting (no roadmap, no worktree); `/fix` for a punch-list of small targeted fixes; `/dev` (or running the chain by hand) for anything larger — multiple phases, parallel waves, per-task two-stage review.
 
 ### `/ship` — single-feature pipeline
 
