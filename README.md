@@ -98,6 +98,16 @@ Use executing-plan-time to run <plan file>.
 /ship add rate limiting to the login endpoint
 ```
 
+### `/fix` — batch of small fixes
+
+`/fix <blurb of small changes>` is the punch-list lane between `/ship` (one feature) and `/dev` (a roadmap of features). It decomposes the blurb into an ordered mini-roadmap (`.fix/roadmap.md`), then ships each fix **lean** — `oro-coder` then `oro-tester`, skipping the planner (the roadmap entry is the mini-spec) and deferring `oro-reviewer` to a single pass at the end.
+
+The point of `/fix` is the **regression guard**: after every fix it runs the full test suite, so a later fix cannot silently break an earlier one. Each fix lands on its own stacked branch (`fix/N-<slug>` off the previous fix's branch). Any red — a fix's own tests or the full suite — **halts** the loop with a report; nothing is merged.
+
+```
+/fix tighten the log format, fix the off-by-one in pagination, and rename `usr` to `user` in the config loader
+```
+
 ### `/dev` — continuous chain loop
 
 `/dev "<idea>"` wraps **project-time → brainstorming-time → writing-plans-time → executing-plan-time** in one resumable command that runs across a multi-phase roadmap:
