@@ -21,6 +21,8 @@ DEV_COMMANDS=(dev)
 # The loop pipeline (autonomous agent loops) also ships as agents + slash commands.
 LOOP_AGENTS=(oro-triager)
 LOOP_COMMANDS=(loop-manager loop-worker)
+# The fix pipeline (batch of small fixes) ships as a slash command reusing the ship agents.
+FIX_COMMANDS=(fix)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 SCOPE="global"
@@ -235,6 +237,10 @@ for command in "${LOOP_COMMANDS[@]}"; do
   install_item "$SCRIPT_DIR/pipelines/loop-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
 done
 
+for command in "${FIX_COMMANDS[@]}"; do
+  install_item "$SCRIPT_DIR/pipelines/fix-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
+done
+
 install_post_merge_hook() {
   # .git/hooks is untracked, so the installer drops this into each clone. After every
   # `git pull`/merge it re-runs `install.sh --refresh`: symlinked content is already live,
@@ -276,5 +282,5 @@ else
   install_ponytail
 
   echo
-  echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, commands (/ship, /dev, /loop-manager, /loop-worker), caveman default, and ponytail."
+  echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, commands (/ship, /fix, /dev, /loop-manager, /loop-worker), caveman default, and ponytail."
 fi
