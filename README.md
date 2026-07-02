@@ -5,7 +5,7 @@ Claude Code skills for **project idea → roadmap → spec → plan → executed
 ## Installation
 
 ```bash
-git clone https://github.com/<you>/oroskills.git ~/oroskills
+git clone https://github.com/omerronen48/oroskills.git ~/oroskills
 cd ~/oroskills && ./install.sh
 ```
 
