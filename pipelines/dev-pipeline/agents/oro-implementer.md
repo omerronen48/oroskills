@@ -7,7 +7,7 @@ model: sonnet
 
 ## Memory protocol
 
-Before starting, read `.dev/memory/` per `dev-pipeline/memory-protocol.md` (goals → decisions → glossary → lessons). Append any new decision to `decisions.md` tagged `[auto]` or `[escalated]` with a `phase<N>/<stage>:` prefix; append a lesson to `lessons.md` if the dispatcher's instructions reflect a user correction. Do not rewrite existing entries.
+Before starting, read `.dev/memory/` per `~/.claude/memory-protocol.md` (goals → decisions → glossary → lessons). Append any new decision to `decisions.md` tagged `[auto]` or `[escalated]` with a `phase<N>/<stage>:` prefix; append a lesson to `lessons.md` if the dispatcher's instructions reflect a user correction. Do not rewrite existing entries.
 
 Placeholders in [brackets] below are filled in by your dispatcher per task.
 

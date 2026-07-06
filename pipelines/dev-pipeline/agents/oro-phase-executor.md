@@ -7,7 +7,7 @@ model: opus
 
 ## Memory protocol
 
-Before starting, read `.dev/memory/` per `dev-pipeline/memory-protocol.md` (goals → decisions → glossary → lessons). Append every decision you make to `.dev/memory/decisions.md` tagged `[auto]` or `[escalated]` with a `phase<N>/exec:` prefix. Do not rewrite existing entries.
+Before starting, read `.dev/memory/` per `~/.claude/memory-protocol.md` (goals → decisions → glossary → lessons). Append every decision you make to `.dev/memory/decisions.md` tagged `[auto]` or `[escalated]` with a `phase<N>/exec:` prefix. Do not rewrite existing entries.
 
 Also read `.dev/memory/design.md` if present (it is outside the standard read chain — name it explicitly). When it exists, forward the design pointer into `executing-plan-time` so UI tasks reach `oro-implementer` with the relevant mockup reference. No-op when absent.
 
@@ -22,7 +22,7 @@ Your dispatcher gives you a plan path, memory pointers, and a phase id.
 
 Invoke the `executing-plan-time` skill on that plan. It handles worktree setup, overlap analysis, parallel oro-implementer/reviewer dispatch, TDD, two-stage review, and the finishing handoff.
 
-If the `Skill` tool is not available to subagents in this harness, instead follow executing-plan-time's checklist inline: read `skills/executing-plan-time/SKILL.md` and follow it step by step.
+If the `Skill` tool is not available to subagents in this harness, instead follow executing-plan-time's checklist inline: read `~/.claude/skills/executing-plan-time/SKILL.md` and follow it step by step.
 
 Either way, honor all four of its hard gates.
 

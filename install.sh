@@ -7,6 +7,7 @@
 #   ./install.sh --copy       # copy files instead of symlinking
 #   ./install.sh --force      # overwrite existing skills with the same name
 #   ./install.sh --refresh    # re-link new files + re-copy hook scripts (skips statusline); used by the auto-installed post-merge git hook
+#   ./install.sh --uninstall  # remove everything install.sh added (skills, agents, commands, hooks, statusline)
 
 set -euo pipefail
 
@@ -29,6 +30,7 @@ SCOPE="global"
 MODE="symlink"
 FORCE=0
 REFRESH=0
+UNINSTALL=0
 
 for arg in "$@"; do
   case "$arg" in
@@ -37,9 +39,10 @@ for arg in "$@"; do
     --copy)    MODE="copy"     ;;
     --symlink) MODE="symlink"  ;;
     --force|-f) FORCE=1        ;;
-    --refresh) REFRESH=1; MODE="symlink"; FORCE=1 ;;
+    --refresh) REFRESH=1; FORCE=1 ;;
+    --uninstall) UNINSTALL=1 ;;
     -h|--help)
-      sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -55,6 +58,13 @@ if [[ "$SCOPE" == "global" ]]; then
 else
   BASE_DIR="$PWD/.claude"
   PLUGIN_SCOPE="project"
+fi
+
+# Remember the --copy/--symlink choice so --refresh (run blindly by the
+# post-merge hook) doesn't convert a copy install into symlinks.
+MODE_FILE="$BASE_DIR/.oroskills-mode"
+if [[ "$REFRESH" -eq 1 && -f "$MODE_FILE" ]]; then
+  MODE="$(cat "$MODE_FILE")"
 fi
 
 SKILLS_DIR="$BASE_DIR/skills"
@@ -188,7 +198,7 @@ install_ponytail() {
   claude plugin marketplace add DietrichGebert/ponytail --scope "$PLUGIN_SCOPE" >/dev/null 2>&1 || true
 
   local out rc
-  out="$(claude plugin install ponytail@ponytail --scope "$PLUGIN_SCOPE" 2>&1)"; rc=$?
+  out="$(claude plugin install ponytail@ponytail --scope "$PLUGIN_SCOPE" 2>&1)" && rc=0 || rc=$?
   if [[ "$rc" -eq 0 ]]; then
     echo "  + ponytail plugin (mode: full)"
   elif echo "$out" | grep -qi 'already'; then
@@ -200,11 +210,48 @@ install_ponytail() {
   fi
 }
 
+uninstall() {
+  echo "Uninstalling oroskills from $BASE_DIR"
+  local item tmp
+  for item in "${SKILLS[@]}"; do rm -rf "$SKILLS_DIR/$item"; done
+  for item in "${AGENTS[@]}" "${DEV_AGENTS[@]}" "${LOOP_AGENTS[@]}"; do rm -f "$AGENTS_DIR/$item.md"; done
+  for item in "${COMMANDS[@]}" "${DEV_COMMANDS[@]}" "${LOOP_COMMANDS[@]}" "${FIX_COMMANDS[@]}"; do rm -f "$COMMANDS_DIR/$item.md"; done
+  rm -f "$HOOK_DEST" "$STATE_DEST" "$BASE_DIR/memory-protocol.md" "$MODE_FILE"
+  # Only remove the statusline if it's ours (has the caveman chip).
+  if [[ -f "$STATUSLINE_FILE" ]] && grep -q 'claude-caveman' "$STATUSLINE_FILE"; then
+    rm -f "$STATUSLINE_FILE"
+  fi
+  if command -v jq >/dev/null 2>&1 && [[ -f "$SETTINGS_FILE" ]]; then
+    tmp="$(mktemp)"
+    jq --arg h "$HOOK_CMD" --arg s "$STATE_CMD" --arg sl "$STATUSLINE_CMD" '
+      (if .hooks then .hooks |= with_entries(.value |= map(select([.hooks[]?.command] | any(. == $h or . == $s) | not))) else . end)
+      | if (.statusLine.command // "") == $sl then del(.statusLine) else . end
+    ' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE" \
+      || { rm -f "$tmp"; echo "  ! could not clean $SETTINGS_FILE (jq failed); remove oroskills hooks/statusLine manually"; }
+  fi
+  local hooks_dir
+  if hooks_dir="$(git -C "$SCRIPT_DIR" rev-parse --git-path hooks 2>/dev/null)"; then
+    case "$hooks_dir" in /*) ;; *) hooks_dir="$SCRIPT_DIR/$hooks_dir" ;; esac
+    if [[ -f "$hooks_dir/post-merge" ]] && grep -q "oroskills: auto-apply" "$hooks_dir/post-merge"; then
+      rm -f "$hooks_dir/post-merge"
+    fi
+  fi
+  echo "Done. Ponytail plugin left as-is (remove with: claude plugin uninstall ponytail@ponytail)."
+}
+
+if [[ "$UNINSTALL" -eq 1 ]]; then
+  uninstall
+  exit 0
+fi
+
 echo "Installing oroskills"
 echo "  source: $SCRIPT_DIR"
 echo "  target: $BASE_DIR"
 echo "  mode:   $MODE"
 echo
+
+mkdir -p "$BASE_DIR"
+[[ "$REFRESH" -eq 1 ]] || echo "$MODE" > "$MODE_FILE"
 
 mkdir -p "$SKILLS_DIR"
 for skill in "${SKILLS[@]}"; do
@@ -229,6 +276,9 @@ for command in "${DEV_COMMANDS[@]}"; do
   install_item "$SCRIPT_DIR/pipelines/dev-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
 done
 
+# Memory-protocol contract referenced by the dev agents and chain skills.
+install_item "$SCRIPT_DIR/pipelines/dev-pipeline/memory-protocol.md" "$BASE_DIR/memory-protocol.md" "dev:memory-protocol"
+
 for agent in "${LOOP_AGENTS[@]}"; do
   install_item "$SCRIPT_DIR/pipelines/loop-pipeline/agents/$agent.md" "$AGENTS_DIR/$agent.md" "agent:$agent"
 done
@@ -239,6 +289,16 @@ done
 
 for command in "${FIX_COMMANDS[@]}"; do
   install_item "$SCRIPT_DIR/pipelines/fix-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
+done
+
+# Remove dangling symlinks that point into this repo (left behind by renames).
+for dir in "$SKILLS_DIR" "$AGENTS_DIR" "$COMMANDS_DIR"; do
+  for link in "$dir"/*; do
+    [[ -L "$link" && ! -e "$link" ]] || continue
+    case "$(readlink "$link")" in
+      "$SCRIPT_DIR"/*) rm "$link"; echo "  - removed dead link: $(basename "$link")" ;;
+    esac
+  done
 done
 
 install_post_merge_hook() {

@@ -4,7 +4,7 @@ You are the orchestrator. Run the stages below in order. Do not skip ahead. Afte
 
 ## 1. Bootstrap
 
-Ensure `.dev/memory/` exists. If absent, create the skeleton files — `goals.md`, `decisions.md`, `lessons.md`, `glossary.md`, `progress.md` — per the contract in `dev-pipeline/memory-protocol.md`. Then read `progress.md`.
+Ensure `.dev/memory/` exists. If absent, create the skeleton files — `goals.md`, `decisions.md`, `lessons.md`, `glossary.md`, `progress.md` — per the contract in `~/.claude/memory-protocol.md`. Then read `progress.md`.
 
 ### Design source (optional)
 

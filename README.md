@@ -165,10 +165,10 @@ pipelines/                # agents install namespaced (oro-*) to avoid collision
     agents/    oro-triager.md
     commands/  loop-manager.md  loop-worker.md
     RUNBOOK.md  loop-settings.json
-tests/dev/                # install-wiring smoke tests
+tests/                    # install-wiring smoke tests (dev/, fix/, loop/)
 statusline-command.sh     # emoji bar with the caveman chip
 install.sh
 LICENSE                   # MIT
 ```
 
-`tests/dev/` are **install-wiring smoke tests** — they verify agents/commands are present, named, and referenced correctly, and that `install.sh` parses. They do **not** test skill behavior.
+`tests/` are **install-wiring smoke tests** — they verify agents/commands are present, named, and referenced correctly, and that `install.sh` parses. They do **not** test skill behavior.

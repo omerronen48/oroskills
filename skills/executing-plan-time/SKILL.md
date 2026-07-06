@@ -39,7 +39,7 @@ It also lets us state cross-cutting invariants that no individual skill can stat
 
 Create a TodoWrite todo for each phase. Each phase has its own internal steps.
 
-1. **Pre-flight** — graphify exists, plan loaded, worktree created, baseline tests green, memory read (read `.dev/memory/` per `pipelines/dev-pipeline/memory-protocol.md` if present; pass memory pointers to each dispatched agent)
+1. **Pre-flight** — graphify exists, plan loaded, worktree created, baseline tests green, memory read (read `.dev/memory/` per `~/.claude/memory-protocol.md` if present; pass memory pointers to each dispatched agent)
 2. **Overlap analysis** — for every wave, verify file + function + call-graph disjointness; downgrade waves if needed
 3. **Wave loop** — for each wave: dispatch parallel `oro-implementer` agents, await all; per task run spec-compliance review (dispatch the `oro-spec-reviewer` agent), fix loop if needed, then code-quality review (dispatch the `oro-code-quality-reviewer` agent), fix loop if needed; verify the wave; mark tasks done
 4. **Final verification** — full test suite + lint + type-check + spec coverage check on the worktree
@@ -127,7 +127,7 @@ If the user declines, fall back to file-level overlap only and note this limitat
 ```bash
 # Stale if any tracked code file is newer than the graph, or the tree is dirty.
 test -n "$(git status --porcelain)" && echo dirty
-find . -name '*.py' -o -name '*.ts' -o -name '*.go' -newer graphify-out/graph.json 2>/dev/null | head
+find . \( -name '*.py' -o -name '*.ts' -o -name '*.go' \) -newer graphify-out/graph.json 2>/dev/null | head
 ```
 
 If either signals staleness, run `graphify --update` and re-verify. If you cannot refresh (no graphify, user declines, update fails), **do not parallelize on function/call-graph claims** — drop to file-level disjointness only and **serialize every wave with more than one task**. Stale-graph parallelism is a correctness risk; the safe default is serial.
@@ -162,7 +162,7 @@ Concrete rules for the main agent:
 
 ### 1.5 Memory protocol
 
-Read `.dev/memory/` per `pipelines/dev-pipeline/memory-protocol.md` if present; pass memory pointers to each dispatched agent. No-op when absent. If `.dev/memory/design.md` is present, include it in the memory pointers passed to each dispatched `oro-implementer` — it sits outside the goals→…→progress read chain, so it must be forwarded explicitly or UI tasks lose the mockup reference.
+Read `.dev/memory/` per `~/.claude/memory-protocol.md` if present; pass memory pointers to each dispatched agent. No-op when absent. If `.dev/memory/design.md` is present, include it in the memory pointers passed to each dispatched `oro-implementer` — it sits outside the goals→…→progress read chain, so it must be forwarded explicitly or UI tasks lose the mockup reference.
 
 ---
 

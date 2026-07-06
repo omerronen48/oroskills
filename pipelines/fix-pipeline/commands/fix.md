@@ -9,7 +9,7 @@ Run a batch of small fixes for: $ARGUMENTS
 3. Show me `.fix/roadmap.md` and wait for my confirmation (or edits) before looping.
 
 ## Baseline
-4. Run the full test suite once and record the base branch. If the suite is already red, stop and report — the regression guard needs a green baseline. (I may re-invoke to override.)
+4. Wipe stale handoffs (`rm -rf .pipeline && mkdir .pipeline`; make sure `.pipeline/` and `.fix/` are gitignored). Run the full test suite once and record the base branch. If the suite is already red, stop and report — the regression guard needs a green baseline. (I may re-invoke to override.)
 
 ## Per-fix loop (in roadmap order), for fix N:
 5. `git checkout -b fix/N-<slug>` off the **previous fix's branch** (off the base branch for N=1). Branches stack so the regression guard sees every prior fix.
@@ -21,7 +21,7 @@ Run a batch of small fixes for: $ARGUMENTS
 11. On green: commit on `fix/N-<slug>`, mark fix N `done` in `.fix/roadmap.md`, continue to the next fix.
 
 ## Finish
-12. After all fixes ship green, delegate to the oro-reviewer subagent once over the accumulated diff. Show me `.pipeline/review.md`.
+12. After all fixes ship green, delegate to the oro-reviewer subagent once over the accumulated diff — tell it the base branch from step 4 so it reviews `git diff <base>...HEAD` (everything is committed on the stacked branches; plain `git diff` would be empty). Show me `.pipeline/review.md`.
 13. Report the summary: fixes shipped, branch names, and the review verdict. **Do not merge** — leave the stacked branches for my review.
 
 Re-invoking `/fix` skips entries already marked `done` in `.fix/roadmap.md`.

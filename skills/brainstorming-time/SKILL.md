@@ -18,10 +18,6 @@ Use this skill instead of superpowers:brainstorming when:
 - The repo already has (or should have) a graphify knowledge graph
 - A visual mind map of the proposed design would help the user review faster than prose
 
-Use the standard superpowers:brainstorming skill when:
-- The user explicitly wants the full visual-companion / multi-approach flow
-- The project is large/ambiguous enough to need decomposition into sub-projects first
-
 ## Checklist
 
 Create a TodoWrite todo for each item and complete them in order:
@@ -175,10 +171,10 @@ Loop until the user approves, then invoke `writing-plans-time`.
 When this skill runs inside a `/dev` loop, read `.dev/memory/` **first**, before gathering context or asking clarifying questions:
 
 - **Suppress re-asking** anything already settled in `goals.md`, `decisions.md`, or `glossary.md`. Do not re-ask settled questions — treat those decisions as fixed inputs to the spec.
-- Append new design decisions made during the brainstorm to `.dev/memory/decisions.md` tagged `[interactive]` (see `pipelines/dev-pipeline/memory-protocol.md` for the full entry format, including the `phase<N>/<stage>:` prefix), and append any new domain terms to `.dev/memory/glossary.md`.
+- Append new design decisions made during the brainstorm to `.dev/memory/decisions.md` tagged `[interactive]` (see `~/.claude/memory-protocol.md` for the full entry format, including the `phase<N>/<stage>:` prefix), and append any new domain terms to `.dev/memory/glossary.md`.
 - **Design mockups.** If `.dev/memory/design.md` exists (written when `/dev` was invoked with `--design`), read it too — it is outside the goals→…→progress read chain, so name it explicitly. Treat the mockup manifest as a first-class **UI constraint**: derive the spec's UI sections and the mind map's screens/components branch from the listed mockup components, not from invented layout. No-op when `design.md` is absent.
 
-See `pipelines/dev-pipeline/memory-protocol.md` for the file formats. This step is a **no-op when `.dev/memory/` is absent** — the skill still runs standalone without it.
+See `~/.claude/memory-protocol.md` for the file formats. This step is a **no-op when `.dev/memory/` is absent** — the skill still runs standalone without it.
 
 ## Autonomous mode (under `/dev --auto`)
 

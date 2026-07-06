@@ -19,7 +19,7 @@ Turn an approved spec into a concrete implementation plan, fast. Same guarantees
 - `plan-template.md` — the canonical plan structure that `executing-plan-time` consumes. Copy the section below the `===` line into your plan file and fill in the placeholders. Sections marked **REQUIRED** in the template (File Edit Manifest, Execution Waves, per-task `Depends-on:` / `Wave:` / `Files:`) are what the executor reads for overlap analysis and parallel dispatch — omitting them forces sequential fall-back.
 
 <HARD-GATE>
-Do NOT begin implementation. The terminal state of this skill is a written plan file plus an execution handoff. The implementation step belongs to superpowers:subagent-driven-development, superpowers:dispatching-parallel-agents, or superpowers:executing-plans — whichever the user picks.
+Do NOT begin implementation. The terminal state of this skill is a written plan file plus an execution handoff. The implementation step belongs to `executing-plan-time` — do not invoke the superpowers execution skills; they are subsumed.
 </HARD-GATE>
 
 ## Checklist
@@ -249,9 +249,9 @@ Message to the user:
 
 ## Memory protocol (when run under /dev)
 
-When this skill runs inside a `/dev` loop, read `.dev/memory/` before building the File Edit Manifest so the plan inherits prior decisions instead of re-deriving them. Append any planning decisions made while writing the plan to `.dev/memory/decisions.md` tagged `[interactive]` (see `pipelines/dev-pipeline/memory-protocol.md` for the full entry format, including the `phase<N>/<stage>:` prefix).
+When this skill runs inside a `/dev` loop, read `.dev/memory/` before building the File Edit Manifest so the plan inherits prior decisions instead of re-deriving them. Append any planning decisions made while writing the plan to `.dev/memory/decisions.md` tagged `[interactive]` (see `~/.claude/memory-protocol.md` for the full entry format, including the `phase<N>/<stage>:` prefix).
 
-See `pipelines/dev-pipeline/memory-protocol.md` for the file formats. This step is a **no-op when `.dev/memory/` is absent** — the skill still runs standalone without it.
+See `~/.claude/memory-protocol.md` for the file formats. This step is a **no-op when `.dev/memory/` is absent** — the skill still runs standalone without it.
 
 ## Autonomous mode (under `/dev --auto`)
 
