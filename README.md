@@ -64,7 +64,21 @@ Emoji bar installed and wired into `settings.json`:
 
 ## Pipelines
 
-**Three doors** by size: `/ship` (one feature) · `/fix` (punch-list of small fixes) · `/dev` (multi-phase roadmap).
+### Which door?
+
+| Situation | Door | Discipline you get |
+|---|---|---|
+| Trivial edit (rename, typo, one-liner) | none — just ask | judgment |
+| Single bug | `/fix` | repro-test-first, stacked branch, full-suite regression guard |
+| Punch-list of small fixes/chores | `/fix` | branch per fix, regression guard after each |
+| One small self-contained feature | `/ship` | planner→coder→tester→reviewer on a `ship/<slug>` branch (fast lane: no TDD, no worktree) |
+| Feature worth a spec + plan | chain: `brainstorming-time` → `writing-plans-time` → `executing-plan-time` | worktree, parallel waves, TDD-before-commit, per-task review |
+| New project / multi-feature roadmap | `project-time`, then `/dev` | roadmap loop; `--auto` for unattended runs |
+| Autonomous issue-driven runs | `/loop-manager` + `/loop-worker` | triage labels, worktree, PR-only |
+
+Every door stops before merge — a human merges, always.
+
+**Superpowers arbitration.** The chain subsumes these superpowers skills — do not invoke them directly: brainstorming, writing-plans, executing-plans, subagent-driven-development, dispatching-parallel-agents, test-driven-development, using-git-worktrees, verification-before-completion, finishing-a-development-branch. Still live and used as-is: systematic-debugging, requesting-code-review, receiving-code-review, writing-skills, using-superpowers.
 
 ### `/ship` — single feature, one sitting
 
@@ -80,11 +94,12 @@ Emoji bar installed and wired into `settings.json`:
 - Runs in order, pausing on open questions or test failures, **never merges** — leaves the branch for review.
 - ⚠️ Deliberate fast lane: **no TDD-before-commit, no worktree, no graphify.** For the full discipline use `/dev`.
 
-### `/fix` — batch of small fixes
+### `/fix` — bugs + batches of small fixes
 
-`/fix <blurb of small changes>` decomposes the blurb into an ordered mini-roadmap (`.fix/roadmap.md`), then ships each fix **lean**: `oro-coder` → `oro-tester` (no planner; roadmap entry is the spec), with one `oro-reviewer` pass at the end.
+`/fix <bug or blurb of small changes>` decomposes the blurb into an ordered mini-roadmap (`.fix/roadmap.md`), then ships each fix **lean**: `oro-coder` → `oro-tester` (no planner; roadmap entry is the spec), with one `oro-reviewer` pass at the end.
 
 - **Regression guard:** full test suite runs after every fix, so a later fix can't silently break an earlier one.
+- **Single-bug mode:** a blurb that is one bug runs the loop once with repro-first discipline — failing test → fix → pass.
 - Each fix lands on its own stacked branch (`fix/N-<slug>`). Any red **halts** the loop; nothing merges.
 
 ### `/dev` — continuous chain loop
@@ -158,7 +173,7 @@ pipelines/                # agents install namespaced (oro-*) to avoid collision
   fix-pipeline/
     commands/  fix.md          # reuses ship-pipeline's oro-coder/tester/reviewer
   dev-pipeline/
-    agents/    oro-implementer.md  oro-spec-reviewer.md  oro-code-quality-reviewer.md  oro-phase-executor.md
+    agents/    oro-implementer.md  oro-task-reviewer.md  oro-phase-executor.md
     commands/  dev.md
     memory-protocol.md  RUNBOOK-autonomous-dev.md
   loop-pipeline/

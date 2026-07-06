@@ -18,17 +18,17 @@ absent.
 - `lessons.md` — lessons from user corrections. Entry format is three lines: the
   lesson, `**Why:**`, `**How to apply:**`.
 - `glossary.md` — domain terms, appended on first definition.
-- `progress.md` — phases with status `pending` / `planned` / `done`. Writers:
-  project-time **or roadmap import** seeds the initial phase list; thereafter
-  only the `/dev` orchestrator updates phase status.
-- `usage.md` — rate-limit window metadata for the headless backstop. Fields:
-  `window_start` (ISO8601 timestamp when the current 5-hour window began); plus,
-  when the guard pauses at 95%, `paused_at` and `resume_scheduled_for`. The
-  resumed clean session uses `resume_scheduled_for` as the new `window_start`,
-  then clears both. Writer: `/dev` orchestrator only.
+- `progress.md` — phases with status `pending` / `planned` / `done` / `blocked`
+  (a phase whose `--auto` run hit a parked irreversible fork; not re-run until
+  the operator clears it). Writers: project-time **or roadmap import** seeds the
+  initial phase list; thereafter only the `/dev` orchestrator updates phase status.
+- `escalations.md` — parked questions from `--auto` runs (irreversible forks the
+  loop couldn't answer autonomously). Writers: the `/dev` orchestrator and
+  brainstorming-time when running unattended. Cleared by the operator answering
+  them interactively.
   **This file is NOT part of the goals→decisions→glossary→lessons→progress
-  read-order chain.** It is read only by the usage-window guard logic, never
-  by brainstorm/plan/execute stages.
+  read-order chain** — it is read at `--auto` session boundaries and by the
+  operator.
 - `design.md` — design-mockup pointer + manifest for UI-aware phases. Writer:
   `/dev` orchestrator at bootstrap (only when `--design <ref>` is given).
   Fields: **source** (`kind: uuid | folder` and the `ref`), **resolved-at**

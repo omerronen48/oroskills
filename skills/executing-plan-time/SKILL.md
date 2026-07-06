@@ -15,10 +15,9 @@ One skill that runs an approved plan to done. Replaces the chain of superpowers:
 
 **Dispatched agents (in `pipelines/dev-pipeline/agents/`):**
 - `oro-implementer` (pipelines/dev-pipeline/agents/oro-implementer.md) — the per-task oro-implementer subagent. Worktree-aware, manifest-constrained, enforces the TDD-before-commit contract.
-- `oro-spec-reviewer` (pipelines/dev-pipeline/agents/oro-spec-reviewer.md) — the spec-compliance reviewer. Also verifies manifest discipline and TDD-artifact integrity (re-runs the test on the parent commit to confirm it would have failed).
-- `oro-code-quality-reviewer` (pipelines/dev-pipeline/agents/oro-code-quality-reviewer.md) — the code-quality reviewer. Also checks for sibling-task conflicts when the task ran inside a parallel wave.
+- `oro-task-reviewer` (pipelines/dev-pipeline/agents/oro-task-reviewer.md) — the combined per-task reviewer: spec compliance, manifest discipline, TDD-artifact integrity (re-runs the test on the parent commit to confirm it would have failed), code quality, and sibling-task conflicts when the task ran inside a parallel wave.
 
-Every oro-implementer dispatch MUST dispatch the `oro-implementer` agent by name. Every task MUST pass both reviewers in order (spec first, then quality) before being marked done. Skipping a reviewer is a hard-gate violation — see below.
+Every oro-implementer dispatch MUST dispatch the `oro-implementer` agent by name. Every task MUST pass the `oro-task-reviewer` before being marked done. Skipping the review is a hard-gate violation — see below.
 
 <HARD-GATE>
 Four hard gates. Violating any of them is a stop-the-line event:
@@ -26,7 +25,7 @@ Four hard gates. Violating any of them is a stop-the-line event:
 1. **Worktree gate.** No edits to the main checkout. All work happens inside a git worktree created by this skill.
 2. **TDD-before-commit gate.** A task does not commit unless a test that exercises the change was written, observed to fail, and then observed to pass — in that order. The fail log + pass log + commit triple is the artifact.
 3. **Overlap gate.** Two tasks run in parallel only if overlap analysis (files + functions + call-graph edges) shows zero conflict. When in doubt, serialize.
-4. **Two-stage review gate.** A task is not done until the `oro-spec-reviewer` agent returns PASS and then the `oro-code-quality-reviewer` agent returns APPROVED. Spec review always runs before quality review.
+4. **Review gate.** A task is not done until the `oro-task-reviewer` agent returns PASS — one review covering spec compliance, TDD-artifact integrity, code quality, and sibling conflicts.
 </HARD-GATE>
 
 ## Why a single skill
@@ -41,7 +40,7 @@ Create a TodoWrite todo for each phase. Each phase has its own internal steps.
 
 1. **Pre-flight** — graphify exists, plan loaded, worktree created, baseline tests green, memory read (read `.dev/memory/` per `~/.claude/memory-protocol.md` if present; pass memory pointers to each dispatched agent)
 2. **Overlap analysis** — for every wave, verify file + function + call-graph disjointness; downgrade waves if needed
-3. **Wave loop** — for each wave: dispatch parallel `oro-implementer` agents, await all; per task run spec-compliance review (dispatch the `oro-spec-reviewer` agent), fix loop if needed, then code-quality review (dispatch the `oro-code-quality-reviewer` agent), fix loop if needed; verify the wave; mark tasks done
+3. **Wave loop** — for each wave: dispatch parallel `oro-implementer` agents, await all; per task run the combined review (dispatch the `oro-task-reviewer` agent), fix loop if needed; verify the wave; mark tasks done
 4. **Final verification** — full test suite + lint + type-check + spec coverage check on the worktree
 5. **Finishing handoff** — present PR / merge-to-main / leave-as-worktree choice; do not act without user confirmation
 
@@ -235,40 +234,27 @@ If wave verification fails: investigate. Common causes:
 - A subagent's test passes in isolation but conflicts with another subagent's change → the overlap check missed something; demote one task to the next wave and re-run.
 - A commit touched files outside the manifest → roll back that task's commit, re-dispatch with the manifest constraint re-emphasized.
 
-### 3.4 Per-task spec-compliance review
+### 3.4 Per-task review
 
-For each task in the wave, dispatch the `oro-spec-reviewer` agent (pipelines/dev-pipeline/agents/oro-spec-reviewer.md) by name. Reviewers for different tasks in the same wave can run in parallel (they read disjoint diffs).
+For each task in the wave, dispatch the `oro-task-reviewer` agent (pipelines/dev-pipeline/agents/oro-task-reviewer.md) by name. Reviewers for different tasks in the same wave can run in parallel (they read disjoint diffs).
 
 Provide:
 - Worktree path
 - Base SHA (commit immediately before this task's commit) and head SHA (the task's commit)
 - The full task text from the plan
 - The task's File Edit Manifest
+- **Sibling-task touch sets** — the files modified by every other task in this same wave (this is what the sibling-conflicts check needs)
 - The oro-implementer's full status report
 
-The reviewer returns `PASS` or `FAIL` with specific findings. If `FAIL`:
+The reviewer returns `PASS` or `FAIL` with specific findings — one report covering spec compliance, TDD-artifact integrity, code quality, and sibling conflicts. If `FAIL`:
 - Re-dispatch the same oro-implementer (fresh subagent, same model unless the failure suggests a more capable model is needed) with the reviewer's findings as additional context.
-- Re-run the spec review until `PASS`.
+- Re-run the review until `PASS`.
 
-Do NOT proceed to code-quality review on a `FAIL`. Do NOT silently fix the issues yourself in main — dispatch a subagent.
+If only Minor quality issues remain and spec compliance is clean, the reviewer returns `PASS` with the minors noted for follow-up (non-blocking). Do NOT silently fix the issues yourself in main — dispatch a subagent.
 
-### 3.5 Per-task code-quality review
+### 3.5 Mark done + context hygiene between waves
 
-Only after spec review returns `PASS` for a given task, dispatch the `oro-code-quality-reviewer` agent (pipelines/dev-pipeline/agents/oro-code-quality-reviewer.md) by name.
-
-Provide:
-- Worktree path, base SHA, head SHA
-- One-paragraph task summary
-- **Sibling-task touch sets** — the files modified by every other task in this same wave. This is what the upstream code-quality reviewer does not have visibility into and is why this agent includes a sibling-conflicts check.
-
-The reviewer returns `APPROVED` or `CHANGES_REQUESTED`. If `CHANGES_REQUESTED`:
-- Re-dispatch the oro-implementer with the findings.
-- Re-run code-quality review until `APPROVED`.
-- If only Minor issues remain, the reviewer allows `APPROVED` with the minors noted for follow-up (non-blocking).
-
-### 3.6 Mark done + context hygiene between waves
-
-A task is marked done in TodoWrite only after both reviewers green-light it. Then summarize the wave in 3–5 lines (tasks, files touched, peak parallelism, any reviewer iterations) and discard the per-task status blobs and reviewer reports from working memory.
+A task is marked done in TodoWrite only after the oro-task-reviewer green-lights it. Then summarize the wave in 3–5 lines (tasks, files touched, peak parallelism, any reviewer iterations) and discard the per-task status blobs and reviewer reports from working memory.
 
 The next wave's oro-implementer subagents only need: the next task slice, the worktree path, and any new graphify context.
 
@@ -351,7 +337,7 @@ Ponytail (minimal-code enforcement) runs at mode `full`. Every oro-implementer a
 5. Can it be one line?
 6. Only then: the minimum viable implementation.
 
-Because dispatched subagents may not inherit ponytail's global session hook, the ladder is stated explicitly in the `oro-implementer` agent and the over-engineering check in the `oro-code-quality-reviewer` agent — do not rely on the hook alone.
+Because dispatched subagents may not inherit ponytail's global session hook, the ladder is stated explicitly in the `oro-implementer` agent and the over-engineering check in the `oro-task-reviewer` agent — do not rely on the hook alone.
 
 ## Token & Context Discipline
 
@@ -413,7 +399,7 @@ If any intersection is non-empty, serialize.
 |---|---|---|
 | superpowers:using-git-worktrees | Always-isolate-in-worktree rule | Worktree creation is phase 1, not a separate skill load |
 | superpowers:executing-plans | Plan-driven execution | Merged into the wave loop |
-| superpowers:subagent-driven-development | Per-task fresh subagent + 3 named agents (oro-implementer, oro-spec-reviewer, oro-code-quality-reviewer) | Agents live in `pipelines/dev-pipeline/agents/`, adapted to require worktree path, pre-queried graphify context, TDD artifact integrity check (re-run on parent commit), manifest-discipline check, and sibling-task conflict check |
+| superpowers:subagent-driven-development | Per-task fresh subagent + 2 named agents (oro-implementer, oro-task-reviewer) | Agents live in `pipelines/dev-pipeline/agents/`, adapted to require worktree path, pre-queried graphify context, TDD artifact integrity check (re-run on parent commit), manifest-discipline check, and sibling-task conflict check |
 | superpowers:dispatching-parallel-agents | Parallel-when-independent | File + function + call-graph overlap check, not just "looks independent" |
 | superpowers:test-driven-development | Test-first, see-it-fail, see-it-pass | Enforced as a contract on every dispatched subagent, with an artifact check |
 | superpowers:verification-before-completion | Evidence before claims | Promoted to a phase with explicit commands and a gate |
@@ -427,9 +413,9 @@ If any intersection is non-empty, serialize.
 - A task commit with no failing-test log preceding it
 - Two parallel implementers touching the same file
 - Implementer returns "done" without fail + pass logs → not done
-- Skipping the spec reviewer or running code-quality before spec → hard-gate violation
-- Skipping the sibling-task touch-sets in the code-quality reviewer dispatch — the agent's parallel-aware check will silently degrade to upstream behavior
-- Writing ad-hoc subagent prompts instead of dispatching the named `oro-implementer` / `oro-spec-reviewer` / `oro-code-quality-reviewer` agents
+- Skipping the oro-task-reviewer → hard-gate violation
+- Skipping the sibling-task touch-sets in the reviewer dispatch — the agent's parallel-aware check will silently degrade
+- Writing ad-hoc subagent prompts instead of dispatching the named `oro-implementer` / `oro-task-reviewer` agents
 - Main agent reading source files directly → use graphify
 - Main agent fixing reviewer findings itself instead of re-dispatching the oro-implementer (context pollution)
 - "Final verification" being a sentence instead of a command run

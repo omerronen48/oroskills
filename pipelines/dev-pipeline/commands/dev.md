@@ -1,3 +1,8 @@
+---
+description: Continuous roadmap-driven dev loop — picks the next roadmap phase and runs it end-to-end through the brainstorm→plan→execute chain; --auto runs unattended and parks escalations. NOT for a single feature (use /ship) or bugs/small fixes (use /fix).
+argument-hint: [--auto] [--import <roadmap-path>] <project direction>
+---
+
 Run the continuous roadmap-driven dev loop for: $ARGUMENTS
 
 You are the orchestrator. Run the stages below in order. Do not skip ahead. After each stage, confirm its handoff artifact exists before advancing. The orchestrator owns every `progress.md` status update — no other stage writes phase status.
@@ -92,35 +97,3 @@ When invoked with `--auto`, the loop runs unattended: it never waits for a human
 ### Phase status `blocked`
 
 `progress.md` phases may also be `blocked` (alongside `pending`/`planned`/`done`): a phase whose `--auto` run hit a parked irreversible fork. A `blocked` phase is not re-run until the operator clears it. The final report lists `blocked` phases distinctly from never-started ones.
-
-### Usage-window guard (`--auto`)
-
-At every phase boundary (after marking a phase `done`, before starting the next), check the current usage percentages.
-
-**Reading usage:**
-- **Interactive session:** read `~/.claude/oro-usage.json` (written by the statusline bridge) **and check its `captured_at`** — the bridge only writes on a statusline render, so in a headless run the file is present but stale. If `captured_at` is older than ~2 minutes, treat the snapshot as stale and ignore its percentages; a fresh `captured_at` is the live value.
-- **Headless / no (or stale) snapshot:** fall back to `.dev/memory/usage.md` and compute elapsed time from `window_start` to estimate current usage. Do not invent a percentage; use a fresh snapshot's value or the time-based estimate only.
-
-**five_hour >= 95%:**
-1. Flush any in-progress phase summary to `.dev/memory/progress.md` (mark phase `planned` or retain its last known state — do not lose work). Record `paused_at` (now) and `resume_scheduled_for` (= `five_hour_resets_at`) in `.dev/memory/usage.md`. The snapshot in `.dev/memory/` must be complete enough that a context-free session can resume from it alone.
-2. Append a note to `.dev/memory/decisions.md` tagged `[auto]`: phase paused for 5-hour quota; will resume at `five_hour_resets_at`.
-3. Schedule a one-shot resume. `five_hour_resets_at` is a **UTC ISO8601** timestamp; bare `at <ISO>` fails (`garbled time`) and a naive digit-strip ignores the UTC→local offset, so convert via epoch and use `at -t [[CC]YY]MMDDhhmm`:
-   ```bash
-   resets="$five_hour_resets_at"   # e.g. 2026-06-29T18:00:00Z (UTC)
-   epoch=$(date -j -u -f "%Y-%m-%dT%H:%M:%SZ" "$resets" "+%s" 2>/dev/null || date -u -d "$resets" "+%s")
-   stamp=$(date -r "$epoch" +%Y%m%d%H%M 2>/dev/null || date -d "@$epoch" +%Y%m%d%H%M)   # local time for at(1)
-   echo "claude -p '/dev --auto'" | at -t "$stamp"
-   ```
-   If `at` is unavailable, log the `cron` equivalent to stdout and `.dev/auto.log` for the operator to install manually. This launches a **fresh, clean session** — `claude -p` starts new context by default; do **not** add `--continue`/`--resume`. The resumed loop reconstructs all state from `.dev/memory/`.
-4. Notify: invoke the **PushNotification** tool with the message: `oro: 5-hour quota at 95% — loop paused, resumes at <five_hour_resets_at>`.
-5. Stop the loop cleanly (do not start any further phase) and end the current session — nothing is carried in context; `.dev/memory/` is the sole source of truth for the resume.
-
-**Resume contract (clean session).** The scheduled `claude -p '/dev --auto'` run starts with empty context. On startup it reads `.dev/memory/` (progress → usage → decisions), sets `window_start` to the recorded `resume_scheduled_for` (the window has just reset), clears `paused_at`/`resume_scheduled_for`, and continues at the first non-`done` phase. Because it carries no prior conversation, the resumed run is lean — but note: starting a clean session does **not** reset the 5-hour quota; only elapsed real time to `resets_at` does, which is why the resume is scheduled for that instant rather than fired immediately.
-
-**seven_day >= 90%:**
-- Notify only — do not pause. Invoke the **PushNotification** tool with the message: `oro: 7-day quota at 90% — <7d%> used, resets <seven_day_resets_at>`. Then continue the loop.
-
-**Important constraints:**
-- The guard runs between phases only. A single long phase that crosses a threshold will overrun — there is no mid-phase interrupt.
-- Do not read `~/.claude/oro-usage.json` inside a subagent (it may be stale by the time the subagent starts). The check runs in the orchestrator, at phase boundaries.
-- If `~/.claude/oro-usage.json` is absent and `.dev/memory/usage.md` has no `window_start`, skip the guard silently for that boundary.

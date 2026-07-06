@@ -1,11 +1,16 @@
+---
+description: Fix bugs and small chores — a single bug (repro-test-first) or a punch-list of independent small fixes, each shipped on stacked branches with a full-suite regression guard. NOT for a new feature (use /ship) or a multi-feature roadmap (use /dev).
+argument-hint: <bug description or list of small fixes>
+---
+
 Run a batch of small fixes for: $ARGUMENTS
 
-`/fix` is the **punch-list lane**: many small fixes from one blurb — not a single feature (that's `/ship`) and not a roadmap of features (that's `/dev`). It decomposes the blurb, ships each fix lean, and after every fix runs the full test suite so a later fix can't silently break an earlier one. Any red halts the loop. Nothing is merged.
+`/fix` is the **bug-and-chore lane**: a single bug or a punch-list of small fixes from one blurb — not a feature (that's `/ship`) and not a roadmap of features (that's `/dev`). It decomposes the blurb, ships each fix lean, and after every fix runs the full test suite so a later fix can't silently break an earlier one. Any red halts the loop. Nothing is merged.
 
 ## Decompose
 1. Parse the blurb above into an ordered list of atomic fixes. Sequence fixes that touch the same file; keep independent fixes in input order. Write `.fix/roadmap.md`, one line per fix:
    `- [ ] N. <title> — files: <paths> — status: pending`
-2. If the blurb yields only one fix, say so and suggest `/ship` instead; proceed only if I confirm.
+2. **Single-bug mode:** if the blurb yields only one fix and it's a bug, don't punt — run the loop once for it with repro-first discipline: `.pipeline/spec.md` must direct the coder to first write a failing test that reproduces the bug, capture the failure output, then fix until it passes (fail and pass output both land in `.pipeline/changes.md`). Skip the roadmap confirmation gate. If the single item is a *feature* rather than a bug, suggest `/ship`; proceed only if I confirm.
 3. Show me `.fix/roadmap.md` and wait for my confirmation (or edits) before looping.
 
 ## Baseline

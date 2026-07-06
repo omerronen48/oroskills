@@ -47,43 +47,6 @@ When the loop halts, a phase is `blocked` and the fork is recorded in `.dev/memo
 - `.dev/memory/escalations.md` — every parked fork.
 - Per-phase branches/PRs — the executor's output. All merges are human-initiated.
 
-## Usage-window guard
-
-`/dev --auto` reads `~/.claude/oro-usage.json` at each phase boundary to check quota usage.
-That file is written by the statusline bridge embedded in `statusline-command.sh`, which
-means **the statusline must be installed and active** for the live-% path to work.
-
-- **Interactive limitation:** `~/.claude/oro-usage.json` is only refreshed when the statusline
-  renders (i.e. in an active Claude Code session). In a headless run started by `at`/cron
-  there is no statusline, so the guard falls back to `.dev/memory/usage.md` `window_start`
-  and estimates elapsed time. This estimate is conservative; it will not catch quota spikes
-  mid-window.
-- **Headless backstop:** ensure `.dev/memory/usage.md` has a current `window_start` before
-  scheduling an unattended run, or accept that the guard will skip silently for that session.
-
-## One-shot resume scheduling
-
-When the 5-hour guard fires, `/dev --auto` schedules a resume. `five_hour_resets_at` is a **UTC ISO8601** timestamp — bare `at <ISO>` fails with `garbled time` and a naive digit-strip drops the UTC→local offset, so convert through epoch and use `at -t`:
-```bash
-resets="$five_hour_resets_at"   # e.g. 2026-06-29T18:00:00Z (UTC)
-epoch=$(date -j -u -f "%Y-%m-%dT%H:%M:%SZ" "$resets" "+%s" 2>/dev/null || date -u -d "$resets" "+%s")
-stamp=$(date -r "$epoch" +%Y%m%d%H%M 2>/dev/null || date -d "@$epoch" +%Y%m%d%H%M)   # local time
-echo "claude -p '/dev --auto'" | at -t "$stamp"
-```
-`at` must be enabled on the machine (`sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist` on macOS). If `at` is unavailable, a `cron` equivalent is logged to stdout and `.dev/auto.log`:
-```
-# add to crontab: run once at <five_hour_resets_at>
-# crontab -e  →  <MM> <HH> <DD> <mon> * cd /path/to/repo && claude -p '/dev --auto' >> .dev/auto.log 2>&1
-```
-The resume runs as a **fresh, clean session** (`claude -p` with no `--continue`/`--resume`): it carries no prior context and rebuilds all state from `.dev/memory/`, so the resumed run starts lean. Note: a clean session does **not** reset the 5-hour quota — only the wait until `five_hour_resets_at` does. That is why the resume is scheduled for that timestamp rather than fired immediately.
-
-## Notifications
-
-Updates (quota warnings, pause) are delivered via the Claude app **PushNotification** tool —
-the orchestrator invokes the tool directly at each notify step. No external service, no
-credentials, and no shell script are required. Requires the Claude app with notifications
-enabled on your device.
-
 ## Limitations
 
 - Autonomous brainstorming self-approves specs: review the audit trail before trusting a long
@@ -91,5 +54,5 @@ enabled on your device.
 - Cloud `/schedule` routines are possible but the cloud env must clone the repo and provide
   graphify + the test runner (same research-preview caveat as the loop-pipeline). Local
   scheduling is the supported default.
-- The usage guard is between-phases only. A single long-running phase can overrun the quota
-  with no interrupt — plan phases accordingly.
+- There is no usage-window guard: a long unattended run can hit the usage quota mid-run and
+  stop. Re-run `/dev --auto` when the window resets, or wrap it in a `/schedule` routine.

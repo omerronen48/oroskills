@@ -1,3 +1,8 @@
+---
+description: Ship one small self-contained feature through planner→coder→tester→reviewer on its own branch (the deliberate fast lane — no TDD contract, no worktree). NOT for bug fixes or chores (use /fix) or multi-phase work (use the brainstorm→plan→execute chain).
+argument-hint: <feature request>
+---
+
 Run the full feature pipeline for: $ARGUMENTS
 
 Note: /ship is the deliberate **fast lane** — tests are written *after* the code, there is no git worktree, and no graphify context. It does NOT enforce the TDD-before-commit contract that the /dev chain treats as a hard gate. For that discipline, use /dev or the chain.

@@ -1,3 +1,8 @@
+---
+description: Work one triaged GitHub issue end-to-end — claim an agent:ready + risk:low issue, isolate in a worktree, run the ship pipeline, open a PR (never merge). Pairs with /loop-manager. NOT for local interactive work.
+argument-hint: [--dry-run] [--repo <owner/repo>]
+---
+
 # /loop-worker
 
 Run as: `/loop-worker $ARGUMENTS`

@@ -1,6 +1,11 @@
+---
+description: Triage open GitHub issues into the autonomous agent loop — dispatches the read-only oro-triager per issue and applies risk/type/agent:ready labels. Control plane for /loop-worker. NOT for doing the fixes themselves (use /fix or /ship locally).
+argument-hint: [--dry-run] [--retriage] [--repo <owner/repo>]
+---
+
 # /loop-manager
 
-Orchestrate backlog triage for the current repo. Accepts `$ARGUMENTS` for flags: `--dry-run`, `--retriage`, `--repo <owner/repo>`.
+Orchestrate backlog triage for the current repo. Invoked as `/loop-manager $ARGUMENTS` with flags: `--dry-run`, `--retriage`, `--repo <owner/repo>`.
 
 ## Design card
 - **JOB:** triage the open GitHub backlog — classify risk/type, route safe work.

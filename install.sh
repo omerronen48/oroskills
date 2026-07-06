@@ -17,7 +17,7 @@ SKILLS=(project-time brainstorming-time writing-plans-time executing-plan-time c
 AGENTS=(oro-planner oro-coder oro-tester oro-reviewer)
 COMMANDS=(ship)
 # The dev pipeline also ships as agents + a slash command.
-DEV_AGENTS=(oro-implementer oro-spec-reviewer oro-code-quality-reviewer oro-phase-executor)
+DEV_AGENTS=(oro-implementer oro-task-reviewer oro-phase-executor)
 DEV_COMMANDS=(dev)
 # The loop pipeline (autonomous agent loops) also ships as agents + slash commands.
 LOOP_AGENTS=(oro-triager)
