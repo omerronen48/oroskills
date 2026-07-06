@@ -75,6 +75,7 @@ Emoji bar installed and wired into `settings.json`:
 | Feature worth a spec + plan | chain: `brainstorming-time` → `writing-plans-time` → `executing-plan-time` | worktree, parallel waves, TDD-before-commit, per-task review |
 | New project / multi-feature roadmap | `project-time`, then `/dev` | roadmap loop; `--auto` for unattended runs |
 | Autonomous issue-driven runs | `/loop-manager` + `/loop-worker` | triage labels, worktree, PR-only |
+| Open PR has red CI / review comments | `/address-review` | punch list from checks+comments, fix on the PR branch, push |
 
 Every door stops before merge — a human merges, always.
 
@@ -101,6 +102,14 @@ Every door stops before merge — a human merges, always.
 - **Regression guard:** full test suite runs after every fix, so a later fix can't silently break an earlier one.
 - **Single-bug mode:** a blurb that is one bug runs the loop once with repro-first discipline — failing test → fix → pass.
 - Each fix lands on its own stacked branch (`fix/N-<slug>`). Any red **halts** the loop; nothing merges.
+
+### `/address-review` — post-PR feedback
+
+`/address-review [PR]` picks up where every other door stops. It pulls failing CI checks (`gh pr checks` + failed-run logs), unresolved review comments, and merge conflicts into a punch list (`.review/feedback.md`), fixes each on the PR branch via `oro-coder` → `oro-tester` (one commit per item), runs one `oro-reviewer` pass over the session diff, and pushes.
+
+- Ambiguous review comments are parked `needs-owner-input` — it never guesses a reviewer's intent.
+- Plain push only; force-push (after a conflict rebase) requires explicit confirmation. Never merges, never resolves threads.
+- Re-invoking skips items already `done`.
 
 ### `/dev` — continuous chain loop
 
@@ -172,6 +181,8 @@ pipelines/                # agents install namespaced (oro-*) to avoid collision
     commands/  ship.md
   fix-pipeline/
     commands/  fix.md          # reuses ship-pipeline's oro-coder/tester/reviewer
+  review-pipeline/
+    commands/  address-review.md  # post-PR lane; reuses ship-pipeline's agents
   dev-pipeline/
     agents/    oro-implementer.md  oro-task-reviewer.md  oro-phase-executor.md
     commands/  dev.md

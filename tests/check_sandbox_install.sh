@@ -27,7 +27,7 @@ done
 for agent in oro-planner oro-coder oro-tester oro-reviewer oro-implementer oro-task-reviewer oro-phase-executor oro-triager; do
   [ -e "$SB/.claude/agents/$agent.md" ] || fail "agent $agent missing"
 done
-for cmd in ship dev fix loop-manager loop-worker; do
+for cmd in ship dev fix loop-manager loop-worker address-review; do
   [ -e "$SB/.claude/commands/$cmd.md" ] || fail "command $cmd missing"
 done
 [ -e "$SB/.claude/memory-protocol.md" ] || fail "memory-protocol.md missing"

@@ -24,6 +24,8 @@ LOOP_AGENTS=(oro-triager)
 LOOP_COMMANDS=(loop-manager loop-worker)
 # The fix pipeline (batch of small fixes) ships as a slash command reusing the ship agents.
 FIX_COMMANDS=(fix)
+# The review pipeline (post-PR feedback) also reuses the ship agents.
+REVIEW_COMMANDS=(address-review)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 SCOPE="global"
@@ -215,7 +217,7 @@ uninstall() {
   local item tmp
   for item in "${SKILLS[@]}"; do rm -rf "$SKILLS_DIR/$item"; done
   for item in "${AGENTS[@]}" "${DEV_AGENTS[@]}" "${LOOP_AGENTS[@]}"; do rm -f "$AGENTS_DIR/$item.md"; done
-  for item in "${COMMANDS[@]}" "${DEV_COMMANDS[@]}" "${LOOP_COMMANDS[@]}" "${FIX_COMMANDS[@]}"; do rm -f "$COMMANDS_DIR/$item.md"; done
+  for item in "${COMMANDS[@]}" "${DEV_COMMANDS[@]}" "${LOOP_COMMANDS[@]}" "${FIX_COMMANDS[@]}" "${REVIEW_COMMANDS[@]}"; do rm -f "$COMMANDS_DIR/$item.md"; done
   rm -f "$HOOK_DEST" "$STATE_DEST" "$BASE_DIR/memory-protocol.md" "$MODE_FILE"
   # Only remove the statusline if it's ours (has the caveman chip).
   if [[ -f "$STATUSLINE_FILE" ]] && grep -q 'claude-caveman' "$STATUSLINE_FILE"; then
@@ -289,6 +291,10 @@ done
 
 for command in "${FIX_COMMANDS[@]}"; do
   install_item "$SCRIPT_DIR/pipelines/fix-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
+done
+
+for command in "${REVIEW_COMMANDS[@]}"; do
+  install_item "$SCRIPT_DIR/pipelines/review-pipeline/commands/$command.md" "$COMMANDS_DIR/$command.md" "command:/$command"
 done
 
 # Remove dangling symlinks that point into this repo (left behind by renames).
