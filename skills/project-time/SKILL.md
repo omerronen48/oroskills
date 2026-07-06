@@ -1,6 +1,6 @@
 ---
 name: project-time
-description: "Use when starting a new project (or a large multi-feature initiative) and you need a high-level technical roadmap with milestones before any feature-level brainstorming. Grills the user one question at a time about architecture, tech stack, scope, and non-functional requirements; resolves the project-level open questions up front; emits a milestone-sliced roadmap that each become an input to brainstorming-time later."
+description: "Use when starting a new project or large multi-feature initiative and you need a technical roadmap with milestones before feature-level brainstorming. One question at a time; emits a milestone-sliced roadmap consumed by brainstorming-time. Optional — skip for a single feature in an existing codebase."
 ---
 
 # Project Time
@@ -27,6 +27,7 @@ Use [[brainstorming-time]] directly (skip this skill) when:
 - The work is a single feature or change inside an existing codebase
 - The architecture, stack, and scope are already settled
 - One spec → one plan → one execution cycle is enough
+- The roadmap would have only **one milestone** — that's a spec; stop and use brainstorming-time instead
 
 ## Checklist
 
@@ -41,42 +42,6 @@ Create a TodoWrite todo for each item and complete them in order:
 7. **Self-review inline** — placeholder scan, milestone independence check, every open question either answered or explicitly deferred to a milestone's brainstorm
 8. **User review gate** — loop until the user approves the file
 9. **Hand off** — tell the user the exact invocation for the first milestone: `Use brainstorming-time on milestone M1: <name>`. Do not invoke brainstorming-time yourself.
-
-## Process Flow
-
-```dot
-digraph project_time {
-    "Greenfield or existing repo?" [shape=diamond];
-    "graphify-out/graph.json exists?" [shape=diamond];
-    "Offer /graphify, wait" [shape=box];
-    "Query current architecture" [shape=box];
-    "Grill: one question at a time\n(with recommended answer)" [shape=box];
-    "Tree resolved?" [shape=diamond];
-    "Draft roadmap inline" [shape=box];
-    "Shape OK?" [shape=diamond];
-    "Write roadmap file" [shape=box];
-    "Self-review inline" [shape=box];
-    "User approves?" [shape=diamond];
-    "Hand off: name first milestone\nfor brainstorming-time" [shape=doublecircle];
-
-    "Greenfield or existing repo?" -> "Grill: one question at a time\n(with recommended answer)" [label="greenfield"];
-    "Greenfield or existing repo?" -> "graphify-out/graph.json exists?" [label="existing"];
-    "graphify-out/graph.json exists?" -> "Offer /graphify, wait" [label="no"];
-    "graphify-out/graph.json exists?" -> "Query current architecture" [label="yes"];
-    "Offer /graphify, wait" -> "Query current architecture";
-    "Query current architecture" -> "Grill: one question at a time\n(with recommended answer)";
-    "Grill: one question at a time\n(with recommended answer)" -> "Tree resolved?";
-    "Tree resolved?" -> "Grill: one question at a time\n(with recommended answer)" [label="no, next branch"];
-    "Tree resolved?" -> "Draft roadmap inline" [label="yes"];
-    "Draft roadmap inline" -> "Shape OK?";
-    "Shape OK?" -> "Draft roadmap inline" [label="no, revise"];
-    "Shape OK?" -> "Write roadmap file" [label="yes"];
-    "Write roadmap file" -> "Self-review inline";
-    "Self-review inline" -> "User approves?";
-    "User approves?" -> "Write roadmap file" [label="changes"];
-    "User approves?" -> "Hand off: name first milestone\nfor brainstorming-time" [label="yes"];
-}
-```
 
 Terminal state: an approved roadmap file plus the named hand-off invocation. The skill does NOT loop through milestones and does NOT invoke brainstorming-time itself.
 
@@ -105,7 +70,7 @@ Terminal state: an approved roadmap file plus the named hand-off invocation. The
 10. **Milestone slicing strategy** — vertical slices (each milestone ships end-to-end value) vs. horizontal (foundation → features). Recommend vertical by default; explain why.
 11. **Risks and assumptions** — top 3 things most likely to invalidate the plan.
 
-When every topic above has a confirmed answer, the tree is resolved. Proceed to the draft.
+When every topic above has a confirmed answer, the tree is resolved. Proceed to the draft. The roadmap must name a tech stack — resolve it now or explicitly mark it as a Milestone 0 spike with a deadline.
 
 ## Roadmap File
 
@@ -161,40 +126,6 @@ Fix in place. Don't loop on self-review.
 
 Loop until the user approves. Then output the hand-off line — do NOT invoke `brainstorming-time` yourself.
 
-## How This Differs From brainstorming-time
-
-| project-time | brainstorming-time |
-|---|---|
-| Input: project / multi-feature idea | Input: one feature or change |
-| Output: roadmap with N milestones | Output: one spec |
-| Resolves architecture, stack, scope **once** for the whole project | Assumes architecture is settled |
-| Grill style: one question at a time, with recommended answer | Batched questions in one message |
-| Visual: architecture diagram | Visual: mind map of one design |
-| Hand-off: names the first milestone for brainstorming-time | Hand-off: invokes writing-plans-time |
-| Terminal state: approved roadmap file | Terminal state: approved spec file |
-
-## Red Flags — Stop and Course-Correct
-
-- About to produce a roadmap with **one milestone** → that's a spec; stop and use brainstorming-time instead.
-- About to write the roadmap before the topic tree is resolved → finish the grill first.
-- Asking a question without a recommended answer → that's interrogation, not grilling; add the recommendation.
-- Batching questions to "go faster" → that's brainstorming-time's style; one at a time here.
-- Filling in milestone-level detail (function signatures, file lists, test cases) → that's writing-plans-time's job; the roadmap stays at architectural granularity.
-- Skipping the scope-out list because "we'll figure it out" → this is the single highest-value section of the roadmap. Do not skip.
-- Invoking brainstorming-time before the user approves the roadmap file → hard gate violation.
-- Roadmap doesn't name a tech stack because "the team will decide later" → that decision belongs in this skill; resolve it now or explicitly mark it as a Milestone 0 spike with a deadline.
-
-## Rationalizations & Reality
-
-| Excuse | Reality |
-|---|---|
-| "This is small, I can skip to brainstorming-time" | If it has milestones, it's not small. If it has one milestone, you don't need this skill. |
-| "I'll let each milestone pick its own stack" | Then you don't have a project, you have N unrelated projects. Pick the stack here. |
-| "Scope-out is obvious" | The user and you have different obvious. Write it down. |
-| "Architecture is implementation detail" | At roadmap level: shape, not signatures. Diagram is required. |
-| "I can answer this from the codebase without asking" | Then do — that's correct behavior in existing-codebase mode. Don't ask what `graphify query` can answer. |
-| "Milestones should be horizontal (build the foundation first)" | Default to vertical slices so each milestone ships value. Pick horizontal only with stated reason. |
-
 ## Memory protocol (when run under /dev)
 
 When this skill runs inside a `/dev` loop, after the roadmap is produced and approved, persist its decisions to shared memory:
@@ -204,12 +135,3 @@ When this skill runs inside a `/dev` loop, after the roadmap is produced and app
 - Seed `.dev/memory/progress.md` with one `pending` entry per milestone.
 
 See `~/.claude/memory-protocol.md` for the file formats. This step is a **no-op when `.dev/memory/` is absent** — the skill still runs standalone without it.
-
-## Key Principles
-
-- **One grill, then a roadmap.** Resolve project-level questions once, in one place, so feature-level brainstorms stop re-litigating them.
-- **Recommended answer always.** Confirming a recommendation is faster than answering a blank question.
-- **Architecture at roadmap granularity.** Components and data flow, not function signatures.
-- **Vertical milestone slices.** Each milestone should ship something observable.
-- **Defer the right things.** Minute technical detail belongs in brainstorming-time and writing-plans-time. The roadmap closes the big questions and names which small questions belong to which milestone.
-- **Hard gate holds.** No downstream skill invocation until the roadmap file is approved.

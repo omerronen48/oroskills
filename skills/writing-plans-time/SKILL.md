@@ -1,6 +1,6 @@
 ---
 name: writing-plans-time
-description: "Use when you have an approved spec and want a faster, lower-ceremony alternative to superpowers:writing-plans. Produces an implementation plan that (1) opens with a complete File Edit Manifest, (2) uses graphify as the primary source for locating callers/dependencies (initializing it if missing), and (3) breaks tasks into parallel-executable waves with explicit dependency edges."
+description: "Use when an approved spec needs an implementation plan. Opens with a File Edit Manifest and breaks work into parallel-executable waves. Replaces superpowers:writing-plans. Hands off to executing-plan-time."
 ---
 
 # Direct Writing Plans
@@ -35,37 +35,6 @@ Create a TodoWrite todo for each item and complete them in order:
 7. **Self-review** — spec coverage, placeholder scan, type-name consistency, manifest matches tasks, every file in the manifest is touched by some task and vice versa
 8. **Write the plan file** — manifest first, then waves, then tasks
 9. **Execution handoff** — offer parallel (default if >1 task in any wave) or sequential execution
-
-## Process Flow
-
-```dot
-digraph direct_writing_plans {
-    "graphify-out/graph.json exists?" [shape=diamond];
-    "Offer /graphify, wait" [shape=box];
-    "Query touch points\n(graphify query per requirement)" [shape=box];
-    "Build File Edit Manifest" [shape=box];
-    "Decompose into tasks (TDD steps)" [shape=box];
-    "Declare depends-on per task" [shape=box];
-    "Group tasks into parallel waves" [shape=box];
-    "Self-review (coverage, placeholders, types, manifest)" [shape=box];
-    "Issues found?" [shape=diamond];
-    "Write plan file" [shape=box];
-    "Execution handoff" [shape=doublecircle];
-
-    "graphify-out/graph.json exists?" -> "Offer /graphify, wait" [label="no"];
-    "graphify-out/graph.json exists?" -> "Query touch points\n(graphify query per requirement)" [label="yes"];
-    "Offer /graphify, wait" -> "Query touch points\n(graphify query per requirement)";
-    "Query touch points\n(graphify query per requirement)" -> "Build File Edit Manifest";
-    "Build File Edit Manifest" -> "Decompose into tasks (TDD steps)";
-    "Decompose into tasks (TDD steps)" -> "Declare depends-on per task";
-    "Declare depends-on per task" -> "Group tasks into parallel waves";
-    "Group tasks into parallel waves" -> "Self-review (coverage, placeholders, types, manifest)";
-    "Self-review (coverage, placeholders, types, manifest)" -> "Issues found?";
-    "Issues found?" -> "Decompose into tasks (TDD steps)" [label="yes, fix inline"];
-    "Issues found?" -> "Write plan file" [label="no"];
-    "Write plan file" -> "Execution handoff";
-}
-```
 
 ## Graphify Integration (Required)
 
@@ -198,6 +167,7 @@ After writing the plan, scan it once:
 4. **Type/name consistency** — `clearLayers()` in Task 3 must match `clearLayers()` in Task 7.
 5. **Wave correctness** — re-check that same-wave tasks touch disjoint files and have no inter-dependencies.
 6. **Wave width** — is any wave artificially narrow? Can a task be split?
+7. **Ponytail first rung** — apply "does this need to exist?" to every task and file in the manifest; drop work that fails it rather than planning it.
 
 Fix inline. Do not loop on self-review.
 
@@ -226,26 +196,16 @@ Message to the user:
 
 **Routing:** Always `executing-plan-time`. Do NOT invoke superpowers:dispatching-parallel-agents, superpowers:subagent-driven-development, or superpowers:executing-plans separately — they are subsumed.
 
-## How This Differs From superpowers:writing-plans
-
-| superpowers:writing-plans | writing-plans-time |
-|---|---|
-| File structure described in prose | Explicit File Edit Manifest table at top |
-| Reads/greps for callers | `graphify query` first; initializes graphify if missing |
-| Tasks listed sequentially, implicit ordering | Tasks declare `Depends-on:`; grouped into parallel waves |
-| Handoff: subagent-driven OR executing-plans (three separate skills) | Single handoff to `executing-plan-time` (parallel waves + sequential fallback in one runner) |
-| No "Out of scope" declaration | Required line in the manifest |
-
 ## Red Flags — Stop and Course-Correct
 
-- Running Read/Grep before any `graphify query` → query first
-- `graphify-out/` missing and you proceeded anyway → stop, initialize
-- Skipping the File Edit Manifest "because the plan is small" → write it anyway, even if 2 rows
-- A task modifies a file not in the manifest → add it to the manifest, don't silently expand scope
-- Two tasks in the same wave touch the same file → split waves, file-disjointness is mandatory
-- Every wave has exactly one task → you missed parallelization opportunities, look again
-- Plan ends with "implement the rest similarly" → fill it in or split the task
-- Handing off to implementation before saving the plan file → finish the artifact first
+- Read/Grep before any `graphify query`
+- `graphify-out/` missing but proceeding anyway
+- Skipping the File Edit Manifest because the plan is small
+- A task modifies a file not in the manifest
+- Two tasks in the same wave touch the same file
+- Every wave has exactly one task
+- Plan ends with "implement the rest similarly"
+- Handing off to implementation before saving the plan file
 
 ## Memory protocol (when run under /dev)
 
@@ -268,12 +228,3 @@ user:
   not `[interactive]`.
 
 This section is inert when the skill runs standalone (not under `/dev --auto`).
-
-## Key Principles
-
-- **Graph before grep.** The manifest is grounded in the call graph, not in guesses.
-- **Manifest before tasks.** Declare the blast radius up front so the reviewer can object before reading 30 task steps.
-- **Disjoint files = safe parallel.** Logical independence isn't enough; file-level disjointness is the parallelization invariant.
-- **Wave width is a quality metric.** Narrow waves usually mean missed decomposition.
-- **No silent scope creep.** Every touched file is in the manifest. Every manifest file is touched by a task.
-- **Ponytail first rung.** Apply "does this need to exist?" to every task and file in the manifest; drop work that fails it rather than planning it.

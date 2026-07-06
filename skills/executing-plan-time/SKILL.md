@@ -1,6 +1,6 @@
 ---
 name: executing-plan-time
-description: "Use when executing an approved implementation plan end-to-end. Consolidates worktree setup, parallel subagent dispatch, TDD, verification, and branch finishing into one runner. Always isolates work in a git worktree, dispatches parallel subagents whenever task overlap analysis (files + functions + call-graph edges via graphify) permits, runs tests before every commit, and keeps the main context lean by pushing per-task work into fresh subagents."
+description: "Use when executing an approved implementation plan end-to-end: worktree isolation, overlap-gated parallel waves, TDD-before-commit, per-task review, finishing handoff. Replaces the superpowers execution skills."
 ---
 
 # Direct Executing Plans
@@ -28,12 +28,6 @@ Four hard gates. Violating any of them is a stop-the-line event:
 4. **Review gate.** A task is not done until the `oro-task-reviewer` agent returns PASS — one review covering spec compliance, TDD-artifact integrity, code quality, and sibling conflicts.
 </HARD-GATE>
 
-## Why a single skill
-
-Each of the seven sub-skills is correct in isolation, but chaining them per task forces re-loading the same discipline seven times. The cost is context. This skill keeps the discipline and pays the load cost once.
-
-It also lets us state cross-cutting invariants that no individual skill can state (e.g. "the worktree set up in step 1 must be the one used by all parallel agents in step 4").
-
 ## Checklist
 
 Create a TodoWrite todo for each phase. Each phase has its own internal steps.
@@ -43,67 +37,6 @@ Create a TodoWrite todo for each phase. Each phase has its own internal steps.
 3. **Wave loop** — for each wave: dispatch parallel `oro-implementer` agents, await all; per task run the combined review (dispatch the `oro-task-reviewer` agent), fix loop if needed; verify the wave; mark tasks done
 4. **Final verification** — full test suite + lint + type-check + spec coverage check on the worktree
 5. **Finishing handoff** — present PR / merge-to-main / leave-as-worktree choice; do not act without user confirmation
-
-## Process Flow
-
-```dot
-digraph direct_executing_plans {
-    "Plan loaded?" [shape=diamond];
-    "Ask user for plan path" [shape=box];
-    "graphify-out/graph.json exists?" [shape=diamond];
-    "Offer /graphify, wait" [shape=box];
-    "Create worktree" [shape=box];
-    "Baseline tests green?" [shape=diamond];
-    "Halt: baseline must pass first" [shape=box];
-    "Overlap analysis per wave" [shape=box];
-    "Any wave needs downgrade?" [shape=diamond];
-    "Split conflicting tasks into next wave" [shape=box];
-    "Dispatch wave (parallel oro-implementer subagents)" [shape=box];
-    "All implementers reported green?" [shape=diamond];
-    "Investigate failure, fix or roll back" [shape=box];
-    "Per task: spec-compliance review" [shape=box];
-    "Spec review PASS?" [shape=diamond];
-    "Re-dispatch oro-implementer with findings" [shape=box];
-    "Per task: code-quality review" [shape=box];
-    "Quality review APPROVED?" [shape=diamond];
-    "Wave verification" [shape=box];
-    "More waves?" [shape=diamond];
-    "Final verification (suite + lint + types + coverage)" [shape=box];
-    "Final green?" [shape=diamond];
-    "Finishing handoff (PR / merge / leave)" [shape=doublecircle];
-
-    "Plan loaded?" -> "Ask user for plan path" [label="no"];
-    "Plan loaded?" -> "graphify-out/graph.json exists?" [label="yes"];
-    "Ask user for plan path" -> "graphify-out/graph.json exists?";
-    "graphify-out/graph.json exists?" -> "Offer /graphify, wait" [label="no"];
-    "graphify-out/graph.json exists?" -> "Create worktree" [label="yes"];
-    "Offer /graphify, wait" -> "Create worktree";
-    "Create worktree" -> "Baseline tests green?";
-    "Baseline tests green?" -> "Halt: baseline must pass first" [label="no"];
-    "Baseline tests green?" -> "Overlap analysis per wave" [label="yes"];
-    "Overlap analysis per wave" -> "Any wave needs downgrade?";
-    "Any wave needs downgrade?" -> "Split conflicting tasks into next wave" [label="yes"];
-    "Split conflicting tasks into next wave" -> "Overlap analysis per wave";
-    "Any wave needs downgrade?" -> "Dispatch wave (parallel oro-implementer subagents)" [label="no"];
-    "Dispatch wave (parallel oro-implementer subagents)" -> "All implementers reported green?";
-    "All implementers reported green?" -> "Investigate failure, fix or roll back" [label="no"];
-    "Investigate failure, fix or roll back" -> "Dispatch wave (parallel oro-implementer subagents)";
-    "All implementers reported green?" -> "Per task: spec-compliance review" [label="yes"];
-    "Per task: spec-compliance review" -> "Spec review PASS?";
-    "Spec review PASS?" -> "Re-dispatch oro-implementer with findings" [label="no"];
-    "Re-dispatch oro-implementer with findings" -> "Per task: spec-compliance review";
-    "Spec review PASS?" -> "Per task: code-quality review" [label="yes"];
-    "Per task: code-quality review" -> "Quality review APPROVED?";
-    "Quality review APPROVED?" -> "Re-dispatch oro-implementer with findings" [label="no, changes requested"];
-    "Quality review APPROVED?" -> "Wave verification" [label="yes"];
-    "Wave verification" -> "More waves?";
-    "More waves?" -> "Dispatch wave (parallel oro-implementer subagents)" [label="yes, next wave"];
-    "More waves?" -> "Final verification (suite + lint + types + coverage)" [label="no"];
-    "Final verification (suite + lint + types + coverage)" -> "Final green?";
-    "Final green?" -> "Investigate failure, fix or roll back" [label="no"];
-    "Final green?" -> "Finishing handoff (PR / merge / leave)" [label="yes"];
-}
-```
 
 ---
 
@@ -208,16 +141,9 @@ The `oro-implementer` agent already enforces the TDD-before-commit contract (3.2
 
 ### 3.2 TDD-before-commit (the contract)
 
-Encoded inside the `oro-implementer` agent. Restated here for visibility — every task's commit MUST be backed by:
+The full contract lives in the `oro-implementer` agent: fail log → pass log → commit — the triple is the artifact.
 
-1. A test file change (new test or modified test in the manifest's Test file).
-2. **Fail log:** observed test failure output before implementation, run on the not-yet-modified branch state.
-3. **Pass log:** observed test pass output after implementation, run on the post-implementation worktree state.
-4. A single commit containing both the test and the implementation, with a message tying it to the task ID.
-
-If an oro-implementer returns without all four, the task is **not done**. Either re-dispatch with the missing artifact explicitly requested, or roll back the commit and re-dispatch fresh.
-
-Never accept "I tested it manually" or "the test passed but I didn't capture the output." The artifact is the fail log → pass log → commit triple. The spec-compliance reviewer (3.4) will verify this by running the HEAD test against the parent's implementation (in a throwaway worktree, overlaying the HEAD test onto the parent — not a plain parent checkout, which reverts the test too and falsely passes).
+The orchestrator's job here is to verify the implementer's report contains the fail log, pass log, and commit SHA before accepting it; a report missing any of the three is not done — re-dispatch or roll back.
 
 ### 3.3 Await all + verify wave-level integration
 
@@ -390,47 +316,13 @@ If any intersection is non-empty, serialize.
 | Baseline was red when we started, masked by new failures | Skipped phase 1.3 | Stash current work, return to base, fix baseline first |
 | "Final verification" was implicit ("should be fine") | Verification gate skipped | Run the suite explicitly, don't hand off without evidence |
 | Merge to base brings only some tasks; branch ref lags the real work | An agent ran `git checkout <sha>` on the shared worktree → detached HEAD, later commits left the branch ref behind | Before finishing, assert worktree HEAD == branch tip (see Phase 5); if detached, `git branch -f <branch> <worktree-HEAD>` then merge |
+| Editing files in the main checkout instead of the worktree | Worktree gate violated | Stop; move all work into the worktree |
+| Skipping the oro-task-reviewer | Review gate skipped — hard-gate violation | Dispatch the `oro-task-reviewer` before marking the task done |
+| Skipping the sibling-task touch-sets in the reviewer dispatch | Incomplete reviewer context — the agent's parallel-aware check will silently degrade | Re-dispatch the reviewer with the sibling touch sets included |
+| Writing ad-hoc subagent prompts instead of dispatching the named `oro-implementer` / `oro-task-reviewer` agents | Named-agent requirement skipped | Re-dispatch by agent name |
+| Main agent fixing reviewer findings itself instead of re-dispatching the oro-implementer | Context pollution | Re-dispatch the oro-implementer with the findings |
+| Reusing an old worktree without asking the user | Skipped the resume-or-fresh prompt (Phase 1.2) | Ask: resume or create fresh |
+| Parallelizing on file-disjointness alone (graphify skipped) | Cross-edge races will bite | Refresh/initialize the graph, or serialize every multi-task wave |
+| Implementer adds an unrequested abstraction, option, or speculative code | Ponytail violation | Re-dispatch with the minimal-code ladder re-emphasized |
 
----
-
-## How This Differs From the Seven Original Skills
-
-| Original | What this skill keeps | What it adds |
-|---|---|---|
-| superpowers:using-git-worktrees | Always-isolate-in-worktree rule | Worktree creation is phase 1, not a separate skill load |
-| superpowers:executing-plans | Plan-driven execution | Merged into the wave loop |
-| superpowers:subagent-driven-development | Per-task fresh subagent + 2 named agents (oro-implementer, oro-task-reviewer) | Agents live in `pipelines/dev-pipeline/agents/`, adapted to require worktree path, pre-queried graphify context, TDD artifact integrity check (re-run on parent commit), manifest-discipline check, and sibling-task conflict check |
-| superpowers:dispatching-parallel-agents | Parallel-when-independent | File + function + call-graph overlap check, not just "looks independent" |
-| superpowers:test-driven-development | Test-first, see-it-fail, see-it-pass | Enforced as a contract on every dispatched subagent, with an artifact check |
-| superpowers:verification-before-completion | Evidence before claims | Promoted to a phase with explicit commands and a gate |
-| superpowers:finishing-a-development-branch | PR / merge / leave options | Triggered only after final verification is green |
-
----
-
-## Red Flags — Stop and Course-Correct
-
-- Editing files in the main checkout instead of the worktree
-- A task commit with no failing-test log preceding it
-- Two parallel implementers touching the same file
-- Implementer returns "done" without fail + pass logs → not done
-- Skipping the oro-task-reviewer → hard-gate violation
-- Skipping the sibling-task touch-sets in the reviewer dispatch — the agent's parallel-aware check will silently degrade
-- Writing ad-hoc subagent prompts instead of dispatching the named `oro-implementer` / `oro-task-reviewer` agents
-- Main agent reading source files directly → use graphify
-- Main agent fixing reviewer findings itself instead of re-dispatching the oro-implementer (context pollution)
-- "Final verification" being a sentence instead of a command run
-- Handing off to finishing before running the full suite
-- Reusing an old worktree without asking the user
-- Skipping graphify and parallelizing on file-disjointness alone (cross-edge races will bite)
-- Implementer adds an unrequested abstraction, option, or speculative code → ponytail violation; re-dispatch with the minimal-code ladder re-emphasized
-- Any agent running `git checkout` on the **shared** worktree (e.g. a reviewer "checking out the parent to verify TDD") → detaches HEAD, races siblings, and orphans the branch ref so later commits land off-branch. Verify parent-commit behavior in a throwaway `git worktree add --detach`, never by checking out the shared worktree.
-
----
-
-## Key Principles
-
-- **Worktree always.** Main checkout is read-only for the duration.
-- **TDD is a contract, not a suggestion.** No fail-log + pass-log + commit triple → not done.
-- **Parallelism requires proof.** File-disjoint + function-disjoint + no cross-edges. When in doubt, serialize.
-- **Main stays light.** Read via graphify, edit via subagents, status in ≤5 lines.
-- **Evidence before finishing.** Full suite + lint + types green, on the worktree, before any PR or merge.
+- Never verify parent-commit behavior by running `git checkout` on the **shared** worktree (e.g. a reviewer "checking out the parent to verify TDD") — it detaches HEAD, races siblings, and orphans the branch ref so later commits land off-branch. Verify in a throwaway `git worktree add --detach`, overlaying the HEAD test onto the parent — not a plain parent checkout, which reverts the test too and falsely passes.

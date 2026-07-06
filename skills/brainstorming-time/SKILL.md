@@ -1,6 +1,6 @@
 ---
 name: brainstorming-time
-description: "Use when turning an idea, feature, or change request into a reviewable spec and you want a faster, lower-ceremony alternative to superpowers:brainstorming. Uses graphify as the primary source for codebase context (initializes it if missing) and produces a mind map for visual review before the written spec."
+description: "Use when turning an idea, feature, or change request into a reviewable spec — mind map first, then written spec — before any creative work. Replaces superpowers:brainstorming. Hands off to writing-plans-time."
 ---
 
 # Direct Brainstorming
@@ -31,40 +31,6 @@ Create a TodoWrite todo for each item and complete them in order:
 7. **Spec self-review** — scan inline for placeholders, contradictions, ambiguity, scope creep; fix in place
 8. **User reviews the spec file** — ask for approval or changes; loop until approved
 9. **Hand off to writing-plans-time** — invoke `writing-plans-time` to produce the implementation plan; do not invoke any implementation skill directly
-
-## Process Flow
-
-```dot
-digraph direct_brainstorming {
-    "graphify-out/graph.json exists?" [shape=diamond];
-    "Offer to run /graphify, wait" [shape=box];
-    "Gather context via graphify query" [shape=box];
-    "Ask batched clarifying questions" [shape=box];
-    "Propose one recommended approach" [shape=box];
-    "Present Mermaid mind map" [shape=box];
-    "Mind map shape OK?" [shape=diamond];
-    "Write spec file" [shape=box];
-    "Self-review spec inline" [shape=box];
-    "User approves spec?" [shape=diamond];
-    "Invoke writing-plans-time" [shape=doublecircle];
-
-    "graphify-out/graph.json exists?" -> "Offer to run /graphify, wait" [label="no"];
-    "graphify-out/graph.json exists?" -> "Gather context via graphify query" [label="yes"];
-    "Offer to run /graphify, wait" -> "Gather context via graphify query";
-    "Gather context via graphify query" -> "Ask batched clarifying questions";
-    "Ask batched clarifying questions" -> "Propose one recommended approach";
-    "Propose one recommended approach" -> "Present Mermaid mind map";
-    "Present Mermaid mind map" -> "Mind map shape OK?";
-    "Mind map shape OK?" -> "Present Mermaid mind map" [label="no, revise"];
-    "Mind map shape OK?" -> "Write spec file" [label="yes"];
-    "Write spec file" -> "Self-review spec inline";
-    "Self-review spec inline" -> "User approves spec?";
-    "User approves spec?" -> "Write spec file" [label="changes"];
-    "User approves spec?" -> "Invoke writing-plans-time" [label="yes"];
-}
-```
-
-The terminal state is invoking `writing-plans-time`. Do not jump to frontend-design, mcp-builder, or any other implementation skill.
 
 ## Graphify Integration (Required)
 
@@ -121,6 +87,8 @@ mindmap
 
 After presenting the mind map, ask one direct question: **"Does this shape match what you want, or is a branch missing/wrong?"** Iterate the mind map (not the prose) until the user confirms the shape. Only then write the spec.
 
+Apply "does this need to exist?" to every proposed component; cut scope that fails it before it reaches the spec.
+
 ## Spec File
 
 - Default path: `docs/specs/YYYY-MM-DD-<topic>.md` (user preferences override)
@@ -146,25 +114,14 @@ Fix in place. Don't loop on self-review.
 
 Loop until the user approves, then invoke `writing-plans-time`.
 
-## How This Differs From superpowers:brainstorming
-
-| superpowers:brainstorming | brainstorming-time |
-|---|---|
-| One question at a time | Batched questions in a single message |
-| 2–3 approaches with tradeoffs | One recommended approach + one rejected alternative |
-| Section-by-section design approval | Mind map first, then full spec at once |
-| Optional visual companion (browser) | Mermaid mind map inline in the chat |
-| Reads files directly for context | Reads via `graphify query`; initializes graphify if missing |
-| Hand-off: superpowers:writing-plans | `writing-plans-time` (the rest of the direct-* chain) |
-
 ## Red Flags — Stop and Course-Correct
 
-- About to call Read/Grep before running a single `graphify query` → stop, query first
-- `graphify-out/` is missing and you proceeded anyway → stop, offer to initialize
-- Writing the spec without showing a mind map → stop, mind map first
-- Asking the user one question, getting an answer, then asking the next → batch them
-- Proposing 2–3 approaches with full tradeoff tables → that's brainstorming, not this skill
-- Invoking an implementation skill before user approves the written spec → hard gate violation
+- Calling Read/Grep before running a single `graphify query`
+- `graphify-out/` is missing and you proceeded anyway
+- Writing the spec without showing a mind map
+- Asking the user one question at a time instead of batching
+- Proposing 2–3 approaches with full tradeoff tables
+- Invoking an implementation skill before user approves the written spec
 
 ## Memory protocol (when run under /dev)
 
@@ -197,12 +154,3 @@ user at any gate. Read `.dev/memory/` first, then clear each gate as follows:
 
 All new decisions/glossary terms are appended to `.dev/memory/` per the memory protocol.
 This section is inert when the skill runs standalone (not under `/dev --auto`).
-
-## Key Principles
-
-- **Graph before file.** The graph is the entry point; files are the fallback.
-- **Batch before drip.** One message of questions beats five rounds of one.
-- **Picture before prose.** A mind map catches structural mistakes faster than a spec does.
-- **One approach, named tradeoff.** Don't pad with alternatives the user didn't ask for.
-- **Hard gate holds.** No code until the spec is approved, no matter how small the task looks.
-- **Ponytail first rung.** Apply "does this need to exist?" to every proposed component; cut scope that fails it before it reaches the spec.
