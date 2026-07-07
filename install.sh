@@ -219,6 +219,12 @@ uninstall() {
   for item in "${AGENTS[@]}" "${DEV_AGENTS[@]}" "${LOOP_AGENTS[@]}"; do rm -f "$AGENTS_DIR/$item.md"; done
   for item in "${COMMANDS[@]}" "${DEV_COMMANDS[@]}" "${LOOP_COMMANDS[@]}" "${FIX_COMMANDS[@]}" "${REVIEW_COMMANDS[@]}"; do rm -f "$COMMANDS_DIR/$item.md"; done
   rm -f "$HOOK_DEST" "$STATE_DEST" "$BASE_DIR/memory-protocol.md" "$MODE_FILE"
+  rm -f "$BASE_DIR/dev-resume-guard.sh" "$BASE_DIR/dev-auto-repos" "$BASE_DIR/oro-usage.json"
+  # Drop the resume-guard crontab line only if present (no-op otherwise, so a
+  # sandboxed uninstall never rewrites the real crontab).
+  if crontab -l 2>/dev/null | grep -q dev-resume-guard; then
+    crontab -l 2>/dev/null | grep -v dev-resume-guard | crontab -
+  fi
   # Only remove the statusline if it's ours (has the caveman chip).
   if [[ -f "$STATUSLINE_FILE" ]] && grep -q 'claude-caveman' "$STATUSLINE_FILE"; then
     rm -f "$STATUSLINE_FILE"
@@ -280,6 +286,12 @@ done
 
 # Memory-protocol contract referenced by the dev agents and chain skills.
 install_item "$SCRIPT_DIR/pipelines/dev-pipeline/memory-protocol.md" "$BASE_DIR/memory-protocol.md" "dev:memory-protocol"
+
+# /dev --auto resume guard (cron-invoked dead-man's switch). Copied, not
+# symlinked, so the crontab entry survives the repo moving.
+cp "$SCRIPT_DIR/pipelines/dev-pipeline/dev-resume-guard.sh" "$BASE_DIR/dev-resume-guard.sh"
+chmod +x "$BASE_DIR/dev-resume-guard.sh"
+echo "  + dev:resume-guard"
 
 for agent in "${LOOP_AGENTS[@]}"; do
   install_item "$SCRIPT_DIR/pipelines/loop-pipeline/agents/$agent.md" "$AGENTS_DIR/$agent.md" "agent:$agent"

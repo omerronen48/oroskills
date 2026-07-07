@@ -83,6 +83,7 @@ Every decision — `[interactive]`, `[auto]`, and `[escalated]` — is logged to
 
 When invoked with `--auto`, the loop runs unattended: it never waits for a human at a gate.
 
+- **Resume switch (arm).** First action on `--auto` start: `touch .dev/auto-resume`; capture the orchestrating claude pid into the lock — `ps -o ppid= -p $$ | tr -d ' ' > .dev/auto.lock` (the Bash tool's parent is the claude process); append this repo's absolute path to `~/.claude/dev-auto-repos` unless already listed; ensure the cron guard is installed: `crontab -l 2>/dev/null | grep -q dev-resume-guard || { (crontab -l 2>/dev/null; echo '*/15 * * * * sh "$HOME/.claude/dev-resume-guard.sh"') | crontab -; }`.
 - **Propagate auto-context.** When running the `brainstorming-time` and `writing-plans-time` skills (phase-loop steps b and c), prefix the invocation with an explicit instruction that they are in **autonomous mode** — decide from the roadmap + `.dev/memory/` and self-review instead of asking. (Each skill's own "Autonomous mode" section defines the gate-clearing behavior.)
 - **Reversible forks** continue with the sensible default, logged to `decisions.md` tagged `[auto]` (unchanged executor policy).
 - **Irreversible forks** — when `oro-phase-executor` returns an `ESCALATE:` block, or an auto-brainstorm hits an irreversible question the roadmap+memory cannot answer:
@@ -92,6 +93,7 @@ When invoked with `--auto`, the loop runs unattended: it never waits for a human
 - **`--design <uuid>` that cannot resolve** (auth absent in a headless run, or project unreachable) is an irreversible/external blocker: park an escalation `("design UUID <ref> could not be resolved — auth absent or project unreachable")` to `escalations.md` and halt. A **folder** ref always resolves headless and is the recommended `--auto` source.
 - **Never merge** — `--auto` keeps the no-merge rule from "Final report": the loop opens branches/PRs but a human merges.
 - **Resume.** Re-running `/dev --auto` resolves nothing automatically: the operator records the resolution in `decisions.md` tagged `[escalated]`, clears the `blocked` status, and re-runs; the loop resumes at the first non-`done` phase.
+- **Resume switch (disarm).** On EVERY orderly ending — final report, escalation halt, empty roadmap — `rm -f .dev/auto-resume .dev/auto.lock` (the guard prunes the registry line on its next tick). The switch stays armed only when the run dies mid-flight (usage limit, crash): the cron guard then relaunches `claude -p '/dev --auto'` once the exhausted window resets, the weekly limit taking precedence over the 5-hour one (`~/.claude/dev-resume-guard.sh`, fed by the statusline usage snapshot).
 - **Empty roadmap.** With no phases and no `--import`, `--auto` does not start the interactive project-time path — it parks an escalation ("no phases to run; import a roadmap") and halts.
 
 ### Phase status `blocked`

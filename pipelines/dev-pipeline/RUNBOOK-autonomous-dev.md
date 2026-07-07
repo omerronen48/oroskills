@@ -32,6 +32,22 @@ machine that has them.
 - **`/loop` skill or ScheduleWakeup** — for an in-session self-paced cadence while you have
   Claude Code open.
 
+## Auto-resume (dead-man's switch)
+
+`/dev --auto` arms a switch at start — `.dev/auto-resume` marker, claude pid in `.dev/auto.lock`,
+repo path in `~/.claude/dev-auto-repos`, and a `*/15 min` crontab entry running
+`~/.claude/dev-resume-guard.sh` — and disarms it on every orderly ending. If the run dies
+mid-flight (usage limit, crash) the switch stays armed and the guard relaunches
+`claude -p '/dev --auto'` once usage allows: an exhausted window blocks until *its* reset, the
+weekly window checked before the 5-hour one. Usage comes from `~/.claude/oro-usage.json`
+(written by the statusline bridge); with no snapshot the guard just tries — a limited headless
+run fails fast and the next tick retries. `progress.md` makes relaunches idempotent.
+
+- Status: `crontab -l | grep dev-resume-guard` · `cat ~/.claude/dev-auto-repos`
+- Disable one repo: `rm -f <repo>/.dev/auto-resume` · all: remove the crontab line
+- Ceiling (ponytail): run-liveness keys on the claude pid captured at bootstrap; a bad pid read
+  means at worst one duplicate relaunch, which worktree isolation keeps from corrupting state.
+
 ## Recovering from a halt (parked escalation)
 
 When the loop halts, a phase is `blocked` and the fork is recorded in `.dev/memory/escalations.md`.
@@ -54,5 +70,5 @@ When the loop halts, a phase is `blocked` and the fork is recorded in `.dev/memo
 - Cloud `/schedule` routines are possible but the cloud env must clone the repo and provide
   graphify + the test runner (same research-preview caveat as the loop-pipeline). Local
   scheduling is the supported default.
-- There is no usage-window guard: a long unattended run can hit the usage quota mid-run and
-  stop. Re-run `/dev --auto` when the window resets, or wrap it in a `/schedule` routine.
+- Quota interruptions are not caught mid-run: a run that hits the usage limit dies where it
+  stands. The resume guard (below) relaunches it once the exhausted window resets.

@@ -144,6 +144,8 @@ Two agent loops that auto-develop a repo through a **GitHub Issues control plane
 - **Labels:** `risk:{low,medium,high}` · `type:{bug,feature,docs,test,refactor,chore}` · `agent:ready` · `needs:human` · `agent:in-progress`.
 - **Safety:** run via `/schedule` routines (see `pipelines/loop-pipeline/RUNBOOK.md`). `loop-settings.json` **denies `gh pr merge`** as a hard stop. Honest limit: routines can't carry per-routine permission scopes today, so isolation rests on the read-only classifier + human PR review, not a hard sandbox.
 
+`--auto` runs are guarded by a **dead-man's switch**: a cron-invoked `~/.claude/dev-resume-guard.sh` relaunches a run that died mid-roadmap (usage limit, crash) once the exhausted window resets — the weekly limit takes precedence over the 5-hour one (reset times from the statusline's `oro-usage.json` snapshot). Armed at `--auto` start, disarmed on every orderly ending; `progress.md` makes relaunches idempotent.
+
 ## Requirements
 
 ### graphify (the headline dependency)

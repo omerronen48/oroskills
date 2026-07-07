@@ -34,6 +34,7 @@ done
 [ -x "$SB/.claude/caveman-hook.sh" ] || fail "caveman-hook.sh missing"
 [ -x "$SB/.claude/caveman-state.sh" ] || fail "caveman-state.sh missing"
 [ -f "$SB/.claude/statusline-command.sh" ] || fail "statusline missing"
+[ -x "$SB/.claude/dev-resume-guard.sh" ] || fail "dev-resume-guard.sh missing"
 [ "$(cat "$SB/.claude/.oroskills-mode")" = "symlink" ] || fail "mode marker wrong"
 command -v jq >/dev/null && {
   jq -e '.hooks.SessionStart' "$SB/.claude/settings.json" >/dev/null || fail "SessionStart hooks not registered"
@@ -47,6 +48,7 @@ HOME="$SB" PATH="$SB/bin:$PATH" "$SB/repo/install.sh" --uninstall >/dev/null
 [ ! -e "$SB/.claude/commands/ship.md" ] || fail "uninstall left commands"
 [ ! -e "$SB/.claude/memory-protocol.md" ] || fail "uninstall left memory-protocol"
 [ ! -e "$SB/.claude/caveman-hook.sh" ] || fail "uninstall left hook scripts"
+[ ! -e "$SB/.claude/dev-resume-guard.sh" ] || fail "uninstall left resume guard"
 command -v jq >/dev/null && {
   [ "$(jq -r '[.hooks[]?[]?.hooks[]?.command] | length' "$SB/.claude/settings.json")" = "0" ] || fail "uninstall left hook entries"
 }
