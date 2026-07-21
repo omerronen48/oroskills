@@ -57,6 +57,9 @@ Emoji bar installed and wired into `settings.json`:
 | **writing-plans-time** | Approved spec → plan with a File Edit Manifest and tasks grouped into parallel waves. |
 | **executing-plan-time** | Approved plan → code. Worktree, parallel implementer subagents, TDD-before-commit, spec + code-quality review, branch finishing. |
 | **caveman** | Compressed comms mode (~75% fewer tokens, full accuracy). Trigger "caveman mode" / `/caveman`, or on by default. From [mattpocock/skills](https://github.com/mattpocock/skills/blob/main/skills/productivity/caveman/SKILL.md). |
+| **remotion-best-practices** | Remotion video authoring guidance (bundles remotion-create/-markup/-interactivity/-saas + mediabunny). Auto-triggers when working in a Remotion project. |
+| **remotion-captions** | Add/transcribe/import captions (SRT) and render animated captions in Remotion. |
+| **remotion-render** | Render Remotion compositions to video, including transparent-video output. |
 
 - **The chain:** project-time → brainstorming-time → writing-plans-time → executing-plan-time. Don't skip stages; each hands off to the next.
 - `project-time` is optional — only for a new project/large initiative. Single feature in an existing repo: start at `brainstorming-time`.

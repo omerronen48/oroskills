@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-SKILLS=(project-time brainstorming-time writing-plans-time executing-plan-time caveman)
+SKILLS=(project-time brainstorming-time writing-plans-time executing-plan-time caveman remotion-best-practices remotion-captions remotion-render)
 # The ship pipeline ships as agents + a slash command rather than a skill.
 # Agents are namespaced (oro-*) to avoid collisions in the global agents dir.
 AGENTS=(oro-planner oro-coder oro-tester oro-reviewer)
