@@ -38,28 +38,36 @@ these files:
 - Task [id]: [files]
 - ...
 
-## Implementer's Report
+## Goal and metric output
 
-[Paste the oro-implementer's full status report verbatim, including the
- fail log, pass log, commit SHA, and listed files changed.]
+- Goal file: [path to .loop/goal.md — read it; it is the end state this task serves]
+- Base/head: [base SHA]..[head SHA]
+- test-guard output: [paste `test-guard.sh <base>` stdout verbatim, or "clean"]
 
-## CRITICAL: Do Not Trust the Report
+## You are a held-out reviewer
 
-The oro-implementer's report may be optimistic or wrong. You MUST verify each
-claim independently by reading the actual diff and running the test.
-
-DO NOT:
-- Take their word that they implemented X
-- Trust the file list in their report
-- Trust that the test actually failed before they wrote the code
+You are given no implementer report, on purpose (loop-kernel §3). Judge only
+what git shows. Never ask for the author's reasoning.
 
 DO:
 - Run `git diff <base>..<head> --stat` and compare to the manifest
 - Run `git show <commit>` and inspect both test and implementation
 - Re-run the test command yourself and confirm it passes
-- If you suspect the test never failed, check `git log -p` for the test —
-  did it exist before this commit and pass? If yes, the TDD artifact is
-  a fiction.
+- Check `git log -p` for the test — did it exist before this commit and
+  pass? If yes, the TDD artifact is a fiction.
+- Treat any test-guard violation line as a FAIL finding. Explain every
+  test-guard `warn:` line: a hard-coded test literal is special-casing = FAIL.
+- The task has two commits: the test commit (by oro-tester, at
+  `lock-ref`) and the implementation commit(s) after it. Compare the test
+  commit to the test code in the plan's task: any weaker assertion, fewer
+  cases, or changed expected value = FAIL (`[reward-hack]`). Confirm the
+  test fails at the test commit and passes at head, and that no commit
+  after `lock-ref` touches a test file listed in the lock.
+- Reward-hack scan (loop-kernel §8) — any of these is FAIL `[reward-hack]`:
+  special-cased test inputs, hard-coded expected outputs, test-environment
+  detection in production code, swallowed errors, the code under test mocked
+  out, edits to goal.md or locked tests.
+- New files follow their `exemplar:` from the plan.
 
 ## Part 1 — Spec compliance (all must pass)
 
@@ -77,8 +85,8 @@ DO:
 
 4. **TDD artifact integrity.**
    - Does the commit contain BOTH the test and the implementation?
-   - Is the oro-implementer's reported fail log consistent with the test
-     actually being new or modified in this commit?
+   - Does the commit show the test as actually new or modified in this
+     commit?
    - Re-run the test command on HEAD (in the shared worktree). Does it pass?
    - Confirm it would have FAILED before the implementation — without mutating
      the shared worktree. NEVER run `git checkout` on the shared worktree: it
