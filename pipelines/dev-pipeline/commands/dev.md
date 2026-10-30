@@ -31,7 +31,7 @@ If invoked with `--design <ref>`, resolve the design source at bootstrap and wri
 
 Decide how `progress.md` gets its phases:
 
-- **`--auto` flag** — `/dev --auto [--import <path>]` runs the loop unattended (see Autonomous mode below).
+- **`--auto` flag** — `/dev --auto [--import <path>] [<idea>]` runs the loop unattended (see Autonomous mode below); with an empty roadmap and an idea, it first runs project-time interactively (Interactive bootstrap).
 - **`--design <ref>` flag** — `/dev --design <ref>` resolves a design source at bootstrap and writes `.dev/memory/design.md` (see Bootstrap → Design source above). Composes with other flags: `/dev --auto --design <ref>`.
 - **Explicit import** — if invoked as `/dev --import <path> [...]`: seed from `<path>` (see Import below). If `progress.md` already has phases, refuse unless `--force` is also given: "progress.md already has phases; re-run with --force to overwrite."
 - **Auto-detect import** — else if `progress.md` has no phases, scan in order `.dev/roadmap.md`, `ROADMAP.md`, `docs/roadmap.md`; if one exists, offer: "Found <path>. Import it as the phase list?" On yes, import it (see Import below).
@@ -95,7 +95,9 @@ When invoked with `--auto`, the loop runs unattended: it never waits for a human
 - **Never merge** — `--auto` keeps the no-merge rule from "Final report": the loop opens branches/PRs but a human merges.
 - **Resume.** Re-running `/dev --auto` resolves nothing automatically: the operator records the resolution in `decisions.md` tagged `[escalated]`, clears the `blocked` status, and re-runs; the loop resumes at the first non-`done` phase.
 - **Resume switch (disarm).** On EVERY orderly ending — final report, escalation halt, empty roadmap — `rm -f .dev/auto-resume .dev/auto.lock` (the guard prunes the registry line on its next tick). The switch stays armed only when the run dies mid-flight (usage limit, crash): the cron guard then relaunches `claude -p '/dev --auto'` once the exhausted window resets, the weekly limit taking precedence over the 5-hour one (`~/.claude/dev-resume-guard.sh`, fed by the statusline usage snapshot). Also `rm -f .loop/auto`.
-- **Empty roadmap.** With no phases and no `--import`, `--auto` does not start the interactive project-time path — it parks an escalation ("no phases to run; import a roadmap") and halts.
+- **Empty roadmap.** With no phases and no `--import`:
+  - **Interactive bootstrap** — if `$ARGUMENTS` contains a project direction besides flags (e.g. `/dev --auto I want a product that does X`), do NOT arm the resume switch yet. Run the `project-time` skill **interactively** (the one stretch of an `--auto` run that waits for the user) until it has written `goals.md` and seeded `progress.md`. Then switch to autonomous mode: arm the resume switch (first `--auto` bullet) and start the phase loop unattended. If the user abandons project-time before phases exist, stop without arming.
+  - **No direction** — bare `/dev --auto` parks an escalation ("no phases to run; import a roadmap or pass an idea") and halts.
 
 ### Phase status `blocked`
 
