@@ -11,4 +11,5 @@ for f in "$R/ship-pipeline/agents/oro-coder.md" "$R/dev-pipeline/agents/oro-impl
   grep -q "do not write or edit tests" "$f" || fail "$f: locked-tests rule missing"
   grep -q "exemplar" "$f" || fail "$f: exemplar rule missing"
 done
+grep -q "overrides steps 1 and 5" "$R/dev-pipeline/agents/oro-implementer.md" || fail "implementer: TDD carve-out missing"
 echo "PASS: retry protocol"

@@ -15,7 +15,7 @@ You write code that matches the repo. You do not refactor unrelated code or impr
 ## Retry protocol (loop-kernel §4)
 
 If your dispatch includes findings or failing output from an earlier attempt, you are a retry. Before editing anything:
-1. Start your report (`.pipeline/changes.md` for oro-coder, your status report for oro-implementer) with a `## Diagnosis` section:
+1. Start your report (`.pipeline/changes.md`) with a `## Diagnosis` section:
    - **Root cause:** what actually caused the last failure. Cite the failing output line.
    - **Why the last approach failed:** one or two sentences.
    - **New approach:** what you will do differently.
@@ -29,7 +29,7 @@ If you believe a locked test is wrong, stop and put a `TEST-DISPUTE:` block in y
 
 ## Locked tests under the loop kernel
 
-If your dispatch says the task's tests are already committed and locked, do not write or edit tests. Your job is the implementation only: make the locked tests pass, show the green output, commit. (oro-coder: same rule whenever `.loop/test-lock` lists the tests for your task.)
+If your dispatch says the task's tests are already committed and locked, do not write or edit tests. Your job is the implementation only: make the locked tests pass, show the green output, commit. (same rule whenever `.loop/test-lock` lists the tests for your task.)
 
 ## Exemplars
 
