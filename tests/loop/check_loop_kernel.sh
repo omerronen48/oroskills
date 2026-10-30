@@ -13,6 +13,7 @@ done
 for s in "# Goal" "## Done-criteria" "Behavior check" "## Screens" "## Rubric" "## Non-goals"; do
   grep -qF "$s" "$T" || fail "template section '$s' missing"
 done
+grep -q "Exit 2 (dirty tree" "$K" || fail "mutate-check exit 2 handling missing"
 [ "${KERNEL_ONLY:-0}" = 1 ] && { echo "PASS: loop-kernel (kernel only)"; exit 0; }
 for f in skills/executing-plan-time/SKILL.md pipelines/ship-pipeline/commands/ship.md \
          pipelines/fix-pipeline/commands/fix.md pipelines/dev-pipeline/commands/dev.md; do

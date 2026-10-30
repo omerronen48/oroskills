@@ -7,7 +7,7 @@ description: Shared loop contract for /dev, /ship, /fix and /loop-worker — goa
 
 An agent keeps working only as long as something other than the user can say "this is wrong, try again". This contract is that something. Pipelines reference sections below by number; they do not restate them.
 
-Run state lives in the **target project** under `.loop/` (git-ignored): `goal.md`, `findings.md`, `proposals/`, `auto`, `stop-blocks`, `escalations.md`. Interactive runs start with `rm -rf .loop && mkdir -p .loop` (clears any stale `auto` marker).
+Run state lives in the **target project** under `.loop/` (git-ignored): `goal.md`, `findings.md`, `proposals/`, `auto`, `stop-blocks`, `escalations.md`, `active`, `test-lock`, `lock-ref`, `lock-ref-<task-id>`, `shots/` (run history is not here: it lives in `.dev/memory/history.jsonl`). Interactive runs start with `rm -rf .loop && mkdir -p .loop` (clears any stale `auto` marker).
 
 Kernel scripts live next to this file: `KERNEL=~/.claude/skills/loop-kernel` (or `.claude/skills/loop-kernel` for a project install).
 
@@ -29,7 +29,7 @@ Kernel scripts live next to this file: `KERNEL=~/.claude/skills/loop-kernel` (or
 After every coder/implementer attempt, the orchestrator runs:
 1. Each done-criterion command. On failure keep the command + last 80 lines of output as a finding.
 2. `bash "$KERNEL/test-guard.sh" <ref> [<manifest-file>]`, where `<ref>` = `.loop/lock-ref` if it exists (so the coder is judged only on what it changed after tests were locked), else the run base. Exit 1 → each printed line is a finding, tagged `[reward-hack]`. `warn:` lines go to the reviewer. Exit 2 → metric failure (report; never treat as pass).
-3. **Once per run, after all tasks pass and before §5:** `bash "$KERNEL/mutate-check.sh" <run-base> "<test command>"` on a clean tree. Exit 1 (tests still pass with the change reverted) → red, finding `[reward-hack] tests don't exercise the change`, retry via §4 with the **test author**, not the coder. Exit 3 (mutants survived) → dispatch the test author once in strengthen mode to add tests that kill the survivors (locked tests stay untouched), lock the new tests, re-run. Still surviving → `[metric]` finding for the reviewer.
+3. **Once per run, after all tasks pass and before §5:** `bash "$KERNEL/mutate-check.sh" <run-base> "<test command>"` on a clean tree. Exit 1 (tests still pass with the change reverted) → red, finding `[reward-hack] tests don't exercise the change`, retry via §4 with the **test author**, not the coder. Exit 3 (mutants survived) → dispatch the test author once in strengthen mode to add tests that kill the survivors (locked tests stay untouched), lock the new tests, re-run. Still surviving → `[metric]` finding for the reviewer. Exit 2 (dirty tree or bad ref) → metric failure: report it, never treat as pass; commit or clean the tree and re-run.
 Append every finding to `.loop/findings.md` as `- [metric] <task>: <line>`.
 
 ## 3. Verifier — blind and held out
@@ -69,7 +69,7 @@ After all tasks pass, before finishing:
 First append one line of run history. `.loop/` is wiped per run, so history lives at `.dev/memory/history.jsonl` (create `.dev/memory/` if missing):
 `jq -nc --arg pipeline <ship|fix|dev> --arg goal "<first line of Goal>" --argjson attempts '<{"<task>":n,...}>' --argjson climb '[<score per round>]' --argjson caps <n> --argjson hacks <count of [reward-hack] findings> --arg date "$(date -u +%FT%TZ)" '{date:$date,pipeline:$pipeline,goal:$goal,attempts:$attempts,climb:$climb,caps:$caps,reward_hacks:$hacks}' >> .dev/memory/history.jsonl`
 
-Dispatch `oro-distiller` with: `.loop/findings.md`, `.loop/escalations.md` (if any), `.dev/memory/history.jsonl`, the target project's `.dev/memory/lessons.md` path, and the oroskills repo path (`readlink -f ~/.claude/skills/loop-kernel/..` → repo `skills/`; if not a symlink install, pass none and it skips proposals).
+Dispatch `oro-distiller` with: `.loop/findings.md`, `.loop/escalations.md` and `.dev/memory/escalations.md` (whichever exist), `.dev/memory/history.jsonl`, the target project's `.dev/memory/lessons.md` path, and the oroskills repo path (`readlink -f ~/.claude/skills/loop-kernel/..` → repo `skills/`; if not a symlink install, pass none and it skips proposals).
 - It appends/increments lessons and writes proposals to `.loop/proposals/*.diff`. It **never** applies a diff.
 - Interactive: list each proposal (file + one-line rationale), ask approve/reject per item, `git -C <oroskills> apply <diff>` for approved ones. Report apply failures; leave the file.
 - `--auto`: list proposals in the run summary only.

@@ -88,12 +88,15 @@ Rules:
 - Create: `exact/path/to/file.py`
 - Modify: `exact/path/to/existing.py:123-145`
 - Test:   `tests/exact/path/to/test.py`
+- Exemplar: `exact/path/to/similar_existing.py`
 
 - [ ] **Step 1: Write the failing test**
 ```python
 def test_specific_behavior():
-    result = function(input)
-    assert result == expected
+    assert function(input_a) == expected_a
+    assert function(input_b) == expected_b
+    with pytest.raises(ValueError):
+        function(bad_input)
 ```
 - [ ] **Step 2: Run test to verify it fails**
   Run: `pytest tests/path/test.py::test_name -v`
@@ -101,7 +104,9 @@ def test_specific_behavior():
 - [ ] **Step 3: Write minimal implementation**
 ```python
 def function(input):
-    return expected
+    if not valid(input):
+        raise ValueError(input)
+    return transform(input)
 ```
 - [ ] **Step 4: Run test to verify it passes**
   Run: `pytest tests/path/test.py::test_name -v`
