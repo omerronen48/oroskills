@@ -82,9 +82,9 @@ Every decision — `[interactive]`, `[auto]`, and `[escalated]` — is logged to
 
 ## Autonomous mode (`--auto`)
 
-When invoked with `--auto`, the loop runs unattended: it never waits for a human at a gate.
+When invoked with `--auto`, the loop runs unattended: it never waits for a human at a gate, except the one-time Interactive bootstrap when started with an idea and an empty roadmap.
 
-- **Resume switch (arm).** First action on `--auto` start: `touch .dev/auto-resume`; capture the orchestrating claude pid into the lock — `ps -o ppid= -p $$ | tr -d ' ' > .dev/auto.lock` (the Bash tool's parent is the claude process); append this repo's absolute path to `~/.claude/dev-auto-repos` unless already listed; ensure the cron guard is installed: `crontab -l 2>/dev/null | grep -q dev-resume-guard || { (crontab -l 2>/dev/null; echo '*/15 * * * * sh "$HOME/.claude/dev-resume-guard.sh"') | crontab -; }`. Also `mkdir -p .loop && touch .loop/auto` so the loop-kernel Stop hook (§7) holds the session to the goal.
+- **Resume switch (arm).** First action on `--auto` start (after Interactive bootstrap, if one runs): `touch .dev/auto-resume`; capture the orchestrating claude pid into the lock — `ps -o ppid= -p $$ | tr -d ' ' > .dev/auto.lock` (the Bash tool's parent is the claude process); append this repo's absolute path to `~/.claude/dev-auto-repos` unless already listed; ensure the cron guard is installed: `crontab -l 2>/dev/null | grep -q dev-resume-guard || { (crontab -l 2>/dev/null; echo '*/15 * * * * sh "$HOME/.claude/dev-resume-guard.sh"') | crontab -; }`. Also `mkdir -p .loop && touch .loop/auto` so the loop-kernel Stop hook (§7) holds the session to the goal.
 - **Propagate auto-context.** When running the `brainstorming-time` and `writing-plans-time` skills (phase-loop steps b and c), prefix the invocation with an explicit instruction that they are in **autonomous mode** — decide from the roadmap + `.dev/memory/` and self-review instead of asking. (Each skill's own "Autonomous mode" section defines the gate-clearing behavior.)
 - **Reversible forks** continue with the sensible default, logged to `decisions.md` tagged `[auto]` (unchanged executor policy).
 - **Irreversible forks** — when `oro-phase-executor` returns an `ESCALATE:` block, or an auto-brainstorm hits an irreversible question the roadmap+memory cannot answer:
