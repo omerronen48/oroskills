@@ -113,6 +113,15 @@ git commit -m "feat: add specific feature"
 ```
 ````
 
+## Test quality rules
+
+Each task's test code is committed by oro-tester before the implementer runs (loop-kernel §8), and locked, so the implementer cannot change it. Write tests that are hard to game:
+- Assert behavior through public interfaces, not implementation details.
+- Use at least 2 distinct inputs per behavior, so that hard-coding one answer cannot pass. Include at least one edge or error case per task.
+- The test must fail against the code as it exists before the task, because the behavior is missing.
+- The plan's last task (or a dedicated task) adds the phase's **Behavior check**: a command that exercises the real end state (run the CLI, curl the endpoint, headless page load). It becomes a done-criterion in `.loop/goal.md`.
+- Name an `exemplar:` existing file for every file a task creates.
+
 ## Parallelization (Required Section)
 
 After tasks are written, derive waves. **Two tasks can be in the same wave iff none of them depends-on the other and they touch disjoint files** (file-disjointness is non-negotiable — overlapping edits race even when logical dependencies look clean).
@@ -156,6 +165,7 @@ Same rules as superpowers:writing-plans. These are plan failures:
 - References to types/functions/methods not defined in any task
 - Tasks without an explicit `Depends-on:` line
 - Files modified outside the File Edit Manifest
+- A test with a single input per behavior, or a task with no edge/error case
 
 ## Self-Review (Inline, No Subagent)
 
