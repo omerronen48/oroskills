@@ -12,4 +12,5 @@ grep -q ".loop/goal.md" "$SR" || fail "oro-reviewer must read goal.md"
 grep -q "Do not read .pipeline/changes.md" "$SR" || fail "oro-reviewer must be told to skip changes.md"
 for f in "$TR" "$SR"; do grep -q "reward-hack" "$f" || fail "$f: reward-hack scan missing"; grep -q "exemplar" "$f" || fail "$f: exemplar check missing"; done
 grep -q "plan's task" "$TR" || fail "task-reviewer must compare test to plan"
+grep -q "Two-commit" "$TR" || fail "task-reviewer: two-commit TDD check missing"
 echo "PASS: blind reviewers"

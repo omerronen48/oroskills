@@ -84,31 +84,51 @@ DO:
    out-of-scope files or missing files.
 
 4. **TDD artifact integrity.**
-   - Does the commit contain BOTH the test and the implementation?
-   - Does the commit show the test as actually new or modified in this
-     commit?
-   - Re-run the test command on HEAD (in the shared worktree). Does it pass?
-   - Confirm it would have FAILED before the implementation — without mutating
-     the shared worktree. NEVER run `git checkout` on the shared worktree: it
-     detaches HEAD, races sibling agents, and orphans the branch ref so later
-     commits land off the branch.
-     **The subtlety that makes a naive check wrong:** the test and the
-     implementation are in the SAME commit, so checking out the parent reverts
-     BOTH. Running the parent's test against the parent's code gives a FALSE
-     pass — the parent test doesn't assert the new behavior. You must run the
-     **HEAD version of the test against the PARENT's implementation.** Do it in
-     a throwaway worktree at the parent, then overlay just the HEAD test file(s):
+   Pick the shape by whether the dispatch gives a `lock-ref`.
+
+   **Two-commit (lock-ref given, /dev loop kernel):** the test commit
+   (`lock-ref`) was made by oro-tester; implementation commit(s) follow.
+   - The `lock-ref` commit touches ONLY test files and matches the plan's
+     task test.
+   - No commit in `lock-ref..head` touches a locked test file.
+   - Re-run the test command at HEAD (shared worktree): it MUST pass.
+   - In a throwaway worktree at the test commit, the test MUST fail:
      ```
-     git worktree add --detach /tmp/tdd-verify-<short-sha> <parent-sha>
-     git -C /tmp/tdd-verify-<short-sha> checkout <head-sha> -- <test-path(s)>
+     git worktree add --detach /tmp/tdd-verify-<short-sha> <lock-ref>
      # run the test command inside /tmp/tdd-verify-<short-sha>
      git worktree remove --force /tmp/tdd-verify-<short-sha>
      ```
-     The HEAD test now runs against pre-implementation code: it MUST fail. If it
-     passes, the TDD contract was faked — flag it.
-     Fallback if the worktree can't be created: confirm the test is newly
-     added/modified in this commit via `git show <commit> -- <testpath>` (a test
-     that did not exist before could not have passed) and check out nothing.
+     NEVER run `git checkout` on the shared worktree: it detaches HEAD, races
+     sibling agents, and orphans the branch ref. If it passes at lock-ref,
+     the test asserts nothing new: flag it.
+
+   **Legacy single commit (no lock-ref):**
+     - Does the commit contain BOTH the test and the implementation?
+     - Does the commit show the test as actually new or modified in this
+       commit?
+     - Re-run the test command on HEAD (in the shared worktree). Does it pass?
+     - Confirm it would have FAILED before the implementation — without mutating
+       the shared worktree. NEVER run `git checkout` on the shared worktree: it
+       detaches HEAD, races sibling agents, and orphans the branch ref so later
+       commits land off the branch.
+       **The subtlety that makes a naive check wrong:** the test and the
+       implementation are in the SAME commit, so checking out the parent reverts
+       BOTH. Running the parent's test against the parent's code gives a FALSE
+       pass — the parent test doesn't assert the new behavior. You must run the
+       **HEAD version of the test against the PARENT's implementation.** Do it in
+       a throwaway worktree at the parent, then overlay just the HEAD test file(s):
+       ```
+       git worktree add --detach /tmp/tdd-verify-<short-sha> <parent-sha>
+       git -C /tmp/tdd-verify-<short-sha> checkout <head-sha> -- <test-path(s)>
+       # run the test command inside /tmp/tdd-verify-<short-sha>
+       git worktree remove --force /tmp/tdd-verify-<short-sha>
+       ```
+       The HEAD test now runs against pre-implementation code: it MUST fail. If it
+       passes, the TDD contract was faked — flag it.
+       Fallback if the worktree can't be created: confirm the test is newly
+       added/modified in this commit via `git show <commit> -- <testpath>` (a test
+       that did not exist before could not have passed) and check out nothing.
+
 
 5. **Misunderstandings.** Did the oro-implementer solve the requested problem,
    or a different one that sounds similar? Read the requirement carefully
