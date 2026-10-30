@@ -32,15 +32,11 @@ Supported flags: `--dry-run` (preview selected issue and intended actions; no cl
 
 6. **Isolate:** `git worktree add -b agent/issue-<n> <worktree-path>` and operate inside that worktree for all subsequent steps.
 
-7. **Drive the ship pipeline** inside the worktree, with the feature request set to `Issue #<n>: <title>` plus the issue body. Dispatch ship agents in sequence:
-   - `oro-planner` → produces `.pipeline/spec.md`; if the spec contains `OPEN QUESTIONS` → early stop (blocker: unresolved questions).
-   - `oro-coder` → produces `.pipeline/changes.md`.
-   - `oro-tester` → produces `.pipeline/test-results.md`; if tests fail → early stop (blocker: failing tests).
-   - `oro-reviewer` → produces `.pipeline/review.md` containing `VERDICT: SHIP | NEEDS WORK | BLOCK`.
+7. **Run /ship** inside the worktree with the feature request `Issue #<n>: <title>` plus the issue body, in unattended mode: OPEN QUESTIONS → early stop (blocker: unresolved questions); skip the Distill approval prompt (list proposals in the issue comment instead). Right after `.loop/goal.md` exists, `touch .loop/auto` (loop-kernel §7); `rm -f .loop/auto` before step 9. /ship's capped retry and climb run as normal; its final `.pipeline/review.md` verdict drives step 8.
 
 8. **Route on `VERDICT`:**
    - **`VERDICT: SHIP`:** stage all code changes (exclude `.pipeline/`), commit referencing the issue, run `git push -u origin agent/issue-<n>`, run `gh pr create --base <default-branch> --head agent/issue-<n>` with title and body drawn from the issue and reviewer summary, then run `gh issue comment <n>` with the PR link, then run `gh issue edit <n> --remove-label "agent:in-progress" --remove-label "agent:ready"` — remove both `agent:in-progress` and `agent:ready` — the open PR is the record; a human re-adds `agent:ready` to request a retry. (The open-PR guard remains as belt-and-suspenders.)
-   - **Non-SHIP or early stop:** open NO PR. Run `gh issue comment <n>` with the specific blocker (reviewer findings / open questions / failing tests). Run `gh issue edit <n> --remove-label "agent:ready" --remove-label "agent:in-progress" --add-label "needs:human"`.
+   - **Non-SHIP or early stop:** open NO PR. Run `gh issue comment <n>` with the specific blocker (reviewer findings / open questions / failing tests / retry cap hit (last findings from .loop/findings.md)). Run `gh issue edit <n> --remove-label "agent:ready" --remove-label "agent:in-progress" --add-label "needs:human"`.
 
 9. **Dispose:** run `git worktree remove <worktree-path>` once done — EXCEPT if `git push` or `gh pr create` failed after a clean SHIP verdict: in that case keep the worktree, comment the push/create failure on the issue, leave `agent:in-progress` for a human to resolve, and log the error.
 
