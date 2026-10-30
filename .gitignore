@@ -10,3 +10,4 @@ graphify-out/
 # pipeline scratch (regenerable per /ship, /dev run)
 .pipeline/
 docs/
+.loop/
