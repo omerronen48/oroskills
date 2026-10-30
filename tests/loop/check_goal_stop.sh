@@ -25,4 +25,11 @@ grep -q "ESCALATE" "$D/.loop/escalations.md" || fail "escalation note missing"
 goal true; [ -z "$(run)" ] || fail "passing should allow"
 [ ! -f "$D/.loop/stop-blocks" ] || fail "counter should reset"
 
+# 6. jq missing -> allow silently, no counter write
+B="$D/bin"; mkdir -p "$B"; rm -f "$D/.loop/stop-blocks"; goal false
+for t in bash cat awk sed tail rm dirname; do ln -s "$(command -v $t)" "$B/$t"; done
+out="$(echo '{}' | PATH="$B" CLAUDE_PROJECT_DIR="$D" "$B/bash" "$HOOK")"
+[ -z "$out" ] || fail "no jq should allow silently"
+[ ! -f "$D/.loop/stop-blocks" ] || fail "no jq should not bump counter"
+
 echo "PASS: goal-stop"

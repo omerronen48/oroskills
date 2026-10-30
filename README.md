@@ -157,8 +157,8 @@ Every pipeline (`/dev`, `/ship`, `/fix`, `/loop-worker`) runs on one shared loop
 - **Metric:** the done-criteria are run, plus `test-guard.sh`, which fails on new skips/xfails, deleted assertions, a drop in test count, or test edits outside the manifest.
 - **Verifier:** reviewers are fresh and blind. They see the goal and the diff, never the author's report.
 - **Optimizer:** 3 attempts per task, then escalate. Every run ends with a hill-climb: 3 blind `oro-judge`s, at most 2 rounds, stop at 8.5 or when the gain is below 0.5, keep the best result. Small non-UI diffs are scored once.
-- **Durability:** `oro-distiller` writes `.dev/memory/lessons.md` with a `seen` counter. A pattern seen twice becomes a proposed skill diff in `.loop/proposals/`, which you approve.
-- **Integrity:** tests are written before the code by a different agent (`oro-tester`, or the plan in `/dev`), then hash-locked. A PreToolUse hook blocks edits to locked tests and the frozen goal; `test-guard.sh` catches edits made any other way; `mutate-check.sh` proves the tests actually exercise the change. When a test is wrong, the only allowed route is a `TEST-DISPUTE:` that someone else rules on.
+- **Durability:** `oro-distiller` writes `.dev/memory/lessons.md` with a `seen` counter. A pattern seen twice becomes a proposed skill diff in `.loop/proposals/`, which you approve; a `[reward-hack]` finding becomes a proposal on its first occurrence.
+- **Integrity:** tests are written before the code by a different agent (in `/dev` the tests come from the plan and `oro-tester` commits them before the implementer runs), then hash-locked. A PreToolUse hook blocks edits to locked tests and the frozen goal; `test-guard.sh` catches edits made any other way; `mutate-check.sh` proves the tests actually exercise the change. When a test is wrong, the only allowed route is a `TEST-DISPUTE:` that someone else rules on.
 - **Pre-code critic:** `oro-critic` checks the goal and spec for gaps before any code is written.
 - **Unattended runs:** a Stop hook keeps `/dev --auto` and `/loop-worker` sessions going until the done-criteria pass (it gives up after 3 blocks).
 

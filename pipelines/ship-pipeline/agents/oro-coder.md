@@ -29,7 +29,7 @@ If you believe a locked test is wrong, stop and put a `TEST-DISPUTE:` block in y
 
 ## Locked tests under the loop kernel
 
-If your dispatch says the task's tests are already committed and locked, do not write or edit tests. Your job is the implementation only: make the locked tests pass, show the green output, commit. (same rule whenever `.loop/test-lock` lists the tests for your task.)
+If your dispatch says the task's tests are already committed and locked, do not write or edit tests. Your job is the implementation only: make the locked tests pass, show the green output, commit. The same rule applies whenever `.loop/test-lock` lists the tests for your task.
 
 ## Exemplars
 

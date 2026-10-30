@@ -12,4 +12,5 @@ for f in "$R/ship-pipeline/agents/oro-coder.md" "$R/dev-pipeline/agents/oro-impl
   grep -q "exemplar" "$f" || fail "$f: exemplar rule missing"
 done
 grep -q "overrides steps 1 and 5" "$R/dev-pipeline/agents/oro-implementer.md" || fail "implementer: TDD carve-out missing"
+grep -q "(oro-coder:" "$R/dev-pipeline/agents/oro-implementer.md" && fail "implementer names oro-coder"
 echo "PASS: retry protocol"

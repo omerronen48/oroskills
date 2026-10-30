@@ -173,7 +173,7 @@ If you believe a locked test is wrong, stop and put a `TEST-DISPUTE:` block in y
 
 ## Locked tests under the loop kernel
 
-If your dispatch says the task's tests are already committed and locked, do not write or edit tests. Your job is the implementation only: make the locked tests pass, show the green output, commit. This overrides steps 1 and 5 of the TDD-Before-Commit Contract: the locked-test commit plus your implementation commit are the TDD artifact. (oro-coder: same rule whenever `.loop/test-lock` lists the tests for your task.)
+If your dispatch says the task's tests are already committed and locked, do not write or edit tests. Your job is the implementation only: make the locked tests pass, show the green output, commit. This overrides steps 1 and 5 of the TDD-Before-Commit Contract: the locked-test commit plus your implementation commit are the TDD artifact.
 
 ## Exemplars
 

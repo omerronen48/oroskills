@@ -7,6 +7,7 @@ set -uo pipefail
 cat >/dev/null   # drain hook input; block counter replaces stop_hook_active
 cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
 [[ -f .loop/auto && -f .loop/goal.md ]] || exit 0
+command -v jq >/dev/null || exit 0   # cannot emit block JSON; allow without bumping counter
 
 counter=.loop/stop-blocks
 blocks=$(cat "$counter" 2>/dev/null || echo 0)
