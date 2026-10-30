@@ -16,5 +16,5 @@ while IFS= read -r line; do
   if [[ -z "$globs" ]]; then hit=1; else
     for g in ${globs//,/ }; do for f in "$@"; do [[ "$f" == $g ]] && hit=1; done; done
   fi
-  (( hit )) && printf '%s\t%s\n' "$seen" "$line"
+  if (( hit )); then printf '%s\t%s\n' "$seen" "$line"; fi
 done < "$lf" | sort -t $'\t' -k1,1nr | head -n 5 | cut -f2-
