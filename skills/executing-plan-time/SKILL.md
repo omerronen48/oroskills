@@ -42,6 +42,10 @@ Create a TodoWrite todo for each phase. Each phase has its own internal steps.
 
 ## Phase 1: Pre-flight
 
+**Loop kernel.** This skill runs on the `loop-kernel` contract (`~/.claude/skills/loop-kernel/SKILL.md`). Before the first wave, ensure `.loop/goal.md` exists in the worktree (write it from the spec per §1 if the plan didn't), run the §1 critic over goal.md + this plan, then freeze (`touch .loop/active`) and record the run base SHA. Each task runs as **tests first, then code** (§8), so the tests are locked before the implementer starts.
+
+**Autonomous runs only:** the Stop hook reads `.loop/` in the *main checkout* (the session's project dir), not the worktree. So also write `<main-checkout>/.loop/goal.md` as a copy whose done-criteria commands are prefixed `cd <worktree> && `. Remove that copy when the phase ends.
+
 ### 1.1 Graphify
 
 ```bash
@@ -130,12 +134,17 @@ For each wave, in order:
 
 ### 3.1 Dispatch parallel oro-implementer subagents
 
+**One isolated worktree per parallel task.** Git's index and branch tip are shared mutable state even when source files are disjoint, so parallel writers must never stage or commit in the same worktree. Record `<wave-base>`, then create a task branch and sibling worktree for every task in the wave from that exact SHA (`git worktree add -b <wave-branch>-<task-id> <task-worktree> <wave-base>`). Seed `<task-worktree>/.loop/` with the integration worktree's frozen `goal.md`, `active`, existing `test-lock`, and `lock-ref*`; verify any copied lock before dispatch. Each task then appends only its own lock entries. Dispatches for that task use only its task worktree. Tasks may run in parallel because their indexes, branch tips and `.loop/` state are isolated.
+
+**Tests first (loop-kernel §8).** In each task worktree, dispatch `oro-tester` in **plan-test** mode. It commits the task's test code exactly as the plan gives it, runs it, and returns the red output. Check the output is red for the right reason (behavior missing, not a syntax error); otherwise re-dispatch it once, then escalate. Lock it inside that task worktree: `shasum -a 256 <repo-relative task test files> >> .loop/test-lock && git rev-parse HEAD > .loop/lock-ref-<task-id>`. Only then dispatch the oro-implementer in the same task worktree, told that the tests are already committed and locked: it writes and commits implementation only. The TDD artifact is the tester's red log + test commit, then the implementer's green log + implementation commit.
+
 Send **all tasks in the wave as a single message with multiple Agent tool calls**. Dispatch the `oro-implementer` agent (pipelines/dev-pipeline/agents/oro-implementer.md) by name with the task slice — do not write ad-hoc instructions. Each dispatch gets:
 
-- The worktree absolute path and branch (Phase 1.2)
+- The task worktree absolute path and task branch (never the shared integration worktree)
 - The full task text from the plan (verbatim — do NOT have the subagent read the plan file)
 - The task's File Edit Manifest entries (Create / Modify / Test / Delete)
 - Pre-queried graphify context (functions defined in modified files, callers, callees) — run these queries once in main BEFORE dispatching, paste the results into each dispatch
+- Output of `lessons-for.sh .dev/memory/lessons.md <task files>` (loop-kernel §1), and on a retry the reviewer findings plus earlier attempts' `## Diagnosis` sections (§4). Attempt 3 is dispatched with `model: opus`.
 
 The `oro-implementer` agent already enforces the TDD-before-commit contract (3.2) and the manifest constraint. Do not weaken it; do not skip required context. If a context slot doesn't apply, write "none" — never leave it blank or invent a value.
 
@@ -145,38 +154,40 @@ The full contract lives in the `oro-implementer` agent: fail log → pass log �
 
 The orchestrator's job here is to verify the implementer's report contains the fail log, pass log, and commit SHA before accepting it; a report missing any of the three is not done — re-dispatch or roll back.
 
-### 3.3 Await all + verify wave-level integration
+### 3.3 Await all
 
-Collect statuses (≤20-line reports) from every oro-implementer in the wave. Then, from main, run only what's needed to verify the wave integrates:
-
-```bash
-# In the worktree
-git log --oneline <wave-base>..HEAD   # confirm one commit per task
-git diff --stat <wave-base>..HEAD     # confirm changed files match the manifest entries for this wave
-<project-test-command-for-touched-areas>
-```
-
-If wave verification fails: investigate. Common causes:
-- A subagent's test passes in isolation but conflicts with another subagent's change → the overlap check missed something; demote one task to the next wave and re-run.
-- A commit touched files outside the manifest → roll back that task's commit, re-dispatch with the manifest constraint re-emphasized.
+Collect statuses (≤20-line reports) from every oro-implementer in the wave. Do not integrate a task yet; first review it in its isolated worktree (§3.4).
 
 ### 3.4 Per-task review
 
-For each task in the wave, dispatch the `oro-task-reviewer` agent (pipelines/dev-pipeline/agents/oro-task-reviewer.md) by name. Reviewers for different tasks in the same wave can run in parallel (they read disjoint diffs).
+For each task in the wave, dispatch the `oro-task-reviewer` agent (pipelines/dev-pipeline/agents/oro-task-reviewer.md) by name in that task's isolated worktree, before integration. Reviewers for different tasks can run in parallel.
 
 Provide:
-- Worktree path
+- Isolated task worktree path
 - Base SHA (commit immediately before this task's commit) and head SHA (the task's commit)
 - The full task text from the plan
 - The task's File Edit Manifest
 - **Sibling-task touch sets** — the files modified by every other task in this same wave (this is what the sibling-conflicts check needs)
-- The oro-implementer's full status report
+- `.loop/goal.md` path, the task's test commit (`.loop/lock-ref-<task-id>`) and implementation head, and `test-guard.sh <lock-ref-<task-id>> <manifest>` output (loop-kernel §2). **Not** the implementer's report — the reviewer is held out (§3); dispatch it fresh, never as a fork.
 
 The reviewer returns `PASS` or `FAIL` with specific findings — one report covering spec compliance, TDD-artifact integrity, code quality, and sibling conflicts. If `FAIL`:
-- Re-dispatch the same oro-implementer (fresh subagent, same model unless the failure suggests a more capable model is needed) with the reviewer's findings as additional context.
-- Re-run the review until `PASS`.
+- Re-dispatch a **fresh** oro-implementer with the reviewer's findings and failing output (not the previous implementer's report) — loop-kernel §4.
+- Re-run metric + review. **Max 3 attempts per task total.** On the 3rd failure: interactive → stop and show the user the findings; autonomous → return an `ESCALATE:` block for that task.
 
 If only Minor quality issues remain and spec compliance is clean, the reviewer returns `PASS` with the minors noted for follow-up (non-blocking). Do NOT silently fix the issues yourself in main — dispatch a subagent.
+
+Only after a task passes review, cherry-pick its test commit and implementation commit(s), in task order, into the phase's integration worktree. After each test commit lands, hash its test paths into the integration worktree's `.loop/test-lock` and record the new cherry-picked SHA as `.loop/lock-ref-<task-id>`. A cherry-pick conflict means the overlap analysis was wrong: abort that cherry-pick, demote the later task, and re-run it from the new integration tip. Never resolve a parallel integration conflict by guessing.
+
+After every passing task has been integrated, verify the wave:
+
+```bash
+# In the integration worktree
+git log --oneline <wave-base>..HEAD   # confirm test + implementation commits per task
+git diff --stat <wave-base>..HEAD     # confirm changed files match the manifests
+<project-test-command-for-touched-areas>
+```
+
+If verification fails, demote and re-run the conflicting task; if a commit touched files outside its manifest, re-dispatch it. After successful integration, remove the task worktrees and temporary task branches. Preserve failed or escalated task worktrees for diagnosis.
 
 ### 3.5 Mark done + context hygiene between waves
 
@@ -207,8 +218,10 @@ git log --oneline <main>..HEAD | grep -iE "<requirement-keywords>"
 
 All must pass. If any fail:
 - Do NOT proceed to finishing.
-- Dispatch a single subagent to investigate, following the TDD-before-commit contract for any fix.
+- Dispatch a fresh subagent to investigate, following the TDD-before-commit contract for any fix. Max 3 attempts total, then escalate (loop-kernel §4).
 - Re-run final verification.
+
+When final verification is green, run **loop-kernel §2 step 3 (mutate-check)** over the run, then **§5 (Climb)** against the run base, re-run final verification if the climb changed code, then **§6 (Distill)**. Then proceed to finishing.
 
 State the final verification result explicitly. No "it should be working" — evidence before claims.
 
@@ -326,3 +339,14 @@ If any intersection is non-empty, serialize.
 | Implementer adds an unrequested abstraction, option, or speculative code | Ponytail violation | Re-dispatch with the minimal-code ladder re-emphasized |
 
 - Never verify parent-commit behavior by running `git checkout` on the **shared** worktree (e.g. a reviewer "checking out the parent to verify TDD") — it detaches HEAD, races siblings, and orphans the branch ref so later commits land off-branch. Verify in a throwaway `git worktree add --detach`, overlaying the HEAD test onto the parent — not a plain parent checkout, which reverts the test too and falsely passes.
+
+## Autonomous mode (under `/dev --auto`)
+
+When dispatched by `oro-phase-executor` under `/dev --auto`, never wait for a user. Clear each gate:
+- **Existing worktree for this plan (§1.2):** resume it; never create a parallel one.
+- **Red baseline (§1.3):** do not start the plan; return an `ESCALATE:` block with the failing output.
+- **Plan-test not red for the right reason after one re-dispatch:** return an `ESCALATE:` block (the plan's test is likely wrong; that is a planning decision).
+- **Review cap hit (§3.4) / verification cap hit (Phase 4):** return an `ESCALATE:` block naming the task and last findings.
+- **Finishing choice (Phase 5):** run the branch-integrity precheck, push the branch, and open a PR if `gh` is authenticated; otherwise leave the branch. Never merge.
+- Distill proposals are listed in the summary, not applied.
+This section is inert when the skill runs interactively.

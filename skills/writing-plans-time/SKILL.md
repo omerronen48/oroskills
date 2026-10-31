@@ -88,12 +88,15 @@ Rules:
 - Create: `exact/path/to/file.py`
 - Modify: `exact/path/to/existing.py:123-145`
 - Test:   `tests/exact/path/to/test.py`
+- Exemplar: `exact/path/to/similar_existing.py`
 
 - [ ] **Step 1: Write the failing test**
 ```python
 def test_specific_behavior():
-    result = function(input)
-    assert result == expected
+    assert function(input_a) == expected_a
+    assert function(input_b) == expected_b
+    with pytest.raises(ValueError):
+        function(bad_input)
 ```
 - [ ] **Step 2: Run test to verify it fails**
   Run: `pytest tests/path/test.py::test_name -v`
@@ -101,7 +104,9 @@ def test_specific_behavior():
 - [ ] **Step 3: Write minimal implementation**
 ```python
 def function(input):
-    return expected
+    if not valid(input):
+        raise ValueError(input)
+    return transform(input)
 ```
 - [ ] **Step 4: Run test to verify it passes**
   Run: `pytest tests/path/test.py::test_name -v`
@@ -112,6 +117,15 @@ git add tests/path/test.py src/path/file.py
 git commit -m "feat: add specific feature"
 ```
 ````
+
+## Test quality rules
+
+Each task's test code is committed by oro-tester before the implementer runs (loop-kernel §8), and locked, so the implementer cannot change it. Write tests that are hard to game:
+- Assert behavior through public interfaces, not implementation details.
+- Use at least 2 distinct inputs per behavior, so that hard-coding one answer cannot pass. Include at least one edge or error case per task.
+- The test must fail against the code as it exists before the task, because the behavior is missing.
+- The plan's last task (or a dedicated task) adds the phase's **Behavior check**: a command that exercises the real end state (run the CLI, curl the endpoint, headless page load). It becomes a done-criterion in `.loop/goal.md`.
+- Name an `exemplar:` existing file for every file a task creates.
 
 ## Parallelization (Required Section)
 
@@ -156,6 +170,7 @@ Same rules as superpowers:writing-plans. These are plan failures:
 - References to types/functions/methods not defined in any task
 - Tasks without an explicit `Depends-on:` line
 - Files modified outside the File Edit Manifest
+- A test with a single input per behavior, or a task with no edge/error case
 
 ## Self-Review (Inline, No Subagent)
 
