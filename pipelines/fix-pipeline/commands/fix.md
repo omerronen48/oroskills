@@ -14,11 +14,11 @@ Run a batch of small fixes for: $ARGUMENTS
 3. Show me `.fix/roadmap.md` and wait for my confirmation (or edits) before looping.
 
 ## Baseline
-4. Wipe stale handoffs (`rm -rf .pipeline .loop && mkdir .pipeline .loop`; make sure `.pipeline/`, `.fix/` and `.loop/` are gitignored). Run the full test suite once and record the base branch. If the suite is already red, stop and report — the regression guard needs a green baseline. (I may re-invoke to override.) Then write .loop/goal.md (loop-kernel §1): end state = every roadmap fix done; done-criteria = the full test suite command; rubric = correctness, minimal diff, regression safety.
+4. Wipe stale handoffs (`rm -rf .pipeline .loop && mkdir .pipeline .loop`; make sure `.pipeline/`, `.fix/` and `.loop/` are gitignored). Run the full test suite once and record the base branch. If the suite is already red, stop and report — the regression guard needs a green baseline. (I may re-invoke to override.) Before coding, write one `.fix/spec-N.md` mini-spec per roadmap item. Then write `.loop/goal.md` (loop-kernel §1): end state = every roadmap fix done; done-criteria = the full test suite command **plus one runnable Behavior/reproduction command per fix** that exercises the real affected CLI, endpoint, UI, or library interface; rubric = correctness, minimal diff, regression safety. Run `oro-critic` over the goal and all mini-specs; blocking gaps are revised and re-reviewed (max 2 rounds). Only after CLEAR, freeze with `touch .loop/active`.
 
 ## Per-fix loop (in roadmap order), for fix N:
 5. `git checkout -b fix/N-<slug>` off the **previous fix's branch** (off the base branch for N=1). Branches stack so the regression guard sees every prior fix.
-6. Write `.pipeline/spec.md` from fix N's roadmap entry (overwrite). This replaces the planner — the roadmap entry is the mini-spec.
+6. Copy `.fix/spec-N.md` to `.pipeline/spec.md` (overwrite). The critic has already checked this mini-spec against the frozen batch goal.
 7a. Before step 7 (tests come first, loop-kernel §8): delegate to the oro-tester subagent in **test-first** mode with fix N's spec + goal.md. It writes the repro/acceptance test and shows it red. Commit it and lock it (`shasum -a 256 <test files> >> .loop/test-lock; git rev-parse HEAD > .loop/lock-ref`). Step 7's oro-coder must make it pass without touching it.
 7. Delegate to the oro-coder subagent. Wait for `.pipeline/changes.md`.
 8. Run fix N's locked tests. They must pass.
@@ -28,7 +28,7 @@ Run a batch of small fixes for: $ARGUMENTS
 
 ## Finish
 12. After all fixes ship green, delegate to the oro-reviewer subagent once, fresh and blind (loop-kernel §3), over the accumulated diff — tell it the base branch from step 4 so it reviews `git diff <base>...HEAD`. NEEDS WORK → one fresh oro-coder pass on the last fix branch with the findings, then re-review (counts against a max of 3 review attempts). Then run mutate-check (§2 step 3; test author = oro-tester in strengthen mode) and Climb (§5) against the base on the last fix branch. Show me `.pipeline/review.md` and the climb score.
-13b. Run Distill (loop-kernel §6) and show me the proposals.
+13b. Run Distill (loop-kernel §6), show me the proposals, and `rm -f .loop/active` on every orderly ending.
 13. Report the summary: fixes shipped, branch names, and the review verdict. **Do not merge** — leave the stacked branches for my review.
 
 Re-invoking `/fix` skips entries already marked `done` in `.fix/roadmap.md`.

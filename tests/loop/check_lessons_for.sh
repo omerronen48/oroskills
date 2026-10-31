@@ -23,4 +23,9 @@ for i in 1 2 3 4 5 6 7; do echo "- [interactive] general $i" >> "$L"; done
 [ "$(bash "$LF" "$L" x | wc -l | tr -d ' ')" = 5 ] || fail "cap at 5"
 printf -- '- general\n- x (files: src/*; seen: 2)\n' > "$D/l2.md"
 bash "$LF" "$D/l2.md" other.py >/dev/null || fail "must exit 0 when output is correct"
+# A result larger than a pipe buffer must not make sort|head fail with SIGPIPE.
+: > "$D/large.md"
+pad="$(printf '%02000d' 0)"
+for i in $(seq 1 100); do printf -- '- general %s %s (seen: %s)\n' "$i" "$pad" "$i" >> "$D/large.md"; done
+bash "$LF" "$D/large.md" x >/dev/null || fail "large lesson set must exit 0"
 echo "PASS: lessons-for"

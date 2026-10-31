@@ -29,4 +29,22 @@ repo '. src/f.sh; ok 1 && ! ok 2' 'ok(){ [ "$1" == 1 ]; }\n'; echo '# dirty' >> 
 # 5. tree restored after a run
 repo '. src/f.sh; ok 1 && ! ok 2' 'ok(){ [ "$1" == 1 ]; }\nDEBUG=true\n'; rc
 [ -z "$(git status --porcelain)" ] || fail "working tree not restored"
+# 6. deletion-only behavior must be reverted and exercised, not reported as no change
+d="$(mktemp -d)"; cd "$d"
+git init -q; git config user.email t@t; git config user.name t
+printf 'obsolete\n' > obsolete.txt; git add -A; git commit -qm base
+git rm -q obsolete.txt; git commit -qm head
+set +e; out="$(bash "$MC" HEAD~1 'test ! -e obsolete.txt')"; code=$?; set -e
+[ "$code" = 0 ] || fail "deletion exercised by tests should exit 0 (got $code: $out)"
+! grep -q "no implementation changes" <<<"$out" || fail "deletion was ignored"
+[ -z "$(git status --porcelain)" ] || fail "deletion revert did not restore HEAD"
+# 7. pure renames are implementation changes too
+d="$(mktemp -d)"; cd "$d"
+git init -q; git config user.email t@t; git config user.name t
+printf 'content\n' > old-name.txt; git add -A; git commit -qm base
+git mv old-name.txt new-name.txt; git commit -qm head
+set +e; out="$(bash "$MC" HEAD~1 'test -e new-name.txt && test ! -e old-name.txt')"; code=$?; set -e
+[ "$code" = 0 ] || fail "rename exercised by tests should exit 0 (got $code: $out)"
+! grep -q "no implementation changes" <<<"$out" || fail "rename was ignored"
+[ -z "$(git status --porcelain)" ] || fail "rename revert did not restore HEAD"
 echo "PASS: mutate-check"

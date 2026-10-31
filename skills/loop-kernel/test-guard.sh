@@ -14,15 +14,21 @@ git rev-parse --verify -q "$base^{commit}" >/dev/null || { echo "test-guard: bad
 
 SKIP='(\.skip\(|(^|[^a-zA-Z_])xit\(|xdescribe\(|@pytest\.mark\.(skip|xfail)|t\.Skip\(|#\[ignore\])'
 ASSERT='(assert|expect\(|t\.(Error|Fatal))'
-TESTDEF='(def test_|(^|[^a-zA-Z_.])it\(|(^|[^a-zA-Z_.])test\(|func Test)'
+TESTDEF='(def test_|(^|[^a-zA-Z_.])it\(|(^|[^a-zA-Z_.])test\(|func Test|#\[test\])'
 is_test() { [[ "$1" =~ (^|/)(tests?|__tests__|spec)/ || "$1" =~ (_test\.|\.test\.|\.spec\.|(^|/)test_) ]]; }
+is_test_at() {
+  local ref="$1" f="$2"
+  is_test "$f" && return 0
+  # Rust convention keeps unit tests inline in src/*.rs under #[cfg(test)].
+  [[ "$f" == *.rs ]] && git show "$ref:$f" 2>/dev/null | grep -qF '#[cfg(test)]'
+}
 
 # count_defs <ref>: total test definitions across test files at <ref>.
 # ponytail: O(test files) git show calls; fine for repo-sized suites.
 count_defs() {
   local n=0 f c
   while IFS= read -r f; do
-    is_test "$f" || continue
+    is_test_at "$1" "$f" || continue
     c=$(git show "$1:$f" 2>/dev/null | grep -Ec "$TESTDEF" || true)
     n=$((n + c))
   done < <(git ls-tree -r --name-only "$1")
@@ -40,7 +46,7 @@ while IFS= read -r f; do
   added="$(grep -E '^\+[^+]' <<<"$d" || true)"
   removed="$(grep -E '^-[^-]' <<<"$d" || true)"
   if [[ "$f" =~ $CFG_FILE ]] && ! in_manifest "$f"; then echo "test-guard: test config file changed: $f"; fail=1; fi
-  if ! is_test "$f"; then
+  if ! is_test_at "$base" "$f" && ! is_test_at HEAD "$f"; then
     if grep -Eq "$CFG_KEY" <<<"$added"$'\n'"$removed" && ! in_manifest "$f"; then
       echo "test-guard: test runner setting changed in $f"; fail=1
     fi

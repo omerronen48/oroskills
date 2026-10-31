@@ -14,6 +14,10 @@ for s in "# Goal" "## Done-criteria" "Behavior check" "## Screens" "## Rubric" "
   grep -qF "$s" "$T" || fail "template section '$s' missing"
 done
 grep -q "Exit 2 (dirty tree" "$K" || fail "mutate-check exit 2 handling missing"
+grep -q "copy the frozen \`goal.md\`" "$K" || fail "climb variants must receive frozen loop state"
+grep -q "Verify the copied lock" "$K" || fail "climb variant lock verification missing"
+grep -q "git merge --ff-only" "$K" || fail "climb winner integration must be explicit"
+grep -q "never use \`git reset --hard\`" "$K" || fail "destructive climb cleanup still allowed"
 [ "${KERNEL_ONLY:-0}" = 1 ] && { echo "PASS: loop-kernel (kernel only)"; exit 0; }
 for f in skills/executing-plan-time/SKILL.md pipelines/ship-pipeline/commands/ship.md \
          pipelines/fix-pipeline/commands/fix.md pipelines/dev-pipeline/commands/dev.md; do
@@ -21,7 +25,11 @@ for f in skills/executing-plan-time/SKILL.md pipelines/ship-pipeline/commands/sh
 done
 grep -q "/ship" "$REPO/pipelines/loop-pipeline/commands/loop-worker.md" || fail "loop-worker must call /ship"
 grep -q "oro-coder\` → produces" "$REPO/pipelines/loop-pipeline/commands/loop-worker.md" && fail "loop-worker still inlines ship stages"
+grep -q "one runnable Behavior/reproduction command per fix" "$REPO/pipelines/fix-pipeline/commands/fix.md" || fail "/fix goal lacks behavior criteria"
+grep -q "Run \`oro-critic\` over the goal and all mini-specs" "$REPO/pipelines/fix-pipeline/commands/fix.md" || fail "/fix never critiques its goal"
+grep -q "touch .loop/active" "$REPO/pipelines/fix-pipeline/commands/fix.md" || fail "/fix never freezes its goal"
 grep -q "Re-run the review until \`PASS\`" "$REPO/skills/executing-plan-time/SKILL.md" && fail "uncapped review loop still present"
 grep -q "## Autonomous mode" "$REPO/skills/executing-plan-time/SKILL.md" || fail "executing-plan-time autonomous mode missing"
+grep -q "One isolated worktree per parallel task" "$REPO/skills/executing-plan-time/SKILL.md" || fail "parallel tasks still share a git index"
 grep -q "goal.md" "$REPO/pipelines/ship-pipeline/agents/oro-planner.md" || fail "planner must emit goal.md"
 echo "PASS: loop-kernel"

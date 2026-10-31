@@ -134,11 +134,13 @@ For each wave, in order:
 
 ### 3.1 Dispatch parallel oro-implementer subagents
 
-**Tests first (loop-kernel §8).** For each task in the wave (in parallel), dispatch `oro-tester` in **plan-test** mode with the task text and the worktree path. It commits the task's test code exactly as the plan gives it, runs it, and returns the red output. Check the output is red for the right reason (behavior missing, not a syntax error); otherwise re-dispatch it once, then escalate. Then lock, running inside the worktree with repo-relative paths: `cd <worktree> && shasum -a 256 <repo-relative task test files> >> .loop/test-lock && git rev-parse HEAD > .loop/lock-ref-<task-id>` (the lock and lock-refs live in the worktree's `.loop/`, where `guard-edits.sh` and `test-guard.sh` read them). Only then dispatch the oro-implementer, told that the tests are already committed and locked: it writes implementation only. The TDD-before-commit artifact for the task is the tester's red log + test commit, then the implementer's green log + implementation commit.
+**One isolated worktree per parallel task.** Git's index and branch tip are shared mutable state even when source files are disjoint, so parallel writers must never stage or commit in the same worktree. Record `<wave-base>`, then create a task branch and sibling worktree for every task in the wave from that exact SHA (`git worktree add -b <wave-branch>-<task-id> <task-worktree> <wave-base>`). Seed `<task-worktree>/.loop/` with the integration worktree's frozen `goal.md`, `active`, existing `test-lock`, and `lock-ref*`; verify any copied lock before dispatch. Each task then appends only its own lock entries. Dispatches for that task use only its task worktree. Tasks may run in parallel because their indexes, branch tips and `.loop/` state are isolated.
+
+**Tests first (loop-kernel §8).** In each task worktree, dispatch `oro-tester` in **plan-test** mode. It commits the task's test code exactly as the plan gives it, runs it, and returns the red output. Check the output is red for the right reason (behavior missing, not a syntax error); otherwise re-dispatch it once, then escalate. Lock it inside that task worktree: `shasum -a 256 <repo-relative task test files> >> .loop/test-lock && git rev-parse HEAD > .loop/lock-ref-<task-id>`. Only then dispatch the oro-implementer in the same task worktree, told that the tests are already committed and locked: it writes and commits implementation only. The TDD artifact is the tester's red log + test commit, then the implementer's green log + implementation commit.
 
 Send **all tasks in the wave as a single message with multiple Agent tool calls**. Dispatch the `oro-implementer` agent (pipelines/dev-pipeline/agents/oro-implementer.md) by name with the task slice — do not write ad-hoc instructions. Each dispatch gets:
 
-- The worktree absolute path and branch (Phase 1.2)
+- The task worktree absolute path and task branch (never the shared integration worktree)
 - The full task text from the plan (verbatim — do NOT have the subagent read the plan file)
 - The task's File Edit Manifest entries (Create / Modify / Test / Delete)
 - Pre-queried graphify context (functions defined in modified files, callers, callees) — run these queries once in main BEFORE dispatching, paste the results into each dispatch
@@ -152,27 +154,16 @@ The full contract lives in the `oro-implementer` agent: fail log → pass log �
 
 The orchestrator's job here is to verify the implementer's report contains the fail log, pass log, and commit SHA before accepting it; a report missing any of the three is not done — re-dispatch or roll back.
 
-### 3.3 Await all + verify wave-level integration
+### 3.3 Await all
 
-Collect statuses (≤20-line reports) from every oro-implementer in the wave. Then, from main, run only what's needed to verify the wave integrates:
-
-```bash
-# In the worktree
-git log --oneline <wave-base>..HEAD   # confirm one commit per task
-git diff --stat <wave-base>..HEAD     # confirm changed files match the manifest entries for this wave
-<project-test-command-for-touched-areas>
-```
-
-If wave verification fails: investigate. Common causes:
-- A subagent's test passes in isolation but conflicts with another subagent's change → the overlap check missed something; demote one task to the next wave and re-run.
-- A commit touched files outside the manifest → roll back that task's commit, re-dispatch with the manifest constraint re-emphasized.
+Collect statuses (≤20-line reports) from every oro-implementer in the wave. Do not integrate a task yet; first review it in its isolated worktree (§3.4).
 
 ### 3.4 Per-task review
 
-For each task in the wave, dispatch the `oro-task-reviewer` agent (pipelines/dev-pipeline/agents/oro-task-reviewer.md) by name. Reviewers for different tasks in the same wave can run in parallel (they read disjoint diffs).
+For each task in the wave, dispatch the `oro-task-reviewer` agent (pipelines/dev-pipeline/agents/oro-task-reviewer.md) by name in that task's isolated worktree, before integration. Reviewers for different tasks can run in parallel.
 
 Provide:
-- Worktree path
+- Isolated task worktree path
 - Base SHA (commit immediately before this task's commit) and head SHA (the task's commit)
 - The full task text from the plan
 - The task's File Edit Manifest
@@ -184,6 +175,19 @@ The reviewer returns `PASS` or `FAIL` with specific findings — one report cove
 - Re-run metric + review. **Max 3 attempts per task total.** On the 3rd failure: interactive → stop and show the user the findings; autonomous → return an `ESCALATE:` block for that task.
 
 If only Minor quality issues remain and spec compliance is clean, the reviewer returns `PASS` with the minors noted for follow-up (non-blocking). Do NOT silently fix the issues yourself in main — dispatch a subagent.
+
+Only after a task passes review, cherry-pick its test commit and implementation commit(s), in task order, into the phase's integration worktree. After each test commit lands, hash its test paths into the integration worktree's `.loop/test-lock` and record the new cherry-picked SHA as `.loop/lock-ref-<task-id>`. A cherry-pick conflict means the overlap analysis was wrong: abort that cherry-pick, demote the later task, and re-run it from the new integration tip. Never resolve a parallel integration conflict by guessing.
+
+After every passing task has been integrated, verify the wave:
+
+```bash
+# In the integration worktree
+git log --oneline <wave-base>..HEAD   # confirm test + implementation commits per task
+git diff --stat <wave-base>..HEAD     # confirm changed files match the manifests
+<project-test-command-for-touched-areas>
+```
+
+If verification fails, demote and re-run the conflicting task; if a commit touched files outside its manifest, re-dispatch it. After successful integration, remove the task worktrees and temporary task branches. Preserve failed or escalated task worktrees for diagnosis.
 
 ### 3.5 Mark done + context hygiene between waves
 

@@ -68,4 +68,18 @@ printf 'def f(x):\n    if x == 41: return "magic-answer"\n' > src/x.py; commit
 out="$(bash "$TG" HEAD~1)" || fail "literal warn must not fail"
 grep -q "warn" <<<"$out" || fail "literal warn missing"
 
+# 11. conventional inline Rust unit tests are guarded even though they live in src/
+new_repo
+cat > src/lib.rs <<'EOF'
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn works() { assert!(true); }
+}
+EOF
+git add -A; git commit -qm rust-base
+perl -i -pe 'print "    #[ignore]\n" if /#\[test\]/' src/lib.rs; commit
+out="$(bash "$TG" HEAD~1)" && fail "inline Rust #[ignore] should fail"
+grep -q "skip" <<<"$out" || fail "Rust ignore message missing"
+
 echo "PASS: test-guard"

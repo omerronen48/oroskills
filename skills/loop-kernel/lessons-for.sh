@@ -17,4 +17,7 @@ while IFS= read -r line; do
     for g in ${globs//,/ }; do for f in "$@"; do [[ "$f" == $g ]] && hit=1; done; done
   fi
   if (( hit )); then printf '%s\t%s\n' "$seen" "$line"; fi
-done < "$lf" | sort -t $'\t' -k1,1nr | head -n 5 | cut -f2-
+# Consume the full sorted stream instead of using `head`: with pipefail, a
+# sufficiently large lessons file makes sort receive SIGPIPE and turns a
+# successful five-line result into exit 141.
+done < "$lf" | sort -t $'\t' -k1,1nr | awk 'NR <= 5 { sub(/^[^\t]*\t/, ""); print }'

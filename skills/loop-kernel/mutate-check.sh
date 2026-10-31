@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # mutate-check.sh <base-ref> "<test command>"   (loop-kernel §2 step 3)
 # Proves the tests exercise the change:
-#  1. Revert check: put every changed non-test file back to <base-ref>
-#     (delete added ones); the test command must now FAIL.
+#  1. Revert check: put every changed non-test path back to <base-ref>
+#     (including additions, deletions and renames); the test command must FAIL.
 #  2. Up to 3 operator-flip mutants on added non-test lines; each must
 #     make the test command fail.
 # Exit 0 = all good; 1 = tests pass with the change reverted; 3 = mutants
@@ -16,18 +16,45 @@ git rev-parse --verify -q "$base^{commit}" >/dev/null || { echo "mutate-check: b
 is_test() { [[ "$1" =~ (^|/)(tests?|__tests__|spec)/ || "$1" =~ (_test\.|\.test\.|\.spec\.|(^|/)test_) ]]; }
 passes() { bash -c "$cmd" >/dev/null 2>&1; }
 
-mod=(); add=()
-while IFS=$'\t' read -r st f; do
-  is_test "$f" && continue
-  case "$st" in M) mod+=("$f") ;; A) add+=("$f") ;; esac
+mod=(); add=(); del=()
+while IFS=$'\t' read -r st f old_or_new; do
+  case "$st" in
+    M|T)
+      is_test "$f" || mod+=("$f")
+      ;;
+    A)
+      is_test "$f" || add+=("$f")
+      ;;
+    D)
+      is_test "$f" || del+=("$f")
+      ;;
+    R*)
+      # A rename is reverted by removing the new path and restoring the old.
+      if ! is_test "$f" || ! is_test "$old_or_new"; then
+        add+=("$old_or_new"); del+=("$f")
+      fi
+      ;;
+    C*)
+      # The source remains at HEAD for a copy; only the new path is reverted.
+      is_test "$old_or_new" || add+=("$old_or_new")
+      ;;
+  esac
 done < <(git diff --name-status "$base"..HEAD)
-(( ${#mod[@]} + ${#add[@]} )) || { echo "mutate-check: no implementation changes"; exit 0; }
+(( ${#mod[@]} + ${#add[@]} + ${#del[@]} )) || { echo "mutate-check: no implementation changes"; exit 0; }
+
+restore_head() {
+  (( ${#mod[@]} )) && git checkout -q HEAD -- "${mod[@]}"
+  (( ${#add[@]} )) && git checkout -q HEAD -- "${add[@]}"
+  (( ${#del[@]} )) && git rm -q -f --ignore-unmatch -- "${del[@]}" >/dev/null
+}
+trap restore_head EXIT HUP INT TERM
 
 # 1. Revert check
 (( ${#mod[@]} )) && git checkout -q "$base" -- "${mod[@]}"
 (( ${#add[@]} )) && rm -f -- "${add[@]}"
-if passes; then git checkout -q HEAD -- .; echo "mutate-check: tests still pass with the change reverted"; exit 1; fi
-git checkout -q HEAD -- .
+(( ${#del[@]} )) && git checkout -q "$base" -- "${del[@]}"
+if passes; then echo "mutate-check: tests still pass with the change reverted"; exit 1; fi
+restore_head
 
 # 2. Operator flips: first flippable op per added line, max 3 mutants total.
 FROM=('==' '!=' '<=' '>=' '&&' '||' 'true' 'false' 'True' 'False')
