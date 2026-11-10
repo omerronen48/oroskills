@@ -165,6 +165,8 @@ If your dispatch includes findings or failing output from an earlier attempt, yo
    - **New approach:** what you will do differently.
 2. Never re-apply the previous approach with small tweaks. If the dispatch says this is attempt 3, choose a structurally different approach from attempts 1-2 (a different algorithm, a different seam, a different data shape) and say which.
 3. Never weaken, skip or delete tests to get green. test-guard will catch it and the attempt will count as failed.
+4. Factory-check failures arrive as `FAIL:` blocks ending in a `→ fix:` line. Follow the `→ fix:` line; it is the instruction.
+5. You may push back on a `[P2]` finding you believe is wrong: add `REJECT: <finding> — <reason>` to your report and do not implement it. A blind reviewer rules on it; if re-raised, it is binding. You may REJECT only a [P2]: never a [P0], [P1] or [reward-hack] finding, and never a test (use TEST-DISPUTE:). `[P3]` findings are optional.
 
 ## Integrity (loop-kernel §8) — applies to every attempt, not only retries
 

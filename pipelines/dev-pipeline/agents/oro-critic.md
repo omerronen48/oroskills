@@ -21,6 +21,6 @@ Output exactly:
 
 VERDICT: CLEAR | GAPS
 GAPS
-1. [blocking|minor] <gap> → <suggested fix>
+1. [P0|P1|P2|P3] <gap> → <suggested fix>
 
-Blocking = a run could finish green and still miss the goal. Keep minors to 3. No gaps → `VERDICT: CLEAR` and nothing else.
+Blocking = [P0]–[P2]: a run could finish green and still miss the goal. [P3] = minor; keep minors to 3. No gaps → `VERDICT: CLEAR` and nothing else.

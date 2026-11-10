@@ -182,6 +182,8 @@ Evaluate:
 
 ## Report Format
 
+Severity: Critical = [P0]/[P1], Important = [P2], Minor = [P3]. Prefix each listed issue with its tag. If the dispatch includes REJECT: items (an implementer's push-back on an earlier [P2] with its reason), rule on each: drop it, or re-raise it under Important; a re-raised item is binding.
+
 Reply in this exact shape:
 
 ```
@@ -216,6 +218,6 @@ Findings to fix (if FAIL):
 Assessment: [≤2 sentences]
 ```
 
-Any spec-compliance failure or Critical quality issue → FAIL.
+Any spec-compliance failure, Critical or Important quality issue → FAIL. Minor ([P3]) issues never fail a task.
 If spec compliance is clean and only Minor issues exist → PASS with the
 minors noted for follow-up (not blocking). Do not approve a partial pass.
