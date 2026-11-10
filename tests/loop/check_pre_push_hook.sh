@@ -22,8 +22,11 @@ push() { set +e; out="$(git push "$@" 2>&1)"; rc=$?; set -e; }
 # (a) green and red on an existing branch
 mk a; checks 'true'; push origin main
 [ $rc = 0 ] || fail "(a) green push should succeed: $out"
-echo y > g; git add -A; git commit -qm more; checks 'test -f g'; push origin main
-[ $rc = 0 ] || fail "(a2) second green push should succeed: $out"
+echo y > g; echo 'test -f g' >> .factory/checks; git add -A; git commit -qm more; push origin main
+[ $rc = 0 ] || fail "(a2) second green push (appended check) should succeed: $out"
+echo z > h; checks 'test -f h'; push origin main
+[ $rc != 0 ] || fail "(a3) replacing a check line should be rejected"
+grep -qi "factory check" <<<"$out" || fail "(a3) output missing 'factory check': $out"
 # (b) red blocks
 mk b; checks 'echo boom; false'; push origin main
 [ $rc != 0 ] || fail "(b) red push should be rejected"
