@@ -35,10 +35,10 @@ if [[ -n "$goal" ]]; then
     awk '/^## /{s=($0 ~ /^## Done-criteria/)} s && /^- \[.\] `/' "$goal" | sed -E 's/^- \[.\] `([^`]*)`.*/\1/')
   (( ${#cmds[@]} > n )) || { echo "factory-check: no runnable done-criteria in $goal → fix: write each as a '- [ ] \`<command>\` exits 0' line under ## Done-criteria"; exit 2; }
 fi
-(( ${#cmds[@]} )) || { echo "factory-check: nothing to check → fix: add .factory/checks (one command per line, loop-kernel §0) or pass a goal file"; exit 2; }
+(( ${#cmds[@]} )) || git cat-file -e "$base:.factory/checks" 2>/dev/null || { echo "factory-check: nothing to check → fix: add .factory/checks (one command per line, loop-kernel §0) or pass a goal file"; exit 2; }
 
 fail=0
-for c in "${cmds[@]}"; do
+for c in ${cmds[@]+"${cmds[@]}"}; do
   if ! out="$(bash -c "$c" 2>&1)"; then
     echo "FAIL: $c"
     tail -n 40 <<<"$out"

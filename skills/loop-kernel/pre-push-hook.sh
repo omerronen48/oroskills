@@ -5,8 +5,7 @@
 set -uo pipefail
 cd "$(git rev-parse --show-toplevel)" || exit 1
 kernel="${OROSKILLS_KERNEL:-$HOME/.claude/skills/loop-kernel}"
-zero=0000000000000000000000000000000000000000
-while read -r _ lsha lref rsha; do
+while read -r lref lsha _ rsha; do
   [[ "$lsha" =~ ^0+$ ]] && continue
   if [[ "$lsha" != "$(git rev-parse HEAD)" ]]; then
     echo "pre-push: $lref is not checked out; factory-check skipped → fix: check it out and push from it"; continue
@@ -23,7 +22,7 @@ while read -r _ lsha lref rsha; do
   [[ -f "$kernel/factory-check.sh" ]] || { echo "pre-push: loop-kernel not found at $kernel → fix: run oroskills ./install.sh, or set OROSKILLS_KERNEL"; exit 1; }
   if ! out="$(bash "$kernel/factory-check.sh" "$base" 2>&1)"; then
     echo "$out"
-    echo "pre-push: blocked by factory check → fix: make the checks pass; agents never use --no-verify (loop-kernel §8)"; exit 1
+    echo "pre-push: blocked by factory-check → fix: make the checks pass; agents never use --no-verify (loop-kernel §8)"; exit 1
   fi
 done
 exit 0
