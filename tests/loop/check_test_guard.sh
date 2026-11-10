@@ -82,4 +82,40 @@ perl -i -pe 'print "    #[ignore]\n" if /#\[test\]/' src/lib.rs; commit
 out="$(bash "$TG" HEAD~1)" && fail "inline Rust #[ignore] should fail"
 grep -q "skip" <<<"$out" || fail "Rust ignore message missing"
 
+# 12. every violation type fires in one commit, and every violation line carries "→ fix:"
+# (skip literal built from a variable so this file itself never adds a skip marker)
+S=skip
+new_repo; echo '[pytest]' > pytest.ini; echo '{"scripts":{"test":"jest"}}' > package.json; git add -A; git commit -qm cfg
+mkdir -p .loop; shasum -a 256 tests/test_x.py > .loop/test-lock
+printf "import pytest\n@pytest.mark.$S\ndef test_a():\n    pass\n" > tests/test_x.py
+echo 'addopts = -q' >> pytest.ini; echo '{"scripts":{"test":"jest --passWithNoTests"}}' > package.json; commit
+echo "src/x.py" > m.txt
+out="$(bash "$TG" HEAD~1 m.txt)" && fail "all-violations commit should fail"
+for kind in "config file" "runner setting" "skip" "assertion" "not in manifest" "locked" "count"; do
+  grep -q "$kind" <<<"$out" || fail "violation '$kind' not triggered"
+done
+while IFS= read -r l; do
+  [[ "$l" == "test-guard: warn:"* ]] && continue
+  grep -qF "→ fix:" <<<"$l" || fail "no remediation on: $l"
+done < <(grep '^test-guard:' <<<"$out")
+
+# 13. removing a .factory/checks line (or factory workflow line) fails unless in manifest; adding passes
+new_repo; mkdir -p .factory; printf 'pytest\nruff check .\n' > .factory/checks; git add -A; git commit -qm f
+printf 'pytest\nruff check .\nmypy .\n' > .factory/checks; commit
+bash "$TG" HEAD~1 >/dev/null || fail "adding a factory check should pass"
+printf 'pytest\n' > .factory/checks; commit
+out="$(bash "$TG" HEAD~1)" && fail "removing a factory check should fail"
+grep -q "factory check" <<<"$out" || fail "factory check msg"
+echo ".factory/checks" > m.txt; bash "$TG" HEAD~1 m.txt >/dev/null || fail "factory change in manifest should pass"
+new_repo; mkdir -p .github/workflows; printf 'on: pull_request\nwith:\n  test-command: pytest\n' > .github/workflows/factory.yml; git add -A; git commit -qm wf
+printf 'on: pull_request\nwith:\n  test-command: ""\n' > .github/workflows/factory.yml; commit
+bash "$TG" HEAD~1 >/dev/null && fail "weakening factory.yml should fail"
+
+# 14. an UNCOMMITTED weakening of .factory/checks is caught too (factory-check reads the working tree)
+new_repo; mkdir -p .factory; printf 'pytest\nruff check .\n' > .factory/checks; git add -A; git commit -qm f
+printf 'pytest\n' > .factory/checks
+bash "$TG" HEAD >/dev/null && fail "uncommitted factory check removal should fail"
+mkdir -p sub; ( cd sub && bash "$TG" HEAD >/dev/null ) && fail "uncommitted removal must be caught from a subdirectory"
+rm -f .factory/checks; bash "$TG" HEAD >/dev/null && fail "deleting .factory/checks should fail"
+
 echo "PASS: test-guard"
