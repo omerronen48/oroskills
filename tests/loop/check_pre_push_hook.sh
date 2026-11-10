@@ -60,4 +60,17 @@ mk f; git checkout -q -b gone; checks 'true'; push -u origin gone; [ $rc = 0 ] |
 git checkout -q main; checks 'false'                     # red checks present, must not matter
 push origin --delete gone
 [ $rc = 0 ] || fail "(f) deletion should not be blocked: $out"
+# (g) deleting/emptying .factory/checks must not disable the hook
+mk g; checks 'true'; push origin main; [ $rc = 0 ] || fail "(g) setup: $out"
+git rm -q .factory/checks; git commit -qm rmchecks; push origin main
+[ $rc != 0 ] || fail "(g) deleting .factory/checks should be rejected"
+grep -qi "factory check" <<<"$out" || fail "(g) output missing 'factory check': $out"
+mk g2; checks 'true'; push origin main; [ $rc = 0 ] || fail "(g2) setup: $out"
+echo '# nothing' > .factory/checks; git add -A; git commit -qm emptied; push origin main
+[ $rc != 0 ] || fail "(g2) comment-only .factory/checks should be rejected"
+grep -qi "factory check" <<<"$out" || fail "(g2) output missing 'factory check': $out"
+# (h) delete-only push never needs the kernel
+mk h; git checkout -q -b gone2; checks 'true'; push -u origin gone2; [ $rc = 0 ] || fail "(h) setup: $out"
+git checkout -q main; OROSKILLS_KERNEL="$T/nokernel" push origin --delete gone2
+[ $rc = 0 ] || fail "(h) delete-only push with missing kernel should succeed: $out"
 echo "PASS: pre-push hook"
