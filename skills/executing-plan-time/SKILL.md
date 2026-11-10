@@ -42,7 +42,7 @@ Create a TodoWrite todo for each phase. Each phase has its own internal steps.
 
 ## Phase 1: Pre-flight
 
-**Loop kernel.** This skill runs on the `loop-kernel` contract (`~/.claude/skills/loop-kernel/SKILL.md`). Before the first wave, ensure `.loop/goal.md` exists in the worktree (write it from the spec per §1 if the plan didn't), run the §1 critic over goal.md + this plan, then freeze (`touch .loop/active`) and record the run base SHA. Each task runs as **tests first, then code** (§8), so the tests are locked before the implementer starts.
+**Loop kernel.** This skill runs on the `loop-kernel` contract (`~/.claude/skills/loop-kernel/SKILL.md`). Before the first wave, ensure `.loop/goal.md` exists in the worktree (write it from the spec per §1 if the plan didn't), run the §1 critic over goal.md + this plan, then freeze (`touch .loop/active`) — and, because the session's hooks run in the main checkout, also `mkdir -p <main-checkout>/.loop && touch <main-checkout>/.loop/active` (every run, not only autonomous ones; remove it when the phase ends) so the intervention hook logs prompts during the run and record the run base SHA. Each task runs as **tests first, then code** (§8), so the tests are locked before the implementer starts.
 
 **Autonomous runs only:** the Stop hook reads `.loop/` in the *main checkout* (the session's project dir), not the worktree. So also write `<main-checkout>/.loop/goal.md` as a copy whose done-criteria commands are prefixed `cd <worktree> && `. Remove that copy when the phase ends.
 
@@ -168,7 +168,7 @@ Provide:
 - The full task text from the plan
 - The task's File Edit Manifest
 - **Sibling-task touch sets** — the files modified by every other task in this same wave (this is what the sibling-conflicts check needs)
-- `.loop/goal.md` path, the task's test commit (`.loop/lock-ref-<task-id>`) and implementation head, and `test-guard.sh <lock-ref-<task-id>> <manifest>` output (loop-kernel §2). **Not** the implementer's report — the reviewer is held out (§3); dispatch it fresh, never as a fork.
+- `.loop/goal.md` path, the task's test commit (`.loop/lock-ref-<task-id>`) and implementation head, and `factory-check.sh <lock-ref-<task-id>> "" <manifest>` output (loop-kernel §2: .factory/checks + test-guard; goal criteria wait for final verification). **Not** the implementer's report — the reviewer is held out (§3); dispatch it fresh, never as a fork.
 
 The reviewer returns `PASS` or `FAIL` with specific findings — one report covering spec compliance, TDD-artifact integrity, code quality, and sibling conflicts. If `FAIL`:
 - Re-dispatch a **fresh** oro-implementer with the reviewer's findings and failing output (not the previous implementer's report) — loop-kernel §4.
@@ -202,6 +202,7 @@ The next wave's oro-implementer subagents only need: the next task slice, the wo
 Before any finishing action, from main, in the worktree:
 
 ```bash
+bash ~/.claude/skills/loop-kernel/factory-check.sh <run-base> .loop/goal.md   # goal done-criteria + .factory/checks + test-guard
 # Full test suite
 <project test command>
 
