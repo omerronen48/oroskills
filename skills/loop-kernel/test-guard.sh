@@ -4,6 +4,8 @@
 # added skip/xfail, net-removed assertions, dropped test-definition count,
 # a test file outside the manifest, a changed locked test (.loop/test-lock),
 # or a changed test-runner config/setting not declared in the manifest.
+# Every violation line ends with "→ fix: <remediation>" — the line is the retry prompt.
+# Removing a line from .factory/checks or .github/workflows/factory.yml is a violation (loop-kernel §0).
 # Prints "warn:" lines (exit unaffected) for test literals hard-coded in
 # implementation. Exit 2 = can't run.
 # ponytail: regex heuristics, not a parser; add per-language parsers if false positives bite.
@@ -45,26 +47,33 @@ while IFS= read -r f; do
   d="$(git diff "$base"..HEAD -- "$f")"
   added="$(grep -E '^\+[^+]' <<<"$d" || true)"
   removed="$(grep -E '^-[^-]' <<<"$d" || true)"
-  if [[ "$f" =~ $CFG_FILE ]] && ! in_manifest "$f"; then echo "test-guard: test config file changed: $f"; fail=1; fi
+  if [[ "$f" =~ $CFG_FILE ]] && ! in_manifest "$f"; then echo "test-guard: test config file changed: $f → fix: revert $f, or get it added to the task manifest if the spec requires it"; fail=1; fi
   if ! is_test_at "$base" "$f" && ! is_test_at HEAD "$f"; then
     if grep -Eq "$CFG_KEY" <<<"$added"$'\n'"$removed" && ! in_manifest "$f"; then
-      echo "test-guard: test runner setting changed in $f"; fail=1
+      echo "test-guard: test runner setting changed in $f → fix: revert the runner setting in $f; never narrow or silence a test run"; fail=1
     fi
     impl_added+="$added"$'\n'; continue
   fi
   test_added+="$added"$'\n'
-  if grep -Eq "$SKIP" <<<"$added"; then echo "test-guard: skip/xfail added in $f"; fail=1; fi
+  if grep -Eq "$SKIP" <<<"$added"; then echo "test-guard: skip/xfail added in $f → fix: remove the skip; if the test is wrong, write a TEST-DISPUTE: block (loop-kernel §8.5)"; fail=1; fi
   a=$(grep -Ec "$ASSERT" <<<"$added" || true); r=$(grep -Ec "$ASSERT" <<<"$removed" || true)
-  if (( r > a )); then echo "test-guard: $((r - a)) assertion(s) removed in $f"; fail=1; fi
+  if (( r > a )); then echo "test-guard: $((r - a)) assertion(s) removed in $f → fix: restore the assertions in $f; change the code, not the test"; fail=1; fi
   if [[ -n "$manifest" ]] && ! in_manifest "$f"; then
-    echo "test-guard: $f changed but not in manifest"; fail=1
+    echo "test-guard: $f changed but not in manifest → fix: revert $f or get it added to the task manifest"; fail=1
   fi
 done < <(git diff --name-only "$base"..HEAD)
+
+# Factory checks (loop-kernel §0): removing or changing a line weakens every future run.
+for f in .factory/checks .github/workflows/factory.yml; do
+  if git diff "$base" -- ":/$f" | grep -Eq '^-[^-]' && ! in_manifest "$f"; then
+    echo "test-guard: factory check removed or changed in $f → fix: restore it; factory checks change only via an approved distiller proposal"; fail=1
+  fi
+done
 
 # Locked tests (loop-kernel §8): any change, by any route, is a violation.
 lock="$(git rev-parse --show-toplevel)/.loop/test-lock"
 if [[ -f "$lock" ]]; then
-  while IFS= read -r bad; do echo "test-guard: locked test modified: $bad"; fail=1; done \
+  while IFS= read -r bad; do echo "test-guard: locked test modified: $bad → fix: git checkout <lock-ref> -- $bad; locked tests are never edited (TEST-DISPUTE: if wrong)"; fail=1; done \
     < <(cd "$(dirname "$lock")/.." && shasum -a 256 -c "$lock" 2>/dev/null | grep -v ': OK$' | sed 's/: FAILED.*//')
 fi
 
@@ -76,5 +85,5 @@ while IFS= read -r lit; do
 done < <(grep -oE '"[^"]{4,}"|[0-9]{3,}' <<<"$test_added" | sort -u)
 
 before=$(count_defs "$base"); after=$(count_defs HEAD)
-if (( after < before )); then echo "test-guard: test count dropped $before -> $after"; fail=1; fi
+if (( after < before )); then echo "test-guard: test count dropped $before -> $after → fix: restore the deleted tests"; fail=1; fi
 exit "$fail"
