@@ -10,7 +10,8 @@ grep -q "LOOP-WORKER: <issue|none> <SHIP|needs:human|no-eligible>" "$W" || fail 
 grep -q '"event":"pr_opened"' "$W" || fail "worker: must log pr_opened"
 grep -qF 'touch "$MAIN/.loop/active"' "$W" || fail "worker: must mirror .loop/active to the main checkout"
 grep -q "never asks" "$W" || fail "worker: headless must never ask"
-for s in ".factory/checks" "outer-loop.yml" "factory-check.sh" "scorecard.sh" "/gc" "intervention" "--headless" "[P0]"; do
+for s in ".factory/checks" "pre-push" "factory-check.sh" "scorecard.sh" "/gc" "intervention" "--headless" "[P0]"; do
   grep -qF -- "$s" "$RD" || fail "README missing '$s'"
 done
+grep -qF "outer-loop.yml" "$RD" && fail "README still mentions outer-loop.yml"
 echo "PASS: headless worker"

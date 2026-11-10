@@ -4,13 +4,14 @@ set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 K="$REPO/skills/loop-kernel/SKILL.md"; L="$REPO/skills/loop-kernel"
 fail() { echo "FAIL: $1"; exit 1; }
-for s in "## 0. Factory files" ".factory/checks" ".factory/run.md" ".github/workflows/factory.yml" \
-         "factory-workflow.yml" "chore(factory): bootstrap .factory" "before the run base is recorded" \
+for s in "## 0. Factory files" ".factory/checks" ".factory/run.md" "pre-push-hook.sh" \
+         "--no-verify" "chore(factory): bootstrap .factory" "before the run base is recorded" \
          "factory-check.sh" "→ fix:" "[P0]" "[P3]" "[deferred]" "REJECT:" "re-raised" \
          "intervention-log.sh" "pr_review" "pr_opened" "human-feedback.md" "scorecard.sh" "/gc" \
          "git worktree list --porcelain" 'touch "$MAIN/.loop/active"' '<goal-or-"">' "any [P0]–[P2] item (blocking)"; do
   grep -qF -- "$s" "$K" || fail "kernel missing '$s'"
 done
+for s in "factory-workflow.yml" "outer-loop.yml"; do grep -qF -- "$s" "$K" && fail "kernel still mentions $s"; done
 # the old two-step metric (separate test-guard step) is gone from §2
 awk '/^## 2\. Metric/{s=1;next} /^## 3\./{s=0} s' "$K" | grep -q '^2\. `bash "\$KERNEL/test-guard.sh"' && fail "§2 still runs test-guard separately"
 # retry triggers on P0-P2, never on P3
