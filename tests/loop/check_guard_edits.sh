@@ -23,4 +23,10 @@ touch .loop/active
 [ "$(decision "$(call "$D/.loop/goal.md")")" = deny ] || fail "frozen goal should be denied"
 [ -z "$(call "$D/newdir/x.py")" ] || fail "file in new dir should be allowed"
 [ -z "$(echo '{"tool_name":"Bash","tool_input":{"command":"ls"}}' | bash "$G")" ] || fail "non-file tool passes through"
+mkdir -p .factory; echo pytest > .factory/checks
+rm -f .loop/active
+[ -z "$(call "$D/.factory/checks")" ] || fail "factory checks editable outside a run"
+touch .loop/active
+[ "$(decision "$(call "$D/.factory/checks")")" = deny ] || fail "factory checks should be frozen during a run"
+[ -z "$(call "$D/.factory/run.md")" ] || fail "run.md stays editable"
 echo "PASS: guard-edits"
