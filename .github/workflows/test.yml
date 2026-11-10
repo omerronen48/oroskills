@@ -1,0 +1,22 @@
+name: tests
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  suite:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Git identity for test repos
+        run: git config --global user.email ci@example.com && git config --global user.name ci
+      - name: Ensure jq
+        run: command -v jq || sudo apt-get install -y jq
+      - name: Run test suite
+        run: for t in tests/check_sandbox_install.sh tests/*/check_*.sh; do echo "== $t"; bash "$t" || exit 1; done

@@ -1,0 +1,11 @@
+# Copied into a target project as .github/workflows/factory.yml by the
+# loop-kernel factory bootstrap (§0). Runs the outer loop on every PR.
+name: factory
+on:
+  pull_request:
+jobs:
+  factory:
+    uses: omerronen48/oroskills/.github/workflows/outer-loop.yml@main
+    with:
+      setup: ""         # e.g. npm ci  |  pip install -r requirements.txt
+      test-command: ""  # e.g. npm test — enables mutate-check
