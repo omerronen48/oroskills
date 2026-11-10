@@ -23,7 +23,7 @@ Create any missing file by inspecting the project (package.json scripts, Makefil
 
 - The stage that owns intent writes it once, from `goal-template.md`: brainstorm/plan (`/dev`), `oro-planner` (`/ship`), the decompose step (`/fix`).
 - **Goal** = end state only. Steps belong in the spec/plan, never here.
-- **Done-criteria** = runnable commands only. Always the project's test command, plus **at least one Behavior check**: a command that exercises the real end state (run the CLI with real input, curl the endpoint, build and load the page headless, run the migration on a scratch DB). Unit tests alone are not a done-criterion set. Anything not expressible as a command goes in **Rubric**. The project's `.factory/checks` run on every attempt anyway (§2), so done-criteria list only what is specific to this goal.
+- **Done-criteria** = runnable commands only. **At least one Behavior check**: a command that exercises the real end state (run the CLI with real input, curl the endpoint, build and load the page headless, run the migration on a scratch DB). Unit tests alone are not a done-criterion set. Anything not expressible as a command goes in **Rubric**. The project's `.factory/checks` (which include its test command) run on every attempt anyway (§2), so done-criteria list only the Behavior check plus goal-specific commands.
 - **UI goals** (goal touches UI files or describes something a user sees): add `## Screens` listing 1-5 screens/states to capture (URL or route + state). Climb captures these for the judges (§5).
 - **Rubric** = 3-5 criteria derived from the Goal, each with what a 10/10 looks like.
 - **Grill:** if the goal can't be written without guessing, the owning stage asks the user (its existing question mechanism). Under `--auto`: answer from `.dev/memory/`; reversible → sensible default logged `[auto]` to `decisions.md`; irreversible → `ESCALATE:`.
@@ -64,7 +64,7 @@ On any red: factory-check exit ≠ 0, or any reviewer finding tagged [P0]–[P2]
 After all tasks pass, before finishing:
 1. `git tag -f loop/climb-0`. Compute run diff stats vs the run base.
 2. **Small-diff exemption:** < 50 changed lines AND no file matching `*.css *.scss *.tsx *.jsx *.vue *.svelte *.html` → do step 3 once, report the score, skip to §6.
-3. **Screens (UI goals only):** if goal.md has `## Screens`, launch the app (the `run` skill's pattern for the project type, or the built-in browser pane) and save a screenshot per listed screen to `.loop/shots/<tag>/<n>.png`. If launch fails, record that as a `[metric]` finding and judge from code only.
+3. **Screens (UI goals only):** if goal.md has `## Screens`, launch the app (per `.factory/run.md` Launch/Browser first, falling back to the `run` skill's pattern for the project type or the built-in browser pane) and save a screenshot per listed screen to `.loop/shots/<tag>/<n>.png`. If launch fails, record that as a `[metric]` finding and judge from code only.
    Dispatch **3 `oro-judge`** subagents in parallel (fresh, blind): input = goal.md + `git diff <base>..HEAD` + the screenshot paths for this tag (if any). Judges 1-2: `persona: none`. Judge 3: `persona:` an expert fitting the goal's domain (e.g. senior UX designer, SRE, API designer). Each returns per-criterion scores 0-10 and up to 3 improvements.
 4. Drop malformed judge output. < 2 valid judges → skip climb, report. Score = mean of all valid per-criterion scores.
 5. Stop if score ≥ 8.5. Otherwise run **two competing variants** in parallel, each in its own worktree off the best tag (`git worktree add .loop/wt-a -b loop/climb-N-a <best-tag>`, same for `-b`). `.loop/` is ignored and is not carried into a worktree: before dispatch, create `<variant>/.loop/` and copy the frozen `goal.md`, `active`, `test-lock`, and every `lock-ref*` from the run worktree. Verify the copied lock with `shasum -a 256 -c <variant>/.loop/test-lock`. A missing or invalid lock discards the variant before any coder runs.
@@ -76,13 +76,13 @@ After all tasks pass, before finishing:
 
 ## 6. Distill — durability (every run, also after escalation/cap)
 
-First append one line of run history. `.loop/` is wiped per run, so history lives at `.dev/memory/history.jsonl` (create `.dev/memory/` if missing):
-`jq -nc --arg pipeline <ship|fix|dev> --arg goal "<first line of Goal>" --argjson attempts '<{"<task>":n,...}>' --argjson climb '[<score per round>]' --argjson caps <n> --argjson hacks <count of [reward-hack] findings> --arg date "$(date -u +%FT%TZ)" '{date:$date,pipeline:$pipeline,goal:$goal,attempts:$attempts,climb:$climb,caps:$caps,reward_hacks:$hacks}' >> .dev/memory/history.jsonl`
+First append one line of run history. `.loop/` is wiped per run, so history lives at `$MAIN/.dev/memory/history.jsonl` (`MAIN` as defined below; create the directory if missing):
+`jq -nc --arg pipeline <ship|fix|dev> --arg goal "<first line of Goal>" --argjson attempts '<{"<task>":n,...}>' --argjson climb '[<score per round>]' --argjson caps <n> --argjson hacks <count of [reward-hack] findings> --arg date "$(date -u +%FT%TZ)" '{date:$date,pipeline:$pipeline,goal:$goal,attempts:$attempts,climb:$climb,caps:$caps,reward_hacks:$hacks}' >> "$MAIN/.dev/memory/history.jsonl"`
 
 Other history events (all to `.dev/memory/history.jsonl`, one JSON object per line):
 - `{"date","event":"intervention","prompt"}` — written by the `intervention-log.sh` UserPromptSubmit hook for every human prompt while `.loop/active` exists. Each one is a place the harness failed to carry the agent.
 - `{"date","event":"pr_opened","pr":<n>,"by":"agent"}` — written when a pipeline opens a PR (`/loop-worker`).
-- `{"date","event":"pr_review","pr":<n>,"human_comments":<n>}` — written by `/address-review`, which also appends each human comment to `.dev/memory/human-feedback.md` as `- [human] PR#<n>: <summary> (<url>)`.
+- `{"date","event":"pr_review","pr":<n>,"human_comments":<n>}` — written by `/address-review`, which also appends each human comment to `.dev/memory/human-feedback.md` as `- [human] <YYYY-MM-DD> PR#<n>: <summary> (<url>)`.
 Runs often happen in a git worktree (/dev, /loop-worker, climb variants), which is removed afterwards. So every history writer — the §6 run line included — writes to the **main checkout**: `MAIN="$(git worktree list --porcelain | sed -n '1s/^worktree //p')"`, file `$MAIN/.dev/memory/history.jsonl` (same for `human-feedback.md`). A run that works in a worktree also does `mkdir -p "$MAIN/.loop" && touch "$MAIN/.loop/active"` at freeze and `rm -f "$MAIN/.loop/active"` at its end, so the intervention hook (which runs in the session's project dir) sees it.
 `bash "$KERNEL/scorecard.sh"` turns these into autonomy (interventions per run), automation (zero-touch agent PRs, human comments per PR) and quality (attempts, caps, reward hacks, climb gain) numbers. The weekly `/gc` command runs the scorecard and the distiller over the week's human feedback.
 

@@ -22,7 +22,7 @@ Run a batch of small fixes for: $ARGUMENTS
 7a. Before step 7 (tests come first, loop-kernel §8): delegate to the oro-tester subagent in **test-first** mode with fix N's spec + goal.md. It writes the repro/acceptance test and shows it red. Commit it and lock it (`shasum -a 256 <test files> >> .loop/test-lock; git rev-parse HEAD > .loop/lock-ref`). Step 7's oro-coder must make it pass without touching it.
 7. Delegate to the oro-coder subagent. Wait for `.pipeline/changes.md`.
 8. Run fix N's locked tests. They must pass.
-9. **Regression guard + metric (loop-kernel §2):** run `bash ~/.claude/skills/loop-kernel/factory-check.sh "$(cat .loop/lock-ref)" ""` (.factory/checks — the full suite — plus test-guard; the batch goal is checked once at the end). Both must be clean. A `TEST-DISPUTE:` from the coder → handle per loop-kernel §8.
+9. **Regression guard + metric (loop-kernel §2):** run `bash ~/.claude/skills/loop-kernel/factory-check.sh "$(cat .loop/lock-ref)" ""` (.factory/checks — the full suite — plus test-guard; the batch goal is checked once at the end). It must be clean. A `TEST-DISPUTE:` from the coder → handle per loop-kernel §8.
 10. On any red at steps 7-9 → retry (loop-kernel §4): fresh oro-coder with the failing output, repeat 7-9. Max 3 attempts per fix. On the 3rd failure: mark fix N `failed` in `.fix/roadmap.md`, **halt**, report the fix, failing stage and output, then run step 13b (Distill). Leave the branches as-is.
 11. On green: commit on `fix/N-<slug>`, mark fix N `done` in `.fix/roadmap.md`, continue to the next fix.
 

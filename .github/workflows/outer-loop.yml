@@ -17,6 +17,8 @@ on:
         description: oroskills ref to take the kernel scripts from
         type: string
         default: main
+permissions:
+  contents: read
 jobs:
   outer-loop:
     runs-on: ubuntu-latest

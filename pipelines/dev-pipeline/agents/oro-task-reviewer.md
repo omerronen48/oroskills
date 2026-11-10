@@ -164,7 +164,7 @@ Evaluate:
   stdlib → native feature → existing dep → one line → minimum viable).
   Flag anything that fails a rung as over-engineered.
 - If the diff contains an abstraction, option, or layer the task did not
-  require, that is a Critical issue → FAIL.
+  require, that is an Important ([P2]) issue → FAIL.
 
 **Sibling-task conflicts (specific to parallel execution):**
 - Did this task introduce or rename a symbol that is referenced by files
