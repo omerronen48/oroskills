@@ -28,7 +28,7 @@ done
 for agent in oro-planner oro-coder oro-tester oro-reviewer oro-implementer oro-task-reviewer oro-phase-executor oro-triager oro-judge oro-distiller oro-critic; do
   [ -e "$SB/.claude/agents/$agent.md" ] || fail "agent $agent missing"
 done
-for cmd in ship dev fix loop-manager loop-worker address-review; do
+for cmd in ship dev fix loop-manager loop-worker address-review gc; do
   [ -e "$SB/.claude/commands/$cmd.md" ] || fail "command $cmd missing"
 done
 [ -e "$SB/.claude/memory-protocol.md" ] || fail "memory-protocol.md missing"
@@ -36,6 +36,7 @@ done
 [ -x "$SB/.claude/caveman-state.sh" ] || fail "caveman-state.sh missing"
 [ -x "$SB/.claude/goal-stop.sh" ] || fail "goal-stop.sh missing"
 [ -x "$SB/.claude/guard-edits.sh" ] || fail "guard-edits.sh missing"
+[ -x "$SB/.claude/intervention-log.sh" ] || fail "intervention-log.sh missing"
 [ -f "$SB/.claude/statusline-command.sh" ] || fail "statusline missing"
 [ -x "$SB/.claude/dev-resume-guard.sh" ] || fail "dev-resume-guard.sh missing"
 [ "$(cat "$SB/.claude/.oroskills-mode")" = "symlink" ] || fail "mode marker wrong"
@@ -45,6 +46,8 @@ command -v jq >/dev/null && {
   jq -e '[.hooks.PreToolUse[]?.hooks[]?.command] | any(test("guard-edits.sh"))' "$SB/.claude/settings.json" >/dev/null || fail "PreToolUse guard not registered"
   jq -e '[.hooks.Stop[]?.hooks[]?.command] | any(test("goal-stop.sh"))' "$SB/.claude/settings.json" >/dev/null || fail "Stop hook not registered"
   [ "$(jq '[.hooks.Stop[]?.hooks[]?.command | select(test("goal-stop.sh"))] | length' "$SB/.claude/settings.json")" = 1 ] || fail "Stop hook duplicated"
+  jq -e '[.hooks.UserPromptSubmit[]?.hooks[]?.command] | any(test("intervention-log.sh"))' "$SB/.claude/settings.json" >/dev/null || fail "intervention hook not registered"
+  [ "$(jq '[.hooks.UserPromptSubmit[]?.hooks[]?.command | select(test("intervention-log.sh"))] | length' "$SB/.claude/settings.json")" = 1 ] || fail "intervention hook duplicated"
 }
 
 HOME="$SB" PATH="$SB/bin:$PATH" "$SB/repo/install.sh" --uninstall >/dev/null
@@ -57,6 +60,8 @@ HOME="$SB" PATH="$SB/bin:$PATH" "$SB/repo/install.sh" --uninstall >/dev/null
 [ ! -e "$SB/.claude/dev-resume-guard.sh" ] || fail "uninstall left resume guard"
 [ ! -e "$SB/.claude/goal-stop.sh" ] || fail "goal-stop.sh not removed"
 [ ! -e "$SB/.claude/guard-edits.sh" ] || fail "guard-edits.sh not removed"
+[ ! -e "$SB/.claude/intervention-log.sh" ] || fail "intervention-log.sh not removed"
+[ ! -e "$SB/.claude/commands/gc.md" ] || fail "gc command not removed"
 command -v jq >/dev/null && {
   [ "$(jq -r '[.hooks[]?[]?.hooks[]?.command] | length' "$SB/.claude/settings.json")" = "0" ] || fail "uninstall left hook entries"
   jq -e '[.hooks.Stop[]?.hooks[]?.command] | any(test("goal-stop.sh")) | not' "$SB/.claude/settings.json" >/dev/null || fail "Stop hook not removed"
