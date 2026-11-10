@@ -11,7 +11,7 @@ You are the orchestrator. Run the stages below in order. Do not skip ahead. Afte
 
 Ensure `.dev/memory/` exists. If absent, create the skeleton files — `goals.md`, `decisions.md`, `lessons.md`, `glossary.md`, `progress.md` — per the contract in `~/.claude/memory-protocol.md`. Then read `progress.md`.
 
-Then make sure the project has its `.factory/` files (loop-kernel §0: `.factory/checks`, `.factory/run.md`, `.github/workflows/factory.yml`); create and commit any that are missing. Under `--auto`, reversible guesses are logged `[auto]` to `decisions.md`.
+Then make sure the project has its `.factory/` files (loop-kernel §0: `.factory/checks`, `.factory/run.md` and the pre-push hook); create and commit any that are missing. Under `--auto`, reversible guesses are logged `[auto]` to `decisions.md`.
 
 ### Design source (optional)
 

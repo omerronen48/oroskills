@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # factory-check.sh <base-ref> [goal-file] [manifest]   (loop-kernel §2)
-# The one metric entry point, used in-session and in CI (outer-loop.yml):
+# The one metric entry point, used in-session and by the pre-push hook:
 #  1. every command line in .factory/checks (blank and # lines skipped)
 #  2. every `cmd` under "## Done-criteria" in the goal file, when given
 #  3. test-guard.sh <base-ref> [manifest]
