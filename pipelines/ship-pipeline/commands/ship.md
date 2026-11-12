@@ -1,6 +1,6 @@
 ---
 description: Ship one small self-contained feature through planner→coder→tester→reviewer on its own branch (the deliberate fast lane — tests-first on the loop-kernel contract, no worktree). NOT for bug fixes or chores (use /fix) or multi-phase work (use the brainstorm→plan→execute chain).
-argument-hint: <feature request>
+argument-hint: [--climb] <feature request>
 ---
 
 Run the full feature pipeline for: $ARGUMENTS
@@ -18,7 +18,7 @@ Execute these stages in order. Do not skip ahead. After each stage, confirm the 
 5. Metric (§2): `bash ~/.claude/skills/loop-kernel/factory-check.sh "$(cat .loop/lock-ref)" .loop/goal.md`. Its `FAIL:`/`→ fix:` blocks are the findings.
 6. Delegate to the oro-reviewer subagent as a fresh, blind reviewer (§3), passing any test-guard `warn:` lines. Wait for .pipeline/review.md.
 7. Any red in 4-6 (failed tests, metric finding, NEEDS WORK) → retry (§4): fresh oro-coder with the findings and diagnoses, then repeat 4-6. Max 3 attempts total. A `TEST-DISPUTE:` in changes.md → handle per §8 (show it to me). BLOCK or cap hit → stop and show me the last findings, then go to step 10.
-8. On SHIP: run mutate-check (§2 step 3; the test author is oro-tester in strengthen mode).
-9. Run Climb (§5); commit any climb changes.
-10. Run Distill (§6) and show me the proposals to approve. `rm -f .loop/active`.
-Report the final verdict, climb score, any `[reward-hack]` findings, lessons added and proposals. Do not merge anything. Leave the branch for my review.
+8. On SHIP: run mutate-check (§2 step 3: skipped for a small, non-risky diff; the test author is oro-tester in strengthen mode).
+9. Run Climb (§5: skipped for a small non-UI diff unless `--climb` was passed); commit any climb changes.
+10. Run Distill (§6): the history line always; the distiller only when the run produced findings or corrections — then show me the proposals to approve. `rm -f .loop/active`.
+Report the final verdict, climb score (if Climb ran), any `[reward-hack]` findings, lessons added and proposals. Do not merge anything. Leave the branch for my review.

@@ -7,9 +7,9 @@ model: opus
 
 You turn one run's mistakes into rules the next run reads.
 
-Inputs from the dispatcher: `.loop/findings.md`, optional `.loop/escalations.md`, the lessons path (`.dev/memory/lessons.md` in the target project), and an optional oroskills repo path. In **gc mode** (from /gc) the inputs are instead `.dev/memory/human-feedback.md`, `.dev/memory/history.jsonl` and the lessons path, and proposals go to `.dev/proposals/` instead of `.loop/proposals/`.
+Inputs from the dispatcher: `.loop/findings.md`, optional `.loop/escalations.md`, the run history (`.dev/memory/history.jsonl`), optional `.dev/memory/human-feedback.md` (`[human]` PR comments), the lessons path (`.dev/memory/lessons.md` in the target project), and an optional oroskills repo path.
 
-1. Read the findings. Entries are tagged `[metric]`, `[review]`, `[judge]`, `[user]`, `[human]`, `[deferred]`, `[reward-hack]`. Weight `[user]`, `[human]` and `[reward-hack]` highest; `[deferred]` (P3 nits) count only when the same nit recurs. Then read the last 50 lines of the history file: find trends across runs (which pipeline or stage causes most retries, rising or falling climb scores, repeat cap hits) and cite those numbers in proposals.
+1. Read the findings and the human feedback. Entries are tagged `[metric]`, `[review]`, `[judge]`, `[user]`, `[human]`, `[deferred]`, `[reward-hack]`. Weight `[user]`, `[human]` and `[reward-hack]` highest; `[deferred]` (P3 nits) count only when the same nit recurs. Then read the last 50 lines of the history file: find trends across runs (which pipeline or stage causes most retries, rising or falling climb scores, repeat cap hits) and cite those numbers in proposals.
 2. Cluster them into patterns. Each pattern = one line: `<what went wrong> → <rule that prevents it>`. Drop one-off noise (a typo the retry fixed with no general lesson).
 3. Open the lessons file (create it and its directory if missing). For each pattern:
    - If an existing `[distilled]` lesson says the same thing, increment its `seen: N` counter.

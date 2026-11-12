@@ -1,11 +1,11 @@
 ---
 name: writing-plans-time
-description: "Use when an approved spec needs an implementation plan. Opens with a File Edit Manifest and breaks work into parallel-executable waves. Replaces superpowers:writing-plans. Hands off to executing-plan-time."
+description: "Use when an approved spec needs an implementation plan. Opens with a File Edit Manifest and breaks work into parallel-executable waves. Hands off to executing-plan-time."
 ---
 
 # Direct Writing Plans
 
-Turn an approved spec into a concrete implementation plan, fast. Same guarantees as superpowers:writing-plans (bite-sized steps, exact code, TDD, frequent commits), with three differences:
+Turn an approved spec into a concrete implementation plan, fast: bite-sized steps, exact code, TDD, frequent commits, plus three things:
 
 1. **Graphify-first.** The plan's file list comes from `graphify query`, not guesswork. If no graph exists, initialize one before planning.
 2. **File Edit Manifest up front.** Before any tasks, the plan declares every file it will create, modify, or delete. The reader knows the blast radius before reading step 1.
@@ -19,7 +19,7 @@ Turn an approved spec into a concrete implementation plan, fast. Same guarantees
 - `plan-template.md` — the canonical plan structure that `executing-plan-time` consumes. Copy the section below the `===` line into your plan file and fill in the placeholders. Sections marked **REQUIRED** in the template (File Edit Manifest, Execution Waves, per-task `Depends-on:` / `Wave:` / `Files:`) are what the executor reads for overlap analysis and parallel dispatch — omitting them forces sequential fall-back.
 
 <HARD-GATE>
-Do NOT begin implementation. The terminal state of this skill is a written plan file plus an execution handoff. The implementation step belongs to `executing-plan-time` — do not invoke the superpowers execution skills; they are subsumed.
+Do NOT begin implementation. The terminal state of this skill is a written plan file plus an execution handoff. The implementation step belongs to `executing-plan-time`.
 </HARD-GATE>
 
 ## Checklist
@@ -162,7 +162,7 @@ Rules:
 
 ## No Placeholders
 
-Same rules as superpowers:writing-plans. These are plan failures:
+These are plan failures:
 - `TBD`, `TODO`, "implement later", "fill in details"
 - "Add appropriate error handling" / "handle edge cases" without specifics
 - "Write tests for the above" without the test code
@@ -203,13 +203,13 @@ Fix inline. Do not loop on self-review.
 
 ## Execution Handoff
 
-After saving the plan, hand off to `executing-plan-time`. That skill is the single entry point for executing plans produced here — it absorbs what used to be the three separate superpowers execution skills (dispatching-parallel-agents, subagent-driven-development, executing-plans) into one runner that always uses a worktree, always parallelizes when overlap analysis permits, and falls back to sequential within the same flow.
+After saving the plan, hand off to `executing-plan-time`. That skill is the single entry point for executing plans produced here — one runner that always uses a worktree, always parallelizes when overlap analysis permits, and falls back to sequential within the same flow.
 
 Message to the user:
 
 > "Plan saved to `<path>`. Wave summary: W1=1 task, W2=2 parallel, W3=1, W4=1, W5=1 (peak parallelism: 2). Ready to hand off to `executing-plan-time` — it will set up a worktree, run overlap analysis on the waves, dispatch parallel oro-implementer subagents per wave, run spec-compliance and code-quality review per task, and finish the branch. Proceed?"
 
-**Routing:** Always `executing-plan-time`. Do NOT invoke superpowers:dispatching-parallel-agents, superpowers:subagent-driven-development, or superpowers:executing-plans separately — they are subsumed.
+**Routing:** Always `executing-plan-time`.
 
 ## Red Flags — Stop and Course-Correct
 

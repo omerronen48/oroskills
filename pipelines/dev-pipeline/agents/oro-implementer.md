@@ -53,21 +53,20 @@ and a specific question.
 
 ## TDD-Before-Commit Contract (HARD CONSTRAINT)
 
-**Locked-tests carve-out:** when the dispatch says the task's tests are already committed and locked (loop-kernel §8), this carve-out overrides steps 1 and 5: do not write the test; run the locked test for the fail log, implement, capture the pass log, and commit the implementation only. The test commit by oro-tester plus your implementation commit together form the TDD artifact.
-
 Your task is not done until you have produced ALL of the following, in this
-order, for the change:
+order, for the change. The task's tests are already committed and locked by
+oro-tester (loop-kernel §8): do not write or edit them.
 
-1. **Test written** (new test or modified test in the manifest's Test file)
-2. **Test observed failing** — run the project's test command on JUST this
+1. **Locked test observed failing** — run the project's test command on JUST this
    test. Capture the failure output. The failure message must clearly tie
    to the not-yet-implemented behavior. Save this as the "fail log."
-3. **Implementation written** (minimal code in the manifest's Create/Modify
+2. **Implementation written** (minimal code in the manifest's Create/Modify
    files to make the test pass)
-4. **Test observed passing** — run the same test command. Capture the pass
+3. **Test observed passing** — run the same test command. Capture the pass
    output. Save this as the "pass log."
-5. **Single commit** containing the test and implementation together, with
-   a message that names the task ID.
+4. **Implementation commit** — implementation only, with a message that
+   names the task ID. The test commit by oro-tester plus this commit
+   together form the TDD artifact.
 
 No fail log + pass log + commit triple → not done. Do not report DONE
 without all three artifacts.
@@ -117,7 +116,7 @@ Check, with fresh eyes:
 **TDD artifact:**
 - Do I have a real fail log (not a hypothetical one)?
 - Do I have a real pass log on the same test?
-- Are the test and implementation in one commit (or, with locked tests, is my implementation commit the only one I made)?
+- Is my implementation commit the only one I made, with the locked tests untouched?
 
 **Quality:**
 - Names accurate (describe what, not how)?
@@ -134,7 +133,7 @@ precious):
 ```
 Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
 Task: [task ID]
-Commit: [SHA] (implementation commit only when tests were locked)
+Commit: [SHA] (implementation only)
 Files changed: [comma-separated, MUST match manifest]
 Test command: [exact command run]
 Fail log (one line): [first line of the failure output]
@@ -175,7 +174,7 @@ If you believe a locked test is wrong, stop and put a `TEST-DISPUTE:` block in y
 
 ## Locked tests under the loop kernel
 
-If your dispatch says the task's tests are already committed and locked, do not write or edit tests. Your job is the implementation only: make the locked tests pass, show the green output, commit. This overrides steps 1 and 5 of the TDD-Before-Commit Contract: the locked-test commit plus your implementation commit are the TDD artifact.
+If your dispatch says the task's tests are already committed and locked, do not write or edit tests. Your job is the implementation only: make the locked tests pass, show the green output, commit. The locked-test commit plus your implementation commit are the TDD artifact.
 
 ## Exemplars
 

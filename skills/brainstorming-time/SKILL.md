@@ -1,19 +1,19 @@
 ---
 name: brainstorming-time
-description: "Use when turning an idea, feature, or change request into a reviewable spec — mind map first, then written spec — before any creative work. Replaces superpowers:brainstorming. Hands off to writing-plans-time."
+description: "Use when turning an idea, feature, or change request into a reviewable spec — mind map plus written spec, approved in one gate — before any creative work. Hands off to writing-plans-time."
 ---
 
 # Direct Brainstorming
 
-Turn an idea into a reviewable spec quickly. Same goal as superpowers:brainstorming — never implement without an approved design — but with less back-and-forth, graphify-first context gathering, and a mind map review step before the written spec.
+Turn an idea into a reviewable spec quickly. Never implement without an approved design — but with little back-and-forth, graphify-first context gathering, and a mind map reviewed together with the written spec in one gate.
 
 <HARD-GATE>
-Do NOT write code, scaffold, or invoke any implementation skill until you have presented the mind map AND the written spec and the user has approved both. This applies regardless of perceived simplicity.
+Do NOT write code, scaffold, or invoke any implementation skill until you have presented the mind map AND the written spec together and the user has approved them (one gate). This applies regardless of perceived simplicity.
 </HARD-GATE>
 
 ## When to Use
 
-Use this skill instead of superpowers:brainstorming when:
+Use this skill when:
 - The user wants to move quickly and dislikes one-question-at-a-time interrogation
 - The repo already has (or should have) a graphify knowledge graph
 - A visual mind map of the proposed design would help the user review faster than prose
@@ -26,10 +26,11 @@ Create a TodoWrite todo for each item and complete them in order:
 2. **Gather context via `graphify query`** — do NOT use Read/Grep for general exploration; only fall back to file reads when a query result is insufficient for a specific line/implementation
 3. **Ask batched clarifying questions** — one message containing all open questions (use AskUserQuestion for choices); follow up only if answers reveal new unknowns
 4. **Propose one recommended approach** — short paragraph, name the main tradeoff, name the alternative you rejected and why (one sentence)
-5. **Present mind map** — a Mermaid `mindmap` of the design (root = feature name; branches = components, data flow, interfaces, risks, test surface); ask the user to confirm or correct the shape before writing prose
+5. **Draw the mind map** — a Mermaid `mindmap` of the design (root = feature name; branches = components, data flow, interfaces, risks, test surface); do not stop for approval, go straight on to the spec
 6. **Write the spec** — save to `docs/specs/YYYY-MM-DD-<topic>.md` (or the project's existing spec location if different); include the mind map at the top
 7. **Spec self-review** — scan inline for placeholders, contradictions, ambiguity, scope creep; fix in place
-8. **User reviews the spec file** — ask for approval or changes; loop until approved
+7b. **Goldfish review (optional)** — non-trivial specs only; skip for small/single-file changes, under `/dev --auto` (oro-critic already runs), or silently if the egm plugin is not installed. Dispatch one `egm:egm-synthesizer` subagent (Agent tool) with `Mode: REVIEW`, `TargetFile: <spec path>` and `Reviewers: [egm-design, egm-zoom-out, egm-implementation-readiness]`; fold the Blocker/Major findings from its report into the spec before the user gate
+8. **One user gate** — present the mind map and the spec file together; ask for approval or changes to either; loop until approved
 9. **Hand off to writing-plans-time** — invoke `writing-plans-time` to produce the implementation plan; do not invoke any implementation skill directly
 
 ## Graphify Integration (Required)
@@ -52,7 +53,7 @@ Use Read/Grep only when:
 
 ## Mind Map Step (Required)
 
-Before writing the spec, produce a Mermaid `mindmap` of the proposed design and present it for visual review. This is cheaper feedback than a written spec — users can spot a missing branch or a mis-shaped boundary in seconds.
+Before writing the spec, produce a Mermaid `mindmap` of the proposed design. It goes at the top of the spec and is presented with it at the single user gate — users can spot a missing branch or a mis-shaped boundary in seconds.
 
 **Minimum branches:**
 - Components / modules
@@ -85,14 +86,14 @@ mindmap
       Integration: end-to-end CLI
 ```
 
-After presenting the mind map, ask one direct question: **"Does this shape match what you want, or is a branch missing/wrong?"** Iterate the mind map (not the prose) until the user confirms the shape. Only then write the spec.
+Do not stop for a separate mind-map approval: write the spec straight away and present both at the user review gate. If the user corrects the shape there, fix the mind map and the spec together.
 
 Apply "does this need to exist?" to every proposed component; cut scope that fails it before it reaches the spec.
 
 ## Spec File
 
 - Default path: `docs/specs/YYYY-MM-DD-<topic>.md` (user preferences override)
-- First section of the spec is the approved Mermaid mind map
+- First section of the spec is the Mermaid mind map
 - Then: purpose, scope, architecture, data flow, interfaces, error handling, testing, open questions
 - Scale each section to its complexity — a few sentences is fine when the topic is small
 - Commit the spec to git if the repo uses git
@@ -110,7 +111,9 @@ Fix in place. Don't loop on self-review.
 
 ### User review gate
 
-> "Spec written to `<path>` and mind map approved. Please review the file and tell me if you want changes before I hand off to `writing-plans-time`."
+Show the mind map inline, then:
+
+> "Spec written to `<path>`, mind map above. Does the shape match what you want, and does the spec read right? Tell me what to change in either before I hand off to `writing-plans-time`."
 
 Loop until the user approves, then invoke `writing-plans-time`.
 
@@ -118,7 +121,7 @@ Loop until the user approves, then invoke `writing-plans-time`.
 
 - Calling Read/Grep before running a single `graphify query`
 - `graphify-out/` is missing and you proceeded anyway
-- Writing the spec without showing a mind map
+- Presenting the spec without the mind map, or stopping for a separate mind-map approval
 - Asking the user one question at a time instead of batching
 - Proposing 2–3 approaches with full tradeoff tables
 - Invoking an implementation skill before user approves the written spec
@@ -146,8 +149,7 @@ user at any gate. Read `.dev/memory/` first, then clear each gate as follows:
    **reversible**, pick the sensible default and append it to `decisions.md` tagged `[auto]`;
    if **irreversible**, do not guess — return an `ESCALATE:` block to the orchestrator (it
    parks the fork to `escalations.md` and halts).
-3. **Mind-map confirm** — generate the mind map, self-confirm, include it at the top of the
-   spec; do not wait for an "OK?".
+3. **Mind map** — generate it and include it at the top of the spec.
 4. **Spec approval + `<HARD-GATE>`** — the inline self-review replaces human approval. The
    HARD-GATE is satisfied by "mind map + self-reviewed spec produced". Then hand off to
    `writing-plans-time` (also in autonomous mode).

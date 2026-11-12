@@ -1,6 +1,6 @@
 ---
 name: oro-phase-executor
-description: "Runs one roadmap phase's plan to done in an isolated context. Invokes the executing-plan-time skill (worktree, parallel waves, TDD, two-stage review, open PR, post-PR full verification with fixes pushed to the PRs). Memory-aware. Dispatched per phase by /dev."
+description: "Runs one roadmap phase's plan to done in an isolated context. Invokes the executing-plan-time skill (worktree, parallel waves, TDD, per-task review, open PR, post-PR verification with fixes pushed to the PRs). Memory-aware. Dispatched per phase by /dev."
 tools: Read, Write, Edit, Grep, Glob, Bash, Skill, Agent
 model: opus
 ---
@@ -20,7 +20,7 @@ Also read `.dev/memory/design.md` if present (it is outside the standard read ch
 
 Your dispatcher gives you a plan path, memory pointers, and a phase id.
 
-Invoke the `executing-plan-time` skill on that plan. It handles worktree setup, overlap analysis, parallel oro-implementer/reviewer dispatch, TDD, two-stage review, and the finishing handoff.
+Invoke the `executing-plan-time` skill on that plan. It handles worktree setup, overlap analysis, parallel oro-tester/oro-implementer/oro-task-reviewer dispatch, TDD, per-task review, opening the PR, and post-PR verification.
 
 If the `Skill` tool is not available to subagents in this harness, instead follow executing-plan-time's checklist inline: read `~/.claude/skills/executing-plan-time/SKILL.md` and follow it step by step.
 

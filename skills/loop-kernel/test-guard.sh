@@ -5,7 +5,7 @@
 # a test file outside the manifest, a changed locked test (.loop/test-lock),
 # or a changed test-runner config/setting not declared in the manifest.
 # Every violation line ends with "→ fix: <remediation>" — the line is the retry prompt.
-# Removing a line from .factory/checks or .github/workflows/factory.yml is a violation (loop-kernel §0).
+# Removing a line from .factory/checks is a violation (loop-kernel §0).
 # Prints "warn:" lines (exit unaffected) for test literals hard-coded in
 # implementation. Exit 2 = can't run.
 # ponytail: regex heuristics, not a parser; add per-language parsers if false positives bite.
@@ -64,7 +64,7 @@ while IFS= read -r f; do
 done < <(git diff --name-only "$base"..HEAD)
 
 # Factory checks (loop-kernel §0): removing or changing a line weakens every future run.
-for f in .factory/checks .github/workflows/factory.yml; do
+for f in .factory/checks; do
   if git diff "$base" -- ":/$f" | grep -Eq '^-[^-]' && ! in_manifest "$f"; then
     echo "test-guard: factory check removed or changed in $f → fix: restore it; factory checks change only via an approved distiller proposal"; fail=1
   fi
