@@ -1,6 +1,6 @@
 ---
 description: Continuous roadmap-driven dev loop — picks the next roadmap phase and runs it end-to-end through the brainstorm→plan→execute chain; --auto runs unattended and parks escalations. NOT for a single feature (use /ship) or bugs/small fixes (use /fix).
-argument-hint: [--auto] [--import <roadmap-path>] <project direction>
+argument-hint: [--auto] [--climb] [--import <roadmap-path>] <project direction>
 ---
 
 Run the continuous roadmap-driven dev loop for: $ARGUMENTS
@@ -62,13 +62,13 @@ b. Run the `brainstorming-time` skill (interactive, in the main session) → pro
 c. Run the `writing-plans-time` skill (in the main session) → produces a plan file. Confirm the plan exists before continuing.
 d. Set this phase to `planned` in `progress.md` and persist any new decisions/glossary terms.
 e. Dispatch the `oro-phase-executor` agent with: the plan path, memory pointers, and the phase id. Await its ≤10-line summary. Execution runs unattended in that subagent's isolated context — this is what keeps the main session lean across phases.
-   The phase runs on the loop-kernel contract (capped retry, blind review, climb, distill — see executing-plan-time). After each phase, add the distiller's lessons/proposals summary to the phase report.
+   The phase runs on the loop-kernel contract (capped retry, blind review, climb and distill when their conditions hold — see executing-plan-time). After each phase, add the distiller's lessons/proposals summary (if it ran) to the phase report.
 f. If the summary contains an `ESCALATE:` block → STOP, surface it to the user, record the user's resolution in `decisions.md` tagged `[escalated]`, then resume. The oro-phase-executor escalates only irreversible forks; it auto-decides reversible ones on its own (full policy lives in the oro-phase-executor agent).
 g. Set this phase to `done` in `progress.md` and record the summary. Advance to the next non-`done` phase.
 
 ## 4. Final report
 
-When no `pending`/`planned` phase remains, report. Do NOT merge unless the user authorized it — executing-plan-time's finishing handoff governs integration per phase. In `--auto` runs, list `blocked` phases separately from never-started ones.
+When no `pending`/`planned` phase remains, report. Do NOT merge unless the user authorized it — executing-plan-time opens a PR per phase and never merges. In `--auto` runs, list `blocked` phases separately from never-started ones.
 
 ## Resume
 

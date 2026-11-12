@@ -1,11 +1,11 @@
 ---
 name: brainstorming-time
-description: "Use when turning an idea, feature, or change request into a reviewable spec — mind map first, then written spec — before any creative work. Replaces superpowers:brainstorming. Hands off to writing-plans-time."
+description: "Use when turning an idea, feature, or change request into a reviewable spec — mind map first, then written spec — before any creative work. Hands off to writing-plans-time."
 ---
 
 # Direct Brainstorming
 
-Turn an idea into a reviewable spec quickly. Same goal as superpowers:brainstorming — never implement without an approved design — but with less back-and-forth, graphify-first context gathering, and a mind map review step before the written spec.
+Turn an idea into a reviewable spec quickly. Never implement without an approved design — but with little back-and-forth, graphify-first context gathering, and a mind map review step before the written spec.
 
 <HARD-GATE>
 Do NOT write code, scaffold, or invoke any implementation skill until you have presented the mind map AND the written spec and the user has approved both. This applies regardless of perceived simplicity.
@@ -13,7 +13,7 @@ Do NOT write code, scaffold, or invoke any implementation skill until you have p
 
 ## When to Use
 
-Use this skill instead of superpowers:brainstorming when:
+Use this skill when:
 - The user wants to move quickly and dislikes one-question-at-a-time interrogation
 - The repo already has (or should have) a graphify knowledge graph
 - A visual mind map of the proposed design would help the user review faster than prose
@@ -29,6 +29,7 @@ Create a TodoWrite todo for each item and complete them in order:
 5. **Present mind map** — a Mermaid `mindmap` of the design (root = feature name; branches = components, data flow, interfaces, risks, test surface); ask the user to confirm or correct the shape before writing prose
 6. **Write the spec** — save to `docs/specs/YYYY-MM-DD-<topic>.md` (or the project's existing spec location if different); include the mind map at the top
 7. **Spec self-review** — scan inline for placeholders, contradictions, ambiguity, scope creep; fix in place
+7b. **Goldfish review (optional)** — non-trivial specs only; skip for small/single-file changes, under `/dev --auto` (oro-critic already runs), or silently if the egm plugin is not installed. Dispatch one `egm:egm-synthesizer` subagent (Agent tool) with `Mode: REVIEW`, `TargetFile: <spec path>` and `Reviewers: [egm-design, egm-zoom-out, egm-implementation-readiness]`; fold the Blocker/Major findings from its report into the spec before the user gate
 8. **User reviews the spec file** — ask for approval or changes; loop until approved
 9. **Hand off to writing-plans-time** — invoke `writing-plans-time` to produce the implementation plan; do not invoke any implementation skill directly
 

@@ -11,6 +11,7 @@ for f in "$R/ship-pipeline/agents/oro-coder.md" "$R/dev-pipeline/agents/oro-impl
   grep -q "do not write or edit tests" "$f" || fail "$f: locked-tests rule missing"
   grep -q "exemplar" "$f" || fail "$f: exemplar rule missing"
 done
-grep -q "overrides steps 1 and 5" "$R/dev-pipeline/agents/oro-implementer.md" || fail "implementer: TDD carve-out missing"
+grep -q "already committed and locked by" "$R/dev-pipeline/agents/oro-implementer.md" || fail "implementer: locked-tests contract missing"
+grep -q "Single commit" "$R/dev-pipeline/agents/oro-implementer.md" && fail "implementer: stale single-commit mandate is back"
 grep -q "(oro-coder:" "$R/dev-pipeline/agents/oro-implementer.md" && fail "implementer names oro-coder"
 echo "PASS: retry protocol"

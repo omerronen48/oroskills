@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-SKILLS=(project-time brainstorming-time writing-plans-time executing-plan-time caveman loop-kernel remotion-best-practices remotion-captions remotion-render)
+SKILLS=(project-time brainstorming-time writing-plans-time executing-plan-time caveman loop-kernel)
 # The ship pipeline ships as agents + a slash command rather than a skill.
 # Agents are namespaced (oro-*) to avoid collisions in the global agents dir.
 AGENTS=(oro-planner oro-coder oro-tester oro-reviewer)
@@ -129,18 +129,20 @@ install_item() {
   fi
 }
 
-# register_hook <event> <command> — idempotently add a command hook to SETTINGS_FILE.
+# register_hook <event> <command> [matcher] — idempotently add a command hook to SETTINGS_FILE.
+# An entry for the same command with a different matcher (older install) is replaced.
 register_hook() {
-  local event="$1" cmd="$2" tmp
-  if jq -e --arg e "$event" --arg c "$cmd" \
-      '[.hooks[$e][]?.hooks[]?.command] | any(. == $c)' "$SETTINGS_FILE" >/dev/null; then
+  local event="$1" cmd="$2" matcher="${3:-}" tmp
+  if jq -e --arg e "$event" --arg c "$cmd" --arg m "$matcher" \
+      '[.hooks[$e][]? | select((.matcher // "") == $m) | .hooks[]?.command] | any(. == $c)' "$SETTINGS_FILE" >/dev/null; then
     echo "  = hook $event (already present)"
     return
   fi
   tmp="$(mktemp)"
-  jq --arg e "$event" --arg c "$cmd" '
+  jq --arg e "$event" --arg c "$cmd" --arg m "$matcher" '
     .hooks //= {}
-    | .hooks[$e] = ((.hooks[$e] // []) + [{hooks: [{type: "command", command: $c}]}])
+    | .hooks[$e] = ((.hooks[$e] // []) | map(select([.hooks[]?.command] | any(. == $c) | not)))
+        + [(if $m == "" then {} else {matcher: $m} end) + {hooks: [{type: "command", command: $c}]}]
   ' "$SETTINGS_FILE" > "$tmp" \
     && mv "$tmp" "$SETTINGS_FILE" \
     && echo "  + hook $event -> registered" \
@@ -168,7 +170,7 @@ install_session_hook() {
   register_hook SessionStart    "$STATE_CMD"  # seed per-session on/off flag
   register_hook UserPromptSubmit "$STATE_CMD"  # flip the flag on verbal toggle
   register_hook Stop "$GOAL_STOP_CMD"  # loop-kernel goal enforcement (auto runs only)
-  register_hook PreToolUse "$GUARD_CMD"  # loop-kernel test lock + goal freeze
+  register_hook PreToolUse "$GUARD_CMD" "Edit|Write|NotebookEdit"  # loop-kernel test lock + goal freeze
   register_hook UserPromptSubmit "$INTERVENTION_CMD"  # loop-kernel intervention log (meta loop)
 }
 
@@ -379,5 +381,5 @@ else
   install_ponytail
 
   echo
-  echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, commands (/ship, /fix, /dev, /loop-manager, /loop-worker), caveman default, and ponytail."
+  echo "Done. Restart Claude Code (or start a new session) to pick up the skills, agents, commands (/ship, /fix, /dev, /loop-manager, /loop-worker, /address-review, /gc), caveman default, and ponytail."
 fi

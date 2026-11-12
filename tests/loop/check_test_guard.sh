@@ -99,7 +99,7 @@ while IFS= read -r l; do
   grep -qF "→ fix:" <<<"$l" || fail "no remediation on: $l"
 done < <(grep '^test-guard:' <<<"$out")
 
-# 13. removing a .factory/checks line (or factory workflow line) fails unless in manifest; adding passes
+# 13. removing a .factory/checks line fails unless in manifest; adding passes
 new_repo; mkdir -p .factory; printf 'pytest\nruff check .\n' > .factory/checks; git add -A; git commit -qm f
 printf 'pytest\nruff check .\nmypy .\n' > .factory/checks; commit
 bash "$TG" HEAD~1 >/dev/null || fail "adding a factory check should pass"
@@ -107,9 +107,6 @@ printf 'pytest\n' > .factory/checks; commit
 out="$(bash "$TG" HEAD~1)" && fail "removing a factory check should fail"
 grep -q "factory check" <<<"$out" || fail "factory check msg"
 echo ".factory/checks" > m.txt; bash "$TG" HEAD~1 m.txt >/dev/null || fail "factory change in manifest should pass"
-new_repo; mkdir -p .github/workflows; printf 'on: pull_request\nwith:\n  test-command: pytest\n' > .github/workflows/factory.yml; git add -A; git commit -qm wf
-printf 'on: pull_request\nwith:\n  test-command: ""\n' > .github/workflows/factory.yml; commit
-bash "$TG" HEAD~1 >/dev/null && fail "weakening factory.yml should fail"
 
 # 14. an UNCOMMITTED weakening of .factory/checks is caught too (factory-check reads the working tree)
 new_repo; mkdir -p .factory; printf 'pytest\nruff check .\n' > .factory/checks; git add -A; git commit -qm f

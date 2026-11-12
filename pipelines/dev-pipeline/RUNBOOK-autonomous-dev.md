@@ -8,7 +8,7 @@ on a schedule and to recover when it halts.
 
 - Repo is a git repository with a seeded `progress.md` (run `/dev --import <roadmap>` once, or
   let a prior `/dev` seed it).
-- `gh` authenticated if the executor's finishing step opens PRs.
+- `gh` authenticated so the executor can open PRs.
 - The deny-merge template `pipelines/loop-pipeline/loop-settings.json` merged into the repo's
   `.claude/settings.json`, so an unattended run can never `gh pr merge`.
 

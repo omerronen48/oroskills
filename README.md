@@ -19,7 +19,7 @@ Flags:
 | `--force` | Overwrite same-named skills/agents (and an existing statusline) |
 | `--refresh` | Re-link new files + re-copy hook scripts (skips statusline); used by the post-merge hook |
 
-What it installs: skills → `~/.claude/skills/`, `oro-*` pipeline agents → `~/.claude/agents/`, the `/ship` `/fix` `/dev` `/loop-manager` `/loop-worker` commands → `~/.claude/commands/`, the caveman + statusline session hooks, and the ponytail plugin. Project install swaps `~/.claude/` for `<project>/.claude/`.
+What it installs: skills → `~/.claude/skills/`, `oro-*` pipeline agents → `~/.claude/agents/`, the `/ship` `/fix` `/dev` `/loop-manager` `/loop-worker` `/address-review` `/gc` commands → `~/.claude/commands/`, the caveman + statusline session hooks, and the ponytail plugin. Project install swaps `~/.claude/` for `<project>/.claude/`.
 
 - **Changes apply live** — symlinked files take effect with no reinstall. A `post-merge` git hook re-runs `install.sh --refresh` on every `git pull` to wire newly-added files (skips statusline; won't clobber a non-oroskills hook).
 - Verify: `ls ~/.claude/skills/` and `ls ~/.claude/commands/`, then restart Claude Code.
@@ -55,13 +55,11 @@ Emoji bar installed and wired into `settings.json`:
 | **project-time** | Project idea → technical roadmap with milestones. One-question-at-a-time interview; locks architecture/stack/scope/non-functionals up front. |
 | **brainstorming-time** | Idea (or one milestone) → reviewable spec. Graphify context + a mind map before the written spec. |
 | **writing-plans-time** | Approved spec → plan with a File Edit Manifest and tasks grouped into parallel waves. |
-| **executing-plan-time** | Approved plan → code. Worktree, parallel implementer subagents, TDD-before-commit, spec + code-quality review, branch finishing. |
+| **executing-plan-time** | Approved plan → code. Worktree, parallel waves, tests-first TDD, per-task review, PR, post-PR verification. |
 | **caveman** | Compressed comms mode (~75% fewer tokens, full accuracy). Trigger "caveman mode" / `/caveman`, or on by default. From [mattpocock/skills](https://github.com/mattpocock/skills/blob/main/skills/productivity/caveman/SKILL.md). |
-| **remotion-best-practices** | Remotion video authoring guidance (bundles remotion-create/-markup/-interactivity/-saas + mediabunny). Auto-triggers when working in a Remotion project. |
-| **remotion-captions** | Add/transcribe/import captions (SRT) and render animated captions in Remotion. |
-| **remotion-render** | Render Remotion compositions to video, including transparent-video output. |
 
 - **The chain:** project-time → brainstorming-time → writing-plans-time → executing-plan-time. Don't skip stages; each hands off to the next.
+- Non-trivial specs get an optional Goldfish review (`egm:egm-synthesizer`, egm plugin) in `brainstorming-time` before the user gate; skipped if egm is not installed.
 - `project-time` is optional — only for a new project/large initiative. Single feature in an existing repo: start at `brainstorming-time`.
 - Auto-trigger from their descriptions, or invoke explicitly (`Use writing-plans-time on <spec file>.`).
 
@@ -74,15 +72,13 @@ Emoji bar installed and wired into `settings.json`:
 | Trivial edit (rename, typo, one-liner) | none — just ask | judgment |
 | Single bug | `/fix` | repro-test-first, stacked branch, full-suite regression guard |
 | Punch-list of small fixes/chores | `/fix` | branch per fix, regression guard after each |
-| One small self-contained feature | `/ship` | planner→coder→tester→reviewer on a `ship/<slug>` branch (fast lane: no TDD, no worktree) |
+| One small self-contained feature | `/ship` | planner→tester→coder→reviewer on a `ship/<slug>` branch (fast lane: tests-first, no worktree) |
 | Feature worth a spec + plan | chain: `brainstorming-time` → `writing-plans-time` → `executing-plan-time` | worktree, parallel waves, TDD-before-commit, per-task review |
 | New project / multi-feature roadmap | `project-time`, then `/dev` | roadmap loop; `--auto` for unattended runs |
 | Autonomous issue-driven runs | `/loop-manager` + `/loop-worker` | triage labels, worktree, PR-only |
 | Open PR has red CI / review comments | `/address-review` | punch list from checks+comments, fix on the PR branch, push |
 
 Every door stops before merge — a human merges, always.
-
-**Superpowers arbitration.** The chain subsumes these superpowers skills — do not invoke them directly: brainstorming, writing-plans, executing-plans, subagent-driven-development, dispatching-parallel-agents, test-driven-development, using-git-worktrees, verification-before-completion, finishing-a-development-branch. Still live and used as-is: systematic-debugging, requesting-code-review, receiving-code-review, writing-skills, using-superpowers.
 
 ### `/ship` — single feature, one sitting
 
@@ -91,24 +87,24 @@ Every door stops before merge — a human merges, always.
 | Agent | Model | Stage |
 |---|---|---|
 | **oro-planner** | opus | Request → `.pipeline/spec.md` (paths, signatures, edge cases; flags `OPEN QUESTION`) |
-| **oro-coder** | sonnet | Implements spec → `.pipeline/changes.md`. No scope creep. |
-| **oro-tester** | sonnet | Writes/runs tests → `.pipeline/test-results.md`. **Stops** on failure, doesn't patch. |
+| **oro-tester** | sonnet | Writes the acceptance tests **before the code**, shows them red → `.pipeline/test-results.md`; they are then hash-locked. |
+| **oro-coder** | sonnet | Makes the locked tests pass → `.pipeline/changes.md`. No scope creep, never edits tests. |
 | **oro-reviewer** | opus | Read-only `git diff` review → `VERDICT: SHIP / NEEDS WORK / BLOCK` |
 
 - Runs in order, pausing on open questions or test failures, **never merges** — leaves the branch for review.
-- ⚠️ Deliberate fast lane: **no TDD-before-commit, no worktree, no graphify.** For the full discipline use `/dev`.
+- ⚠️ Deliberate fast lane: **no worktree, no graphify** — but tests are written first and locked. For multi-phase work use `/dev`.
 
 ### `/fix` — bugs + batches of small fixes
 
-`/fix <bug or blurb of small changes>` decomposes the blurb into an ordered mini-roadmap (`.fix/roadmap.md`), then ships each fix **lean**: `oro-coder` → `oro-tester` (no planner; roadmap entry is the spec), with one `oro-reviewer` pass at the end.
+`/fix <bug or blurb of small changes>` decomposes the blurb into an ordered mini-roadmap (`.fix/roadmap.md`), then ships each fix **lean**: `oro-tester` (failing test first) → `oro-coder` (no planner; roadmap entry is the spec), with one `oro-reviewer` pass at the end.
 
-- **Regression guard:** full test suite runs after every fix, so a later fix can't silently break an earlier one.
-- **Single-bug mode:** a blurb that is one bug runs the loop once with repro-first discipline — failing test → fix → pass.
+- **Regression guard:** full test suite runs after every fix, so a later fix can't silently break an earlier one (a single fix is not re-run at the end).
+- **Single-bug mode:** a blurb that is one bug runs the loop once with repro-first discipline — failing test → fix → pass; no critic, no roadmap gate.
 - Each fix lands on its own stacked branch (`fix/N-<slug>`). Any red **halts** the loop; nothing merges.
 
 ### `/address-review` — post-PR feedback
 
-`/address-review [PR]` picks up where every other door stops. It pulls failing CI checks (`gh pr checks` + failed-run logs), unresolved review comments, and merge conflicts into a punch list (`.review/feedback.md`), fixes each on the PR branch via `oro-coder` → `oro-tester` (one commit per item), runs one `oro-reviewer` pass over the session diff, and pushes.
+`/address-review [PR]` picks up where every other door stops. It pulls failing CI checks (`gh pr checks` + failed-run logs), unresolved review comments, and merge conflicts into a punch list (`.review/feedback.md`), fixes each on the PR branch via `oro-coder` (one commit per item; `oro-tester` strengthens the tests when `mutate-check.sh` shows a behavior change is unpinned), runs one `oro-reviewer` pass over the session diff, and pushes.
 
 - Ambiguous review comments are parked `needs-owner-input` — it never guesses a reviewer's intent.
 - Plain push only; force-push (after a conflict rebase) requires explicit confirmation. Never merges, never resolves threads.
@@ -127,6 +123,7 @@ Flags:
 | Flag | Effect |
 |---|---|
 | `--auto` | Unattended: decide from roadmap + memory instead of asking. Reversible forks auto-decide (`[auto]`); irreversible ones **park** to `escalations.md`, mark the phase `blocked`, and **halt**. Never merges. |
+| `--climb` | Force the final hill-climb on a small diff (also `/ship`, `/fix`). |
 | `--design <ref>` | Resolve a design source at bootstrap → `.dev/memory/design.md`. `<ref>` is a DesignSync UUID or a mockups folder path. |
 | `--import <path>` | Seed the roadmap from an existing markdown roadmap file instead of interviewing. |
 | `--force` | With `--import`: overwrite existing roadmap phases. |
@@ -154,15 +151,15 @@ Two agent loops that auto-develop a repo through a **GitHub Issues control plane
 Every pipeline (`/dev`, `/ship`, `/fix`, `/loop-worker`) runs on one shared loop contract, `skills/loop-kernel`:
 
 - **Objective:** `.loop/goal.md` holds the end state, done-criteria as commands, and a rubric. It is frozen once coding starts.
-- **Metric:** one command, `factory-check.sh`, runs the project's `.factory/checks`, the goal's done-criteria and `test-guard.sh` (which fails on new skips/xfails, deleted assertions, a drop in test count, test edits outside the manifest, or removed factory checks). Every failure ends in a `→ fix:` line: the error is the prompt.
+- **Metric:** per `/dev` task only test-guard plus the task's own tests run; otherwise one command, `factory-check.sh`, runs the project's `.factory/checks`, the goal's done-criteria and `test-guard.sh` (which fails on new skips/xfails, deleted assertions, a drop in test count, test edits outside the manifest, or removed factory checks). Every failure ends in a `→ fix:` line: the error is the prompt.
 - **Verifier:** reviewers are fresh and blind. They see the goal and the diff, never the author's report.
-- **Optimizer:** 3 attempts per task, then escalate. Every run ends with a hill-climb: 3 blind `oro-judge`s, at most 2 rounds, stop at 8.5 or when the gain is below 0.5, keep the best result. Small non-UI diffs are scored once.
-- **Durability:** `oro-distiller` writes `.dev/memory/lessons.md` with a `seen` counter. A pattern seen twice becomes a proposed skill diff in `.loop/proposals/`, which you approve; a `[reward-hack]` finding becomes a proposal on its first occurrence.
-- **Integrity:** tests are written before the code by a different agent (in `/dev` the tests come from the plan and `oro-tester` commits them before the implementer runs), then hash-locked. A PreToolUse hook blocks edits to locked tests and the frozen goal; `test-guard.sh` catches edits made any other way; `mutate-check.sh` proves the tests actually exercise the change. When a test is wrong, the only allowed route is a `TEST-DISPUTE:` that someone else rules on.
-- **Pre-code critic:** `oro-critic` checks the goal and spec for gaps before any code is written.
+- **Optimizer:** 3 attempts per task, then escalate. UI diffs, diffs of 50+ lines and `--climb` runs end with a hill-climb: 3 blind `oro-judge`s, at most 2 rounds, stop at 8.5 or when the gain is below 0.5, keep the best result. Small non-UI diffs skip it (no judges).
+- **Durability:** when a run produced findings or corrections (clean runs skip it and leave distillation to weekly `/gc`), `oro-distiller` writes `.dev/memory/lessons.md` with a `seen` counter. A pattern seen twice becomes a proposed skill diff in `.loop/proposals/`, which you approve; a `[reward-hack]` finding becomes a proposal on its first occurrence.
+- **Integrity:** tests are written before the code by a different agent (in `/dev` the tests come from the plan and `oro-tester` commits them before the implementer runs), then hash-locked. A PreToolUse hook (matcher `Edit|Write|NotebookEdit`) blocks edits to locked tests and the frozen goal; `test-guard.sh` catches edits made any other way; `mutate-check.sh` proves the tests actually exercise the change (run for non-small or risky diffs). When a test is wrong, the only allowed route is a `TEST-DISPUTE:` that someone else rules on.
+- **Pre-code critic:** `oro-critic` checks the goal and spec for gaps before any code is written — in `/ship` and `--auto` runs; skipped for single-bug `/fix` and for `/dev` plans a human already approved.
 - **Unattended runs:** a Stop hook keeps `/dev --auto` and `/loop-worker` sessions going until the done-criteria pass (it gives up after 3 blocks).
-- **Factory files:** each project gets committed `.factory/checks` (commands that must pass on every change), `.factory/run.md` (launch, logs, smoke, browser) and a pre-push hook, created on first run by `/dev`, `/ship` or `/fix`.
-- **Outer loop (pre-push):** the hook (`pre-push-hook.sh`) runs `factory-check.sh` on every push — deterministic, no API key, no CI. `mutate-check.sh` stays in-session (kernel §2).
+- **Factory files:** each project gets committed `.factory/checks` (commands that must pass on every change), `.factory/run.md` (launch, logs, smoke, browser via `agent-browser`) and a pre-push hook, created on first run by `/dev`, `/ship` or `/fix`.
+- **Outer loop (pre-push):** the hook (`pre-push-hook.sh`) runs `factory-check.sh` on every push — deterministic, no API key, no CI; `executing-plan-time` does not repeat those checks after the push. `mutate-check.sh` stays in-session (kernel §2).
 - **Severity:** review findings are tagged `[P0]`–`[P3]`; only P0–P2 (and reward hacks) trigger a retry. A coder may `REJECT:` a P2 with a reason; the next blind reviewer drops or re-raises it.
 - **Meta loop:** a UserPromptSubmit hook logs every prompt you type during an active run as an intervention; `/address-review` logs human PR comments; `/loop-worker` logs agent PRs. `scorecard.sh` turns `.dev/memory/history.jsonl` into interventions per run, zero-touch PRs, human comments per PR, caps, reward hacks and climb gain. `/gc` (schedule it weekly) runs the scorecard and has the distiller propose checks — mechanical first — for the week's human feedback.
 - **Headless:** `/loop-worker --headless` never asks and ends with `LOOP-WORKER: <issue|none> <SHIP|needs:human|no-eligible>`; schedule `/loop-manager` + `/loop-worker --headless` as a `/schedule` routine.
@@ -216,10 +213,10 @@ pipelines/                # agents install namespaced (oro-*) to avoid collision
     agents/    oro-triager.md
     commands/  loop-manager.md  loop-worker.md
     RUNBOOK.md  loop-settings.json
-tests/                    # install-wiring smoke tests (dev/, fix/, loop/)
+tests/                    # shell checks run by .factory/checks (dev/, fix/, loop/)
 statusline-command.sh     # emoji bar with the caveman chip
 install.sh
 LICENSE                   # MIT
 ```
 
-`tests/` are **install-wiring smoke tests** — they verify agents/commands are present, named, and referenced correctly, and that `install.sh` parses. They do **not** test skill behavior.
+`tests/` are shell checks, run by `.factory/checks`: behavior tests for the installer and the kernel scripts (sandbox install, test-guard, factory-check, mutate-check, hooks, scorecard) plus wording checks that pin the contract text of skills, agents and commands. They do **not** test agent behavior.

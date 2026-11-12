@@ -27,7 +27,7 @@ Address feedback on PR: $ARGUMENTS
 ## Fix loop (per item, in order)
 5. Conflict item: rebase onto the base branch, resolve, run the full suite. A rebase means the final push needs `--force-with-lease` — note it now.
 6. Write `.pipeline/spec.md` from the item (overwrite). For a CI failure the spec is "make this check pass" with the extracted error — reproduce the failure locally first when the check's command can run locally. For a comment the spec is the requested change, quoting the comment verbatim.
-7. Delegate to oro-coder (`.pipeline/changes.md`), then oro-tester (`.pipeline/test-results.md`). Commit on the PR branch, one commit per item: `address-review: <title>`.
+7. Delegate to oro-coder (`.pipeline/changes.md`). Run the tests the item touches, then commit on the PR branch, one commit per item: `address-review: <title>`. If the item changed behavior (not a CI-config, docs or style item), run `bash ~/.claude/skills/loop-kernel/mutate-check.sh HEAD~1 "<test command>"`; exit 1 or 3 → delegate to oro-tester in **strengthen** mode with that output (`.pipeline/test-results.md`) and amend the new tests into the item's commit.
 8. Any red at steps 5–7: mark the item `failed` in `.review/feedback.md`, **halt**, report the item and the captured output. Leave commits as-is.
 9. Green: mark `done`, continue.
 

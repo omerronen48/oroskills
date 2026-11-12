@@ -12,4 +12,4 @@ Commands only; write `n/a` where a section does not apply. Behavior checks and c
 - <one command that proves the real thing works end to end, exits 0 on success>
 
 ## Browser
-- <how to load the UI headless for screenshots (URL + any login/seed step), or n/a>
+- `agent-browser --session "$(agent-browser session id --scope worktree --prefix task)" open <URL>` (plus any login/seed step: `agent-browser snapshot -i`, `agent-browser click @e3`), then `agent-browser screenshot <path>` and `agent-browser close`; or n/a

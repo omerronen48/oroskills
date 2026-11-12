@@ -7,8 +7,8 @@
 set -uo pipefail
 command -v jq >/dev/null || exit 0
 in="$(cat)"
-# Registered without a matcher, so every tool arrives here. Reads never change a file: let them through,
-# or judges and coders cannot see the goal or locked tests they are told to follow.
+# Registered with matcher Edit|Write|NotebookEdit; installs older than that had no matcher, so reads may
+# still arrive here. Let them through, or judges and coders cannot see the goal or locked tests.
 [[ "$(jq -r '.tool_name // empty' <<<"$in")" =~ ^(Read|Grep|Glob|LS|NotebookRead)$ ]] && exit 0
 fp="$(jq -r '.tool_input.file_path // .tool_input.notebook_path // empty' <<<"$in" 2>/dev/null)"
 [[ -n "$fp" ]] || exit 0

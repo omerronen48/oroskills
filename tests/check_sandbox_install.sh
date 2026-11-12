@@ -44,6 +44,7 @@ command -v jq >/dev/null && {
   jq -e '.hooks.SessionStart' "$SB/.claude/settings.json" >/dev/null || fail "SessionStart hooks not registered"
   jq -e '.statusLine.command' "$SB/.claude/settings.json" >/dev/null || fail "statusLine not configured"
   jq -e '[.hooks.PreToolUse[]?.hooks[]?.command] | any(test("guard-edits.sh"))' "$SB/.claude/settings.json" >/dev/null || fail "PreToolUse guard not registered"
+  [ "$(jq -r '[.hooks.PreToolUse[]? | select([.hooks[]?.command] | any(test("guard-edits.sh"))) | .matcher] | join(",")' "$SB/.claude/settings.json")" = "Edit|Write|NotebookEdit" ] || fail "PreToolUse guard matcher wrong or duplicated"
   jq -e '[.hooks.Stop[]?.hooks[]?.command] | any(test("goal-stop.sh"))' "$SB/.claude/settings.json" >/dev/null || fail "Stop hook not registered"
   [ "$(jq '[.hooks.Stop[]?.hooks[]?.command | select(test("goal-stop.sh"))] | length' "$SB/.claude/settings.json")" = 1 ] || fail "Stop hook duplicated"
   jq -e '[.hooks.UserPromptSubmit[]?.hooks[]?.command] | any(test("intervention-log.sh"))' "$SB/.claude/settings.json" >/dev/null || fail "intervention hook not registered"

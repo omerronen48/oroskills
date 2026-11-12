@@ -11,7 +11,7 @@ grep -q 'test-guard.sh "$(cat .loop/lock-ref)"' "$S" && fail "ship still runs te
 grep -q 'test-guard.sh "$(cat .loop/lock-ref)"' "$F" && fail "fix still runs test-guard directly"
 # ship: bootstrap happens before the base SHA is recorded
 awk '/^0\. Setup/{print; exit}' "$S" | grep -q "§0.*Record the base SHA" || fail "ship: bootstrap must precede base SHA"
-grep -qF 'factory-check.sh <lock-ref-<task-id>> "" <manifest>' "$E" || fail "executing-plan-time per-task metric must skip the goal"
+grep -qF 'test-guard.sh <lock-ref-<task-id>> <manifest>' "$E" || fail "executing-plan-time per-task metric is test-guard + the task's own tests"
 grep -qF 'factory-check.sh <run-base> .loop/goal.md' "$E" || fail "executing-plan-time final verification must run the goal"
 grep -qF 'touch <main-checkout>/.loop/active' "$E" || fail "worktree runs must mirror .loop/active to the main checkout"
 grep -qF 'factory-check.sh "$(cat .loop/lock-ref)" ""' "$F" || fail "fix per-fix metric must skip the goal"
