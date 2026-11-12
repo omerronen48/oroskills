@@ -19,7 +19,7 @@ Flags:
 | `--force` | Overwrite same-named skills/agents (and an existing statusline) |
 | `--refresh` | Re-link new files + re-copy hook scripts (skips statusline); used by the post-merge hook |
 
-What it installs: skills → `~/.claude/skills/`, `oro-*` pipeline agents → `~/.claude/agents/`, the `/ship` `/fix` `/dev` `/loop-manager` `/loop-worker` `/address-review` `/gc` commands → `~/.claude/commands/`, the caveman + statusline session hooks, and the ponytail plugin. Project install swaps `~/.claude/` for `<project>/.claude/`.
+What it installs: skills → `~/.claude/skills/`, `oro-*` pipeline agents → `~/.claude/agents/`, the `/ship` `/fix` `/dev` `/loop-manager` `/loop-worker` `/address-review` commands → `~/.claude/commands/`, the caveman + statusline session hooks, and the ponytail plugin. Project install swaps `~/.claude/` for `<project>/.claude/`.
 
 - **Changes apply live** — symlinked files take effect with no reinstall. A `post-merge` git hook re-runs `install.sh --refresh` on every `git pull` to wire newly-added files (skips statusline; won't clobber a non-oroskills hook).
 - Verify: `ls ~/.claude/skills/` and `ls ~/.claude/commands/`, then restart Claude Code.
@@ -53,7 +53,7 @@ Emoji bar installed and wired into `settings.json`:
 | Skill | What it does |
 |---|---|
 | **project-time** | Project idea → technical roadmap with milestones. One-question-at-a-time interview; locks architecture/stack/scope/non-functionals up front. |
-| **brainstorming-time** | Idea (or one milestone) → reviewable spec. Graphify context + a mind map before the written spec. |
+| **brainstorming-time** | Idea (or one milestone) → reviewable spec. Graphify context, then a mind map + written spec approved in one gate. |
 | **writing-plans-time** | Approved spec → plan with a File Edit Manifest and tasks grouped into parallel waves. |
 | **executing-plan-time** | Approved plan → code. Worktree, parallel waves, tests-first TDD, per-task review, PR, post-PR verification. |
 | **caveman** | Compressed comms mode (~75% fewer tokens, full accuracy). Trigger "caveman mode" / `/caveman`, or on by default. From [mattpocock/skills](https://github.com/mattpocock/skills/blob/main/skills/productivity/caveman/SKILL.md). |
@@ -154,14 +154,14 @@ Every pipeline (`/dev`, `/ship`, `/fix`, `/loop-worker`) runs on one shared loop
 - **Metric:** per `/dev` task only test-guard plus the task's own tests run; otherwise one command, `factory-check.sh`, runs the project's `.factory/checks`, the goal's done-criteria and `test-guard.sh` (which fails on new skips/xfails, deleted assertions, a drop in test count, test edits outside the manifest, or removed factory checks). Every failure ends in a `→ fix:` line: the error is the prompt.
 - **Verifier:** reviewers are fresh and blind. They see the goal and the diff, never the author's report.
 - **Optimizer:** 3 attempts per task, then escalate. UI diffs, diffs of 50+ lines and `--climb` runs end with a hill-climb: 3 blind `oro-judge`s, at most 2 rounds, stop at 8.5 or when the gain is below 0.5, keep the best result. Small non-UI diffs skip it (no judges).
-- **Durability:** when a run produced findings or corrections (clean runs skip it and leave distillation to weekly `/gc`), `oro-distiller` writes `.dev/memory/lessons.md` with a `seen` counter. A pattern seen twice becomes a proposed skill diff in `.loop/proposals/`, which you approve; a `[reward-hack]` finding becomes a proposal on its first occurrence.
+- **Durability:** when a run produced findings or corrections (clean runs skip it), `oro-distiller` writes `.dev/memory/lessons.md` with a `seen` counter. A pattern seen twice becomes a proposed skill diff in `.loop/proposals/`, which you approve; a `[reward-hack]` finding becomes a proposal on its first occurrence.
 - **Integrity:** tests are written before the code by a different agent (in `/dev` the tests come from the plan and `oro-tester` commits them before the implementer runs), then hash-locked. A PreToolUse hook (matcher `Edit|Write|NotebookEdit`) blocks edits to locked tests and the frozen goal; `test-guard.sh` catches edits made any other way; `mutate-check.sh` proves the tests actually exercise the change (run for non-small or risky diffs). When a test is wrong, the only allowed route is a `TEST-DISPUTE:` that someone else rules on.
 - **Pre-code critic:** `oro-critic` checks the goal and spec for gaps before any code is written — in `/ship` and `--auto` runs; skipped for single-bug `/fix` and for `/dev` plans a human already approved.
 - **Unattended runs:** a Stop hook keeps `/dev --auto` and `/loop-worker` sessions going until the done-criteria pass (it gives up after 3 blocks).
 - **Factory files:** each project gets committed `.factory/checks` (commands that must pass on every change), `.factory/run.md` (launch, logs, smoke, browser via `agent-browser`) and a pre-push hook, created on first run by `/dev`, `/ship` or `/fix`.
 - **Outer loop (pre-push):** the hook (`pre-push-hook.sh`) runs `factory-check.sh` on every push — deterministic, no API key, no CI; `executing-plan-time` does not repeat those checks after the push. `mutate-check.sh` stays in-session (kernel §2).
 - **Severity:** review findings are tagged `[P0]`–`[P3]`; only P0–P2 (and reward hacks) trigger a retry. A coder may `REJECT:` a P2 with a reason; the next blind reviewer drops or re-raises it.
-- **Meta loop:** a UserPromptSubmit hook logs every prompt you type during an active run as an intervention; `/address-review` logs human PR comments; `/loop-worker` logs agent PRs. `scorecard.sh` turns `.dev/memory/history.jsonl` into interventions per run, zero-touch PRs, human comments per PR, caps, reward hacks and climb gain. `/gc` (schedule it weekly) runs the scorecard and has the distiller propose checks — mechanical first — for the week's human feedback.
+- **Self-improvement (automatic):** at the end of any run with findings, the distiller reads that run's findings, the run history (`.dev/memory/history.jsonl`, one line per run) and human PR comments recorded by `/address-review` (`.dev/memory/human-feedback.md`); `lessons-for.sh` feeds the resulting lessons to the next coder. Nothing needs to be run by hand.
 - **Headless:** `/loop-worker --headless` never asks and ends with `LOOP-WORKER: <issue|none> <SHIP|needs:human|no-eligible>`; schedule `/loop-manager` + `/loop-worker --headless` as a `/schedule` routine.
 
 `.loop/` lives in your project and should be git-ignored.
@@ -197,6 +197,9 @@ skills/
   writing-plans-time/  SKILL.md  plan-template.md
   executing-plan-time/ SKILL.md
   caveman/             SKILL.md  caveman-hook.sh  caveman-state.sh  statusline-snippet.sh
+  loop-kernel/         SKILL.md  goal-template.md  factory-checks-template  factory-run-template.md
+                       factory-check.sh  test-guard.sh  mutate-check.sh  lessons-for.sh
+                       guard-edits.sh  goal-stop.sh  pre-push-hook.sh      # hooks
 pipelines/                # agents install namespaced (oro-*) to avoid collisions
   ship-pipeline/
     agents/    oro-planner.md  oro-coder.md  oro-tester.md  oro-reviewer.md
@@ -207,16 +210,18 @@ pipelines/                # agents install namespaced (oro-*) to avoid collision
     commands/  address-review.md  # post-PR lane; reuses ship-pipeline's agents
   dev-pipeline/
     agents/    oro-implementer.md  oro-task-reviewer.md  oro-phase-executor.md
+               oro-critic.md  oro-judge.md  oro-distiller.md   # loop-kernel agents
     commands/  dev.md
-    memory-protocol.md  RUNBOOK-autonomous-dev.md
+    memory-protocol.md  RUNBOOK-autonomous-dev.md  dev-resume-guard.sh
   loop-pipeline/
     agents/    oro-triager.md
     commands/  loop-manager.md  loop-worker.md
     RUNBOOK.md  loop-settings.json
-tests/                    # shell checks run by .factory/checks (dev/, fix/, loop/)
+tests/                    # script behavior tests run by .factory/checks (dev/, loop/)
 statusline-command.sh     # emoji bar with the caveman chip
 install.sh
 LICENSE                   # MIT
+.factory/                 # this repo's own checks + run.md (loop-kernel §0)
 ```
 
-`tests/` are shell checks, run by `.factory/checks`: behavior tests for the installer and the kernel scripts (sandbox install, test-guard, factory-check, mutate-check, hooks, scorecard) plus wording checks that pin the contract text of skills, agents and commands. They do **not** test agent behavior.
+`tests/` are behavior tests, run by `.factory/checks`: each executes a real script (sandbox install, resume guard, test-guard, factory-check, mutate-check, pre-push hook, guard-edits, goal-stop, lessons-for). Nothing pins the prose of skills, agents or commands, and nothing tests agent behavior.

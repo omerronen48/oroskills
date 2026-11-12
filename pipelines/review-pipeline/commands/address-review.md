@@ -20,9 +20,7 @@ Address feedback on PR: $ARGUMENTS
    `- [ ] N. <title> — source: <check name | comment URL> — status: pending`
    Show me the list and wait for my confirmation (or edits). `needs-owner-input` items stay parked unless I answer them here.
 
-4b. **Record human signals (meta loop, loop-kernel §6).** Count the review comments from step 3 whose author login does not end in `[bot]` (human comments). Append one line to `.dev/memory/history.jsonl` (create the dir if missing):
-   `jq -nc --arg d "$(date -u +%FT%TZ)" --argjson pr <n> --argjson k <human comment count> '{date:$d,"event":"pr_review",pr:$pr,human_comments:$k}' >> .dev/memory/history.jsonl`
-   For each human comment, append `- [human] <YYYY-MM-DD> PR#<n>: <one-line summary> (<comment URL>)` (the comment's date) to `.dev/memory/human-feedback.md`. Write both files in the main checkout (`git worktree list --porcelain | sed -n '1s/^worktree //p'`), never a worktree. `/gc` turns these into checks so the same comment is never needed twice.
+4b. **Record human feedback (loop-kernel §6).** For each review comment from step 3 whose author login does not end in `[bot]`, append `- [human] <YYYY-MM-DD> PR#<n>: <one-line summary> (<comment URL>)` (the comment's date) to `.dev/memory/human-feedback.md` (create the dir if missing) in the main checkout (`git worktree list --porcelain | sed -n '1s/^worktree //p'`), never a worktree. The distiller reads it at the end of the next run that has findings, so the same comment is never needed twice.
 
 ## Fix loop (per item, in order)
 5. Conflict item: rebase onto the base branch, resolve, run the full suite. A rebase means the final push needs `--force-with-lease` — note it now.
