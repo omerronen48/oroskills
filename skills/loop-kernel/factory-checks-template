@@ -1,0 +1,6 @@
+# .factory/checks — one shell command per line; every line must exit 0 on every change.
+# Run by factory-check.sh in-session (loop-kernel §2) and by the pre-push hook.
+# Lines are only ever added during a run; removing or weakening one is a test-guard violation.
+<full test command, e.g. npm test | pytest -q | go test ./... | cargo test>
+<lint/typecheck command, e.g. npm run lint | ruff check . | go vet ./...>
+<smoke command from .factory/run.md, e.g. ./bin/cli --version>

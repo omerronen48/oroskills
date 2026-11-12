@@ -141,13 +141,33 @@ Two agent loops that auto-develop a repo through a **GitHub Issues control plane
 | Command | Stage | Flags |
 |---|---|---|
 | **`/loop-manager`** | Triages open issues: risk + type labels, `agent:ready` / `needs:human`, posts an *Agent Assessment* comment. Labels/comments only — never codes, PRs, or merges. | `--dry-run`, `--retriage`, `--repo <owner/repo>` |
-| **`/loop-worker`** | Takes one `agent:ready` + `risk:low` issue, isolates it in a worktree, drives `/ship`, and on `VERDICT: SHIP` opens a PR + comments the link. Non-SHIP → `needs:human`. | `--dry-run`, `--repo <owner/repo>` |
+| **`/loop-worker`** | Takes one `agent:ready` + `risk:low` issue, isolates it in a worktree, drives `/ship`, and on `VERDICT: SHIP` opens a PR + comments the link. Non-SHIP → `needs:human`. | `--dry-run`, `--headless`, `--repo <owner/repo>` |
 
 - The Manager delegates per-issue classification to **oro-triager**, a read-only agent with no write access.
 - **Labels:** `risk:{low,medium,high}` · `type:{bug,feature,docs,test,refactor,chore}` · `agent:ready` · `needs:human` · `agent:in-progress`.
 - **Safety:** run via `/schedule` routines (see `pipelines/loop-pipeline/RUNBOOK.md`). `loop-settings.json` **denies `gh pr merge`** as a hard stop. Honest limit: routines can't carry per-routine permission scopes today, so isolation rests on the read-only classifier + human PR review, not a hard sandbox.
 
 `--auto` runs are guarded by a **dead-man's switch**: a cron-invoked `~/.claude/dev-resume-guard.sh` relaunches a run that died mid-roadmap (usage limit, crash) once the exhausted window resets — the weekly limit takes precedence over the 5-hour one (reset times from the statusline's `oro-usage.json` snapshot). Armed at `--auto` start, disarmed on every orderly ending; `progress.md` makes relaunches idempotent.
+
+## Loop kernel
+
+Every pipeline (`/dev`, `/ship`, `/fix`, `/loop-worker`) runs on one shared loop contract, `skills/loop-kernel`:
+
+- **Objective:** `.loop/goal.md` holds the end state, done-criteria as commands, and a rubric. It is frozen once coding starts.
+- **Metric:** one command, `factory-check.sh`, runs the project's `.factory/checks`, the goal's done-criteria and `test-guard.sh` (which fails on new skips/xfails, deleted assertions, a drop in test count, test edits outside the manifest, or removed factory checks). Every failure ends in a `→ fix:` line: the error is the prompt.
+- **Verifier:** reviewers are fresh and blind. They see the goal and the diff, never the author's report.
+- **Optimizer:** 3 attempts per task, then escalate. Every run ends with a hill-climb: 3 blind `oro-judge`s, at most 2 rounds, stop at 8.5 or when the gain is below 0.5, keep the best result. Small non-UI diffs are scored once.
+- **Durability:** `oro-distiller` writes `.dev/memory/lessons.md` with a `seen` counter. A pattern seen twice becomes a proposed skill diff in `.loop/proposals/`, which you approve; a `[reward-hack]` finding becomes a proposal on its first occurrence.
+- **Integrity:** tests are written before the code by a different agent (in `/dev` the tests come from the plan and `oro-tester` commits them before the implementer runs), then hash-locked. A PreToolUse hook blocks edits to locked tests and the frozen goal; `test-guard.sh` catches edits made any other way; `mutate-check.sh` proves the tests actually exercise the change. When a test is wrong, the only allowed route is a `TEST-DISPUTE:` that someone else rules on.
+- **Pre-code critic:** `oro-critic` checks the goal and spec for gaps before any code is written.
+- **Unattended runs:** a Stop hook keeps `/dev --auto` and `/loop-worker` sessions going until the done-criteria pass (it gives up after 3 blocks).
+- **Factory files:** each project gets committed `.factory/checks` (commands that must pass on every change), `.factory/run.md` (launch, logs, smoke, browser) and a pre-push hook, created on first run by `/dev`, `/ship` or `/fix`.
+- **Outer loop (pre-push):** the hook (`pre-push-hook.sh`) runs `factory-check.sh` on every push — deterministic, no API key, no CI. `mutate-check.sh` stays in-session (kernel §2).
+- **Severity:** review findings are tagged `[P0]`–`[P3]`; only P0–P2 (and reward hacks) trigger a retry. A coder may `REJECT:` a P2 with a reason; the next blind reviewer drops or re-raises it.
+- **Meta loop:** a UserPromptSubmit hook logs every prompt you type during an active run as an intervention; `/address-review` logs human PR comments; `/loop-worker` logs agent PRs. `scorecard.sh` turns `.dev/memory/history.jsonl` into interventions per run, zero-touch PRs, human comments per PR, caps, reward hacks and climb gain. `/gc` (schedule it weekly) runs the scorecard and has the distiller propose checks — mechanical first — for the week's human feedback.
+- **Headless:** `/loop-worker --headless` never asks and ends with `LOOP-WORKER: <issue|none> <SHIP|needs:human|no-eligible>`; schedule `/loop-manager` + `/loop-worker --headless` as a `/schedule` routine.
+
+`.loop/` lives in your project and should be git-ignored.
 
 ## Requirements
 

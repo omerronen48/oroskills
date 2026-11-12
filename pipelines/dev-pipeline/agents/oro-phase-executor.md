@@ -1,6 +1,6 @@
 ---
 name: oro-phase-executor
-description: "Runs one roadmap phase's plan to done in an isolated context. Invokes the executing-plan-time skill (worktree, parallel waves, TDD, two-stage review, finishing). Memory-aware. Dispatched per phase by /dev."
+description: "Runs one roadmap phase's plan to done in an isolated context. Invokes the executing-plan-time skill (worktree, parallel waves, TDD, two-stage review, open PR, post-PR full verification with fixes pushed to the PRs). Memory-aware. Dispatched per phase by /dev."
 tools: Read, Write, Edit, Grep, Glob, Bash, Skill, Agent
 model: opus
 ---

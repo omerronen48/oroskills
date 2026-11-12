@@ -11,6 +11,8 @@ You are the orchestrator. Run the stages below in order. Do not skip ahead. Afte
 
 Ensure `.dev/memory/` exists. If absent, create the skeleton files — `goals.md`, `decisions.md`, `lessons.md`, `glossary.md`, `progress.md` — per the contract in `~/.claude/memory-protocol.md`. Then read `progress.md`.
 
+Then make sure the project has its `.factory/` files (loop-kernel §0: `.factory/checks`, `.factory/run.md` and the pre-push hook); create and commit any that are missing. Under `--auto`, reversible guesses are logged `[auto]` to `decisions.md`.
+
 ### Design source (optional)
 
 If invoked with `--design <ref>`, resolve the design source at bootstrap and write `.dev/memory/design.md` per the memory-protocol contract. Dispatch on ref shape:
@@ -31,7 +33,7 @@ If invoked with `--design <ref>`, resolve the design source at bootstrap and wri
 
 Decide how `progress.md` gets its phases:
 
-- **`--auto` flag** — `/dev --auto [--import <path>]` runs the loop unattended (see Autonomous mode below).
+- **`--auto` flag** — `/dev --auto [--import <path>] [<idea>]` runs the loop unattended (see Autonomous mode below); with an empty roadmap and an idea, it first runs project-time interactively (Interactive bootstrap).
 - **`--design <ref>` flag** — `/dev --design <ref>` resolves a design source at bootstrap and writes `.dev/memory/design.md` (see Bootstrap → Design source above). Composes with other flags: `/dev --auto --design <ref>`.
 - **Explicit import** — if invoked as `/dev --import <path> [...]`: seed from `<path>` (see Import below). If `progress.md` already has phases, refuse unless `--force` is also given: "progress.md already has phases; re-run with --force to overwrite."
 - **Auto-detect import** — else if `progress.md` has no phases, scan in order `.dev/roadmap.md`, `ROADMAP.md`, `docs/roadmap.md`; if one exists, offer: "Found <path>. Import it as the phase list?" On yes, import it (see Import below).
@@ -60,6 +62,7 @@ b. Run the `brainstorming-time` skill (interactive, in the main session) → pro
 c. Run the `writing-plans-time` skill (in the main session) → produces a plan file. Confirm the plan exists before continuing.
 d. Set this phase to `planned` in `progress.md` and persist any new decisions/glossary terms.
 e. Dispatch the `oro-phase-executor` agent with: the plan path, memory pointers, and the phase id. Await its ≤10-line summary. Execution runs unattended in that subagent's isolated context — this is what keeps the main session lean across phases.
+   The phase runs on the loop-kernel contract (capped retry, blind review, climb, distill — see executing-plan-time). After each phase, add the distiller's lessons/proposals summary to the phase report.
 f. If the summary contains an `ESCALATE:` block → STOP, surface it to the user, record the user's resolution in `decisions.md` tagged `[escalated]`, then resume. The oro-phase-executor escalates only irreversible forks; it auto-decides reversible ones on its own (full policy lives in the oro-phase-executor agent).
 g. Set this phase to `done` in `progress.md` and record the summary. Advance to the next non-`done` phase.
 
@@ -81,9 +84,9 @@ Every decision — `[interactive]`, `[auto]`, and `[escalated]` — is logged to
 
 ## Autonomous mode (`--auto`)
 
-When invoked with `--auto`, the loop runs unattended: it never waits for a human at a gate.
+When invoked with `--auto`, the loop runs unattended: it never waits for a human at a gate, except the one-time Interactive bootstrap when started with an idea and an empty roadmap.
 
-- **Resume switch (arm).** First action on `--auto` start: `touch .dev/auto-resume`; capture the orchestrating claude pid into the lock — `ps -o ppid= -p $$ | tr -d ' ' > .dev/auto.lock` (the Bash tool's parent is the claude process); append this repo's absolute path to `~/.claude/dev-auto-repos` unless already listed; ensure the cron guard is installed: `crontab -l 2>/dev/null | grep -q dev-resume-guard || { (crontab -l 2>/dev/null; echo '*/15 * * * * sh "$HOME/.claude/dev-resume-guard.sh"') | crontab -; }`.
+- **Resume switch (arm).** First action on `--auto` start (after Interactive bootstrap, if one runs): `touch .dev/auto-resume`; capture the orchestrating claude pid into the lock — `ps -o ppid= -p $$ | tr -d ' ' > .dev/auto.lock` (the Bash tool's parent is the claude process); append this repo's absolute path to `~/.claude/dev-auto-repos` unless already listed; ensure the cron guard is installed: `crontab -l 2>/dev/null | grep -q dev-resume-guard || { (crontab -l 2>/dev/null; echo '*/15 * * * * sh "$HOME/.claude/dev-resume-guard.sh"') | crontab -; }`. Also `mkdir -p .loop && touch .loop/auto` so the loop-kernel Stop hook (§7) holds the session to the goal.
 - **Propagate auto-context.** When running the `brainstorming-time` and `writing-plans-time` skills (phase-loop steps b and c), prefix the invocation with an explicit instruction that they are in **autonomous mode** — decide from the roadmap + `.dev/memory/` and self-review instead of asking. (Each skill's own "Autonomous mode" section defines the gate-clearing behavior.)
 - **Reversible forks** continue with the sensible default, logged to `decisions.md` tagged `[auto]` (unchanged executor policy).
 - **Irreversible forks** — when `oro-phase-executor` returns an `ESCALATE:` block, or an auto-brainstorm hits an irreversible question the roadmap+memory cannot answer:
@@ -93,8 +96,10 @@ When invoked with `--auto`, the loop runs unattended: it never waits for a human
 - **`--design <uuid>` that cannot resolve** (auth absent in a headless run, or project unreachable) is an irreversible/external blocker: park an escalation `("design UUID <ref> could not be resolved — auth absent or project unreachable")` to `escalations.md` and halt. A **folder** ref always resolves headless and is the recommended `--auto` source.
 - **Never merge** — `--auto` keeps the no-merge rule from "Final report": the loop opens branches/PRs but a human merges.
 - **Resume.** Re-running `/dev --auto` resolves nothing automatically: the operator records the resolution in `decisions.md` tagged `[escalated]`, clears the `blocked` status, and re-runs; the loop resumes at the first non-`done` phase.
-- **Resume switch (disarm).** On EVERY orderly ending — final report, escalation halt, empty roadmap — `rm -f .dev/auto-resume .dev/auto.lock` (the guard prunes the registry line on its next tick). The switch stays armed only when the run dies mid-flight (usage limit, crash): the cron guard then relaunches `claude -p '/dev --auto'` once the exhausted window resets, the weekly limit taking precedence over the 5-hour one (`~/.claude/dev-resume-guard.sh`, fed by the statusline usage snapshot).
-- **Empty roadmap.** With no phases and no `--import`, `--auto` does not start the interactive project-time path — it parks an escalation ("no phases to run; import a roadmap") and halts.
+- **Resume switch (disarm).** On EVERY orderly ending — final report, escalation halt, empty roadmap — `rm -f .dev/auto-resume .dev/auto.lock` (the guard prunes the registry line on its next tick). The switch stays armed only when the run dies mid-flight (usage limit, crash): the cron guard then relaunches `claude -p '/dev --auto'` once the exhausted window resets, the weekly limit taking precedence over the 5-hour one (`~/.claude/dev-resume-guard.sh`, fed by the statusline usage snapshot). Also `rm -f .loop/auto`.
+- **Empty roadmap.** With no phases and no `--import`:
+  - **Interactive bootstrap** — if `$ARGUMENTS` contains a project direction besides flags (e.g. `/dev --auto I want a product that does X`), do NOT arm the resume switch yet. Run the `project-time` skill **interactively** (the one stretch of an `--auto` run that waits for the user) until it has written `goals.md` and seeded `progress.md`. Then switch to autonomous mode: arm the resume switch (first `--auto` bullet) and start the phase loop unattended. If the user abandons project-time before phases exist, stop without arming.
+  - **No direction** — bare `/dev --auto` parks an escalation ("no phases to run; import a roadmap or pass an idea") and halts.
 
 ### Phase status `blocked`
 

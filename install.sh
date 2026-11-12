@@ -11,13 +11,13 @@
 
 set -euo pipefail
 
-SKILLS=(project-time brainstorming-time writing-plans-time executing-plan-time caveman remotion-best-practices remotion-captions remotion-render)
+SKILLS=(project-time brainstorming-time writing-plans-time executing-plan-time caveman loop-kernel remotion-best-practices remotion-captions remotion-render)
 # The ship pipeline ships as agents + a slash command rather than a skill.
 # Agents are namespaced (oro-*) to avoid collisions in the global agents dir.
 AGENTS=(oro-planner oro-coder oro-tester oro-reviewer)
 COMMANDS=(ship)
 # The dev pipeline also ships as agents + a slash command.
-DEV_AGENTS=(oro-implementer oro-task-reviewer oro-phase-executor)
+DEV_AGENTS=(oro-implementer oro-task-reviewer oro-phase-executor oro-judge oro-distiller oro-critic)
 DEV_COMMANDS=(dev)
 # The loop pipeline (autonomous agent loops) also ships as agents + slash commands.
 LOOP_AGENTS=(oro-triager)
@@ -25,7 +25,7 @@ LOOP_COMMANDS=(loop-manager loop-worker)
 # The fix pipeline (batch of small fixes) ships as a slash command reusing the ship agents.
 FIX_COMMANDS=(fix)
 # The review pipeline (post-PR feedback) also reuses the ship agents.
-REVIEW_COMMANDS=(address-review)
+REVIEW_COMMANDS=(address-review gc)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 SCOPE="global"
@@ -84,6 +84,19 @@ HOOK_CMD="bash \"$HOOK_DEST\""
 STATE_SRC="$SCRIPT_DIR/skills/caveman/caveman-state.sh"
 STATE_DEST="$BASE_DIR/caveman-state.sh"
 STATE_CMD="sh \"$STATE_DEST\""
+# loop-kernel Stop hook: copied like the caveman hooks; inert unless the
+# project has .loop/auto + .loop/goal.md (unattended runs only).
+GOAL_STOP_SRC="$SCRIPT_DIR/skills/loop-kernel/goal-stop.sh"
+GOAL_STOP_DEST="$BASE_DIR/goal-stop.sh"
+GOAL_STOP_CMD="bash \"$GOAL_STOP_DEST\""
+# loop-kernel PreToolUse guard: denies edits to locked tests / frozen goal; inert without .loop/
+GUARD_SRC="$SCRIPT_DIR/skills/loop-kernel/guard-edits.sh"
+GUARD_DEST="$BASE_DIR/guard-edits.sh"
+GUARD_CMD="bash \"$GUARD_DEST\""
+# loop-kernel UserPromptSubmit hook: logs human prompts during active runs (meta loop); inert without .loop/active
+INTERVENTION_SRC="$SCRIPT_DIR/skills/loop-kernel/intervention-log.sh"
+INTERVENTION_DEST="$BASE_DIR/intervention-log.sh"
+INTERVENTION_CMD="bash \"$INTERVENTION_DEST\""
 STATUSLINE_SRC="$SCRIPT_DIR/statusline-command.sh"
 STATUSLINE_FILE="$BASE_DIR/statusline-command.sh"
 STATUSLINE_CMD="sh \"$STATUSLINE_FILE\""
@@ -145,12 +158,18 @@ install_session_hook() {
 
   cp "$HOOK_SRC"  "$HOOK_DEST";  chmod +x "$HOOK_DEST"
   cp "$STATE_SRC" "$STATE_DEST"; chmod +x "$STATE_DEST"
+  cp "$GOAL_STOP_SRC" "$GOAL_STOP_DEST"; chmod +x "$GOAL_STOP_DEST"
+  cp "$GUARD_SRC" "$GUARD_DEST"; chmod +x "$GUARD_DEST"
+  cp "$INTERVENTION_SRC" "$INTERVENTION_DEST"; chmod +x "$INTERVENTION_DEST"
 
   [[ -f "$SETTINGS_FILE" ]] || echo '{}' > "$SETTINGS_FILE"
 
   register_hook SessionStart    "$HOOK_CMD"   # caveman on by default
   register_hook SessionStart    "$STATE_CMD"  # seed per-session on/off flag
   register_hook UserPromptSubmit "$STATE_CMD"  # flip the flag on verbal toggle
+  register_hook Stop "$GOAL_STOP_CMD"  # loop-kernel goal enforcement (auto runs only)
+  register_hook PreToolUse "$GUARD_CMD"  # loop-kernel test lock + goal freeze
+  register_hook UserPromptSubmit "$INTERVENTION_CMD"  # loop-kernel intervention log (meta loop)
 }
 
 # Install the oroskills statusline (emoji-labelled, caveman chip baked in) and
@@ -218,7 +237,7 @@ uninstall() {
   for item in "${SKILLS[@]}"; do rm -rf "$SKILLS_DIR/$item"; done
   for item in "${AGENTS[@]}" "${DEV_AGENTS[@]}" "${LOOP_AGENTS[@]}"; do rm -f "$AGENTS_DIR/$item.md"; done
   for item in "${COMMANDS[@]}" "${DEV_COMMANDS[@]}" "${LOOP_COMMANDS[@]}" "${FIX_COMMANDS[@]}" "${REVIEW_COMMANDS[@]}"; do rm -f "$COMMANDS_DIR/$item.md"; done
-  rm -f "$HOOK_DEST" "$STATE_DEST" "$BASE_DIR/memory-protocol.md" "$MODE_FILE"
+  rm -f "$HOOK_DEST" "$STATE_DEST" "$GOAL_STOP_DEST" "$GUARD_DEST" "$INTERVENTION_DEST" "$BASE_DIR/memory-protocol.md" "$MODE_FILE"
   rm -f "$BASE_DIR/dev-resume-guard.sh" "$BASE_DIR/dev-auto-repos" "$BASE_DIR/oro-usage.json"
   # Drop the resume-guard crontab line only if present (no-op otherwise, so a
   # sandboxed uninstall never rewrites the real crontab).
@@ -231,8 +250,8 @@ uninstall() {
   fi
   if command -v jq >/dev/null 2>&1 && [[ -f "$SETTINGS_FILE" ]]; then
     tmp="$(mktemp)"
-    jq --arg h "$HOOK_CMD" --arg s "$STATE_CMD" --arg sl "$STATUSLINE_CMD" '
-      (if .hooks then .hooks |= with_entries(.value |= map(select([.hooks[]?.command] | any(. == $h or . == $s) | not))) else . end)
+    jq --arg h "$HOOK_CMD" --arg s "$STATE_CMD" --arg sl "$STATUSLINE_CMD" --arg g "$GOAL_STOP_CMD" --arg p "$GUARD_CMD" --arg i "$INTERVENTION_CMD" '
+      (if .hooks then .hooks |= with_entries(.value |= map(select([.hooks[]?.command] | any(. == $h or . == $s or . == $g or . == $p or . == $i) | not))) else . end)
       | if (.statusLine.command // "") == $sl then del(.statusLine) else . end
     ' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE" \
       || { rm -f "$tmp"; echo "  ! could not clean $SETTINGS_FILE (jq failed); remove oroskills hooks/statusLine manually"; }
@@ -347,7 +366,7 @@ EOF
   echo "  Installed post-merge hook -> $hook (runs: install.sh --refresh $scope_flag on every pull)"
 }
 
-install_session_hook   # re-copies the 3 hook scripts; under --refresh FORCE=1 makes that a real refresh
+install_session_hook   # re-copies the hook scripts; under --refresh FORCE=1 makes that a real refresh
 
 install_post_merge_hook
 
