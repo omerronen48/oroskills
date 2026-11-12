@@ -31,6 +31,7 @@ Create any missing file by inspecting the project (package.json scripts, Makefil
 - **Freeze:** after the critic is CLEAR, `touch .loop/active`. goal.md is now frozen; the `guard-edits.sh` PreToolUse hook denies edits to it. `rm -f .loop/active` at run end.
 - **Exemplars:** the spec names, for every file to create, the existing file whose patterns it must follow (`exemplar: <path>`). Coders follow it; reviewers check it.
 - **Lessons:** for every coder/implementer dispatch, run `bash "$KERNEL/lessons-for.sh" .dev/memory/lessons.md <files the task touches>` and pass its output (≤ 5 lessons, highest `seen` first, file-scoped ones only when they match). Never paste the whole lessons file.
+- **Raw output:** every subagent dispatch (coder, tester, reviewer, judge) says: run git as `/usr/bin/git --no-pager`, one plain command per Bash call, and when a shell wrapper condenses test output, build the test binary and run it directly. Agents that see condensed output miss printed lines and diff hunks.
 
 ## 2. Metric
 
