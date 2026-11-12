@@ -1,6 +1,6 @@
 ---
 name: executing-plan-time
-description: "Use when executing an approved implementation plan end-to-end: worktree isolation, overlap-gated parallel waves, TDD-before-commit, per-task review, finishing handoff. Replaces the superpowers execution skills."
+description: "Use when executing an approved implementation plan end-to-end: worktree isolation, overlap-gated parallel waves, TDD-before-commit, per-task review, PR opened right after review with full verification after (fixes go into the PRs). Replaces the superpowers execution skills."
 ---
 
 # Direct Executing Plans
@@ -35,8 +35,8 @@ Create a TodoWrite todo for each phase. Each phase has its own internal steps.
 1. **Pre-flight** — graphify exists, plan loaded, worktree created, baseline tests green, memory read (read `.dev/memory/` per `~/.claude/memory-protocol.md` if present; pass memory pointers to each dispatched agent)
 2. **Overlap analysis** — for every wave, verify file + function + call-graph disjointness; downgrade waves if needed
 3. **Wave loop** — for each wave: dispatch parallel `oro-implementer` agents, await all; per task run the combined review (dispatch the `oro-task-reviewer` agent), fix loop if needed; verify the wave; mark tasks done
-4. **Final verification** — full test suite + lint + type-check + spec coverage check on the worktree
-5. **Finishing handoff** — present PR / merge-to-main / leave-as-worktree choice; do not act without user confirmation
+4. **Open the PR** — as soon as every task has passed review: branch-integrity precheck, push, open the PR (body says full verification is pending). Never merge.
+5. **Post-PR verification** — full test suite + lint + type-check + spec coverage on the pushed branch; every failure is fixed test-first and pushed to the PR it belongs to (an earlier stacked PR if the bug lives there); post the result as a PR comment
 
 ---
 
@@ -197,9 +197,33 @@ The next wave's oro-implementer subagents only need: the next task slice, the wo
 
 ---
 
-## Phase 4: Final Verification
+## Phase 4: Open the PR (before full verification)
 
-Before any finishing action, from main, in the worktree:
+**Directive (user, 2026-11-11):** open the PR as soon as every task has passed its review — do not hold it for the full suite. Full verification runs *after* the PR is open (Phase 5); anything it catches is fixed by updating the PRs. Per-task scoped tests + per-task review are the gate for opening.
+
+1. Run the **branch-integrity precheck** (below) so the pushed branch carries every task.
+2. Push the branch and `gh pr create` against the base branch (in a stack, the previous phase's branch). Title + summary from the plan. The body MUST contain a line saying full verification is pending and that failures will be fixed in this PR (or the earlier stacked PR they belong to), plus the "Not verified" list.
+3. Never merge. Never force-push a branch someone else's PR is stacked on without rebasing the stack after it.
+
+**Branch-integrity precheck.** A subagent may have detached the worktree HEAD during the run, leaving the branch ref behind the real work — pushing the ref would then ship only part of the plan. Confirm the branch label actually points at the work tip:
+
+```bash
+git -C <worktree> rev-parse HEAD          # the real work tip
+git -C <worktree> rev-parse <branch>      # the branch label
+git -C <worktree> symbolic-ref -q HEAD || echo "DETACHED HEAD"
+```
+
+If `HEAD` is detached or the two SHAs differ, repoint the branch before pushing:
+
+```bash
+git -C <worktree> branch -f <branch> <work-tip-SHA>
+```
+
+---
+
+## Phase 5: Post-PR Verification
+
+After the PR is open, from main, in the worktree (run it in the background; it can overlap planning of the next phase):
 
 ```bash
 bash ~/.claude/skills/loop-kernel/factory-check.sh <run-base> .loop/goal.md   # goal done-criteria + .factory/checks + test-guard
@@ -217,52 +241,17 @@ bash ~/.claude/skills/loop-kernel/factory-check.sh <run-base> .loop/goal.md   # 
 git log --oneline <main>..HEAD | grep -iE "<requirement-keywords>"
 ```
 
-All must pass. If any fail:
-- Do NOT proceed to finishing.
+If any fail, **update the PRs**:
 - Dispatch a fresh subagent to investigate, following the TDD-before-commit contract for any fix. Max 3 attempts total, then escalate (loop-kernel §4).
-- Re-run final verification.
+- Commit the fix on the branch whose PR introduced the bug. In a stack, fix it on the earliest PR that owns the bug, push it, then merge that branch forward into each later branch in the stack (merge commits, no rebase/force-push) and push those.
+- Re-run the failed check, then the full verification once more.
+- Known environmental flakes: retry ≤2, then report as environmental in the PR comment — never weaken the test.
 
-When final verification is green, run **loop-kernel §2 step 3 (mutate-check)** over the run, then **§5 (Climb)** against the run base, re-run final verification if the climb changed code, then **§6 (Distill)**. Then proceed to finishing.
+When verification is green, run **loop-kernel §2 step 3 (mutate-check)** over the run, then **§5 (Climb)** against the run base, re-run verification if the climb changed code, then **§6 (Distill)**. Push any resulting commits to the PR.
 
-State the final verification result explicitly. No "it should be working" — evidence before claims.
+Post the result as a PR comment (`gh pr comment`): each check with pass/fail and counts, fixes pushed (SHAs, which PR), anything environmental. Update the PR body's "pending" line to the result. State the result explicitly — no "it should be working".
 
----
-
-## Phase 5: Finishing Handoff
-
-After final verification is green, present the choice. Do not act without the user picking one.
-
-**Branch-integrity precheck (do this first, before any merge/PR).** A subagent may have detached the worktree HEAD during the run, leaving the branch ref behind the real work — merging the ref would then ship only part of the plan. Confirm the branch label actually points at the work tip:
-
-```bash
-git -C <worktree> rev-parse HEAD          # the real work tip
-git -C <worktree> rev-parse <branch>      # the branch label
-git -C <worktree> symbolic-ref -q HEAD || echo "DETACHED HEAD"
-```
-
-If `HEAD` is detached or the two SHAs differ, repoint the branch before finishing:
-
-```bash
-git -C <worktree> branch -f <branch> <work-tip-SHA>
-```
-
-Then, after any merge, re-check the merge diffstat covers **every** task in the plan — not just the early ones.
-
-> "Plan complete and verified on worktree `<path>` (branch `<branch>`). Summary: <N> tasks across <W> waves, peak parallelism <P>, all tests green, lint clean.
->
-> Finishing options:
->
-> 1. **Open a PR** against `<base-branch>` — push the branch and create a PR (I'll draft title + summary).
-> 2. **Merge to `<base-branch>`** — fast-forward / merge / rebase your preference, then optionally remove the worktree.
-> 3. **Leave as worktree** — keep the branch and worktree as-is for further iteration.
->
-> Which?"
-
-For option 1: push the branch, run `gh pr create` with a generated title + summary derived from the plan, return the PR URL.
-
-For option 2: ask which merge style (`--ff-only`, `--no-ff`, rebase), do the merge, then ask whether to `git worktree remove` the worktree.
-
-For option 3: print the worktree path and branch name and stop.
+Merging stays the user's call: never merge; offer it only after verification is green.
 
 ---
 
@@ -347,7 +336,7 @@ When dispatched by `oro-phase-executor` under `/dev --auto`, never wait for a us
 - **Existing worktree for this plan (§1.2):** resume it; never create a parallel one.
 - **Red baseline (§1.3):** do not start the plan; return an `ESCALATE:` block with the failing output.
 - **Plan-test not red for the right reason after one re-dispatch:** return an `ESCALATE:` block (the plan's test is likely wrong; that is a planning decision).
-- **Review cap hit (§3.4) / verification cap hit (Phase 4):** return an `ESCALATE:` block naming the task and last findings.
-- **Finishing choice (Phase 5):** run the branch-integrity precheck, push the branch, and open a PR if `gh` is authenticated; otherwise leave the branch. Never merge.
+- **Review cap hit (§3.4) / verification cap hit (Phase 5):** return an `ESCALATE:` block naming the task and last findings (the PR stays open; say so in a PR comment).
+- **Open the PR (Phase 4):** as soon as all tasks pass review, run the branch-integrity precheck, push, and open the PR if `gh` is authenticated; otherwise leave the branch. Then run Phase 5 and fix failures into the PRs. Never merge.
 - Distill proposals are listed in the summary, not applied.
 This section is inert when the skill runs interactively.
