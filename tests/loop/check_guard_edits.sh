@@ -21,6 +21,8 @@ echo g > .loop/goal.md
 [ -z "$(call "$D/.loop/goal.md")" ] || fail "goal editable before freeze"
 touch .loop/active
 [ "$(decision "$(call "$D/.loop/goal.md")")" = deny ] || fail "frozen goal should be denied"
+[ -z "$(jq -nc --arg f "$D/.loop/goal.md" '{tool_name:"Read",tool_input:{file_path:$f}}' | bash "$G")" ] || fail "reading the frozen goal must be allowed"
+[ -z "$(jq -nc --arg f "$D/tests/test_a.py" '{tool_name:"Read",tool_input:{file_path:$f}}' | bash "$G")" ] || fail "reading a locked test must be allowed"
 [ -z "$(call "$D/newdir/x.py")" ] || fail "file in new dir should be allowed"
 [ -z "$(echo '{"tool_name":"Bash","tool_input":{"command":"ls"}}' | bash "$G")" ] || fail "non-file tool passes through"
 mkdir -p .factory; echo pytest > .factory/checks

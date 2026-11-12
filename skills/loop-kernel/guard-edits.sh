@@ -6,7 +6,11 @@
 # Bash writes bypass this hook; test-guard.sh's hash check catches those.
 set -uo pipefail
 command -v jq >/dev/null || exit 0
-fp="$(jq -r '.tool_input.file_path // .tool_input.notebook_path // empty' 2>/dev/null)"
+in="$(cat)"
+# Registered without a matcher, so every tool arrives here. Reads never change a file: let them through,
+# or judges and coders cannot see the goal or locked tests they are told to follow.
+[[ "$(jq -r '.tool_name // empty' <<<"$in")" =~ ^(Read|Grep|Glob|LS|NotebookRead)$ ]] && exit 0
+fp="$(jq -r '.tool_input.file_path // .tool_input.notebook_path // empty' <<<"$in" 2>/dev/null)"
 [[ -n "$fp" ]] || exit 0
 [[ "$fp" == /* ]] || fp="${CLAUDE_PROJECT_DIR:-$PWD}/$fp"
 dir="$(dirname "$fp")"
